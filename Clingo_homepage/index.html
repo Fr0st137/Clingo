@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clingo Test</title>
+  <script>
+    document.documentElement.classList.add("fonts-loading");
+
+    if ("fonts" in document) {
+      document.fonts.ready.finally(() => {
+        document.documentElement.classList.remove("fonts-loading");
+      });
+    } else {
+      document.documentElement.classList.remove("fonts-loading");
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/backgrounds/background-clingo-home.svg" as="image" type="image/svg+xml" fetchpriority="high">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/header-not-login.css">
+  <link rel="stylesheet" href="styles/home.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="header-not-login" data-node-id="2726:3497">
+      <div class="header-not-login__inner">
+        <div class="header-not-login__left-group">
+          <a class="header-not-login__logo" href="/" aria-label="Clingo">
+            <img
+              src="assets/images/logo-clingo-color-new.png"
+              alt="Clingo"
+            >
+          </a>
+
+          <nav class="header-not-login__nav" aria-label="Główna nawigacja">
+            <a class="header-not-login__nav-link header-not-login__nav-link--narrow" href="/">Jak to działa?</a>
+            <a class="header-not-login__nav-link" href="/">Standardy usług Clingo</a>
+          </nav>
+
+        </div>
+
+        <form class="header-not-login__search" role="search">
+          <label class="header-not-login__search-label" for="header-search">Szukaj</label>
+          <span class="header-not-login__search-icon" aria-hidden="true">
+            <img
+              src="assets/icons/header-search.svg"
+              alt=""
+            >
+          </span>
+          <input
+            id="header-search"
+            class="header-not-login__search-input"
+            type="search"
+            placeholder="Imię i nazwisko | Nazwa firmy"
+          >
+        </form>
+
+        <div class="header-not-login__actions" aria-label="Szybkie akcje">
+          <div class="header-not-login__notifications-menu" data-notifications-menu data-panel-type="notification">
+            <div class="header-not-login__notifications-icons">
+          <button class="header-not-login__icon-button header-not-login__icon-button--notification" type="button" aria-label="Powiadomienia" aria-expanded="false" data-header-panel-trigger="notification">
+            <img
+              src="assets/icons/header-notification-bell.svg"
+              alt=""
+            >
+          </button>
+
+          <button class="header-not-login__icon-button header-not-login__icon-button--favorites" type="button" aria-label="Ulubione" aria-expanded="false" data-header-panel-trigger="favorites">
+            <img
+              src="assets/icons/header-heart.svg"
+              alt=""
+            >
+          </button>
+
+          <button class="header-not-login__icon-button" type="button" aria-label="Wiadomości">
+            <img
+              src="assets/icons/header-chat.svg"
+              alt=""
+            >
+          </button>
+
+            </div>
+
+            <div class="header-not-login__notifications-panel" aria-label="Powiadomienia" data-notifications-panel>
+              <img class="header-not-login__notifications-shape" src="assets/images/header-notifications-shape.svg" alt="" aria-hidden="true">
+              <div class="header-not-login__notifications-divider" aria-hidden="true"></div>
+
+              <div class="header-not-login__notifications-content">
+                <p class="header-not-login__notifications-title" data-header-panel-title>Powiadomienia</p>
+                <p class="header-not-login__notifications-text">Zaloguj się, aby otrzymywać powiadomienia o zamówieniach, statusach i promocjach.</p>
+                <a class="header-not-login__notifications-login" href="/">Zaloguj się</a>
+                <p class="header-not-login__notifications-register">Nie masz konta? <a href="/">Zarejestruj się</a></p>
+              </div>
+            </div>
+          </div>
+
+          <a class="header-not-login__account-button" href="/zamowienia">Moje konto</a>
+
+          <div class="header-not-login__contractor-menu">
+            <button class="header-not-login__contractor-button" type="button" aria-haspopup="true">
+              <span>Dla Wykonawców</span>
+              <img
+                src="assets/icons/header-angle-down.svg"
+                alt=""
+                aria-hidden="true"
+              >
+            </button>
+
+            <div class="header-not-login__contractor-dropdown" aria-label="Menu dla wykonawców">
+              <a class="header-not-login__contractor-dropdown-link" href="/">Zaloguj się</a>
+              <a class="header-not-login__contractor-dropdown-link" href="/">Zostań Wykonawcą</a>
+            </div>
+          </div>
+          <button class="header-not-login__mobile-toggle" type="button" aria-label="OtwĂłrz menu" aria-expanded="false" data-header-mobile-toggle>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        <div class="header-not-login__mobile-backdrop" data-header-mobile-backdrop></div>
+        <div class="header-not-login__mobile-menu" data-header-mobile-menu>
+          <form class="header-not-login__mobile-search" role="search">
+            <label class="header-not-login__search-label" for="header-search-mobile">Szukaj</label>
+            <span class="header-not-login__search-icon" aria-hidden="true">
+              <img
+                src="assets/icons/header-search.svg"
+                alt=""
+              >
+            </span>
+            <input
+              id="header-search-mobile"
+              class="header-not-login__search-input"
+              type="search"
+              placeholder="ImiÄ™ i nazwisko | Nazwa firmy"
+            >
+          </form>
+
+          <nav class="header-not-login__mobile-nav" aria-label="Mobilna nawigacja">
+            <a class="header-not-login__mobile-link" href="/">Jak to dziaĹ‚a?</a>
+            <a class="header-not-login__mobile-link" href="/">Standardy usĹ‚ug Clingo</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="home-page">
+      <section class="home-page__intro" data-node-id="5392:9182">
+        <h1 class="home-page__intro-title">Wybieraj i zamawiaj poszukiwane usługi</h1>
+
+        <div class="home-page__intro-summary">
+          <p class="home-page__intro-text">Szukaj wśród</p>
+          <div class="home-page__intro-pill">
+            <span>12 348</span>
+          </div>
+          <p class="home-page__intro-text">doświadczonych specjalistów</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="home-page__search-stage" data-search-stage>
+    <img class="home-page__hero-graphic home-page__hero-graphic--left" src="assets/images/hero-paint-roller.png" alt="" aria-hidden="true">
+    <div class="home-page__search-shell" data-node-id="322:386">
+      <div class="home-page__search-bar" data-node-id="5184:8593">
+        <div class="home-page__search-field-menu home-page__search-field-menu--service">
+          <button class="home-page__search-field home-page__search-field--service" type="button" aria-label="Rodzaj usługi" data-service-trigger>
+            <span class="home-page__search-field-text" data-service-value>Rodzaj usługi</span>
+            <img src="assets/icons/search-field-angle.svg" alt="" aria-hidden="true">
+          </button>
+
+          <div class="home-page__search-service-dropdown" data-service-dropdown aria-label="Rodzaj usługi">
+            <div class="home-page__search-service-column">
+              <div class="home-page__search-service-heading">
+                <img src="assets/icons/service-broom-1.png" alt="" aria-hidden="true">
+                <span>Sprzątanie obiektów</span>
+              </div>
+              <button class="home-page__search-service-option" type="button" data-service-option="Sprzątanie obiektów · Mieszkań i domów">Mieszkań i domów</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Sprzątanie obiektów · Po remoncie (Mieszkań i domów)">Po remoncie (Mieszkań i domów)</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Sprzątanie obiektów · Biur i lokali użytkowych">Biur i lokali użytkowych</button>
+            </div>
+
+            <div class="home-page__search-service-column">
+              <div class="home-page__search-service-heading">
+                <img src="assets/icons/service-broom-2.png" alt="" aria-hidden="true">
+                <span>Mycie ciśnieniowe</span>
+              </div>
+              <button class="home-page__search-service-option" type="button" data-service-option="Mycie ciśnieniowe · Kostki, chodników, tarasów">Kostki, chodników, tarasów</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Mycie ciśnieniowe · Elewacji zewnętrznych">Elewacji zewnętrznych</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Mycie ciśnieniowe · Dachów skośnych i płaskich">Dachów skośnych i płaskich</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Mycie ciśnieniowe · Paneli fotowoltaicznych">Paneli fotowoltaicznych</button>
+            </div>
+
+            <div class="home-page__search-service-column">
+              <div class="home-page__search-service-heading">
+                <img src="assets/icons/service-broom-3.png" alt="" aria-hidden="true">
+                <span>Malowanie powierzchni</span>
+              </div>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Ścian i sufitów">Ścian i sufitów</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Elewacji zewnętrznych">Elewacji zewnętrznych</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Dachów blaszanych">Dachów blaszanych</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Dachówek">Dachówek</button>
+            </div>
+
+            <div class="home-page__search-service-column">
+              <div class="home-page__search-service-heading">
+                <img src="assets/icons/service-broom-3.png" alt="" aria-hidden="true">
+                <span>Malowanie powierzchni</span>
+              </div>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Ścian i sufitów">Ścian i sufitów</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Elewacji zewnętrznych">Elewacji zewnętrznych</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Dachów blaszanych">Dachów blaszanych</button>
+              <button class="home-page__search-service-option" type="button" data-service-option="Malowanie powierzchni · Dachówek">Dachówek</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="home-page__search-divider" aria-hidden="true"></div>
+
+        <div class="home-page__search-field-menu home-page__search-field-menu--area">
+          <div class="home-page__search-field home-page__search-field--area" data-area-trigger>
+            <span class="home-page__search-field-value home-page__search-field-value--area">
+              <input
+                class="home-page__search-field-input"
+                data-area-input
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="np. 80"
+                aria-label="Powierzchnia"
+              >
+              <span class="home-page__search-field-sizer" data-area-sizer aria-hidden="true"></span>
+              <span class="home-page__search-field-unit" data-area-unit>m²</span>
+            </span>
+            <img src="assets/icons/search-field-angle.svg" alt="" aria-hidden="true">
+          </div>
+
+          <div class="home-page__search-area-dropdown" aria-label="Wybór powierzchni" data-area-dropdown>
+            <div class="home-page__search-area-dropdown-list" data-area-options>
+            </div>
+          </div>
+        </div>
+
+        <div class="home-page__search-divider" aria-hidden="true"></div>
+
+        <div class="home-page__search-field-menu home-page__search-field-menu--location">
+          <div class="home-page__search-field home-page__search-field--location" data-location-trigger>
+            <span class="home-page__search-field-icon home-page__search-field-icon--location">
+              <img src="assets/icons/google-maps.png" alt="" aria-hidden="true" data-location-pin>
+            </span>
+
+            <span class="home-page__search-field-value home-page__search-field-value--location">
+              <input
+                class="home-page__search-field-input home-page__search-field-input--location"
+                data-location-input
+                type="text"
+                autocomplete="off"
+                placeholder="Miejsce objęte usługą"
+                aria-label="Miejsce objęte usługą"
+              >
+            </span>
+
+            <button class="home-page__search-field-clear" type="button" aria-label="Wyczyść lokalizację" data-location-clear>
+              <img src="assets/icons/location-clear.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+
+          <div class="home-page__search-location-dropdown" data-location-dropdown aria-label="Wybór lokalizacji">
+            <button class="home-page__search-location-option home-page__search-location-option--primary" type="button" data-location-option="primary">
+              <span class="home-page__search-location-option-icon">
+                <img src="assets/icons/location-check.svg" alt="" aria-hidden="true">
+              </span>
+              <span class="home-page__search-location-option-text" data-location-primary-label>Floriańska 48, Warszawa, Polska</span>
+            </button>
+
+            <button class="home-page__search-location-option" type="button" data-location-option="query">
+              <span class="home-page__search-location-option-icon">
+                <img src="assets/icons/location-search.svg" alt="" aria-hidden="true">
+              </span>
+              <span class="home-page__search-location-option-text" data-location-query-label>Wyszukaj adres</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-page__search-footer">
+        <button class="home-page__search-extra" type="button" data-addon-toggle>
+          <span class="home-page__search-extra-icon">
+            <img src="assets/icons/services-extra.svg" alt="" aria-hidden="true">
+          </span>
+          <span class="home-page__search-extra-label">Usługi dodatkowe</span>
+          <span class="home-page__search-extra-count" data-addon-total>5</span>
+        </button>
+
+        <button class="home-page__search-submit" type="button" data-search-submit>
+          <span class="home-page__search-submit-icon">
+            <img src="assets/icons/search-cta.svg" alt="" aria-hidden="true">
+          </span>
+          <span>Szukaj</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="home-page__addons-panel" data-addons-panel aria-label="Usługi dodatkowe">
+      <div class="home-page__addons-content" data-addons-content>
+        <div class="home-page__addons-grid" data-addons-grid></div>
+      </div>
+    </section>
+    <img class="home-page__hero-graphic home-page__hero-graphic--right" src="assets/images/hero-cleaning-set.png" alt="" aria-hidden="true">
+    </div>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

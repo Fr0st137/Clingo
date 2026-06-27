@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CleanOLX – Diagram Bazy Danych</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --bg3: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --accent: #58a6ff;
+
+      --color-users:    #f78166;
+      --color-catalog:  #7ee787;
+      --color-tx:       #d2a8ff;
+      --color-quality:  #79c0ff;
+      --color-pivot:    #ffa657;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 56px;
+      background: rgba(13,17,23,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 20px;
+    }
+    header h1 { font-size: 15px; font-weight: 600; color: var(--text); }
+    header span { font-size: 12px; color: var(--text2); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+      border: 1px solid;
+    }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .b-users   { color: var(--color-users);   border-color: var(--color-users);   background: rgba(247,129,102,.08); }
+    .b-catalog { color: var(--color-catalog); border-color: var(--color-catalog); background: rgba(126,231,135,.08); }
+    .b-tx      { color: var(--color-tx);      border-color: var(--color-tx);      background: rgba(210,168,255,.08); }
+    .b-quality { color: var(--color-quality); border-color: var(--color-quality); background: rgba(121,192,255,.08); }
+    .b-pivot   { color: var(--color-pivot);   border-color: var(--color-pivot);   background: rgba(255,166,87,.08); }
+
+    /* ── CONTROLS ── */
+    .controls {
+      position: fixed; bottom: 20px; right: 20px; z-index: 100;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .ctrl-btn {
+      width: 36px; height: 36px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text2);
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .ctrl-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--accent); }
+
+    /* ── CANVAS AREA ── */
+    #canvas-wrap {
+      position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+      overflow: hidden; cursor: grab;
+    }
+    #canvas-wrap.grabbing { cursor: grabbing; }
+    #canvas { position: absolute; transform-origin: 0 0; }
+
+    /* ── RELATION LINES ── */
+    #svg-layer {
+      position: absolute; top: 0; left: 0;
+      pointer-events: none; overflow: visible;
+    }
+
+    /* ── TABLE CARDS ── */
+    .table-card {
+      position: absolute;
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      min-width: 230px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+      transition: box-shadow .25s, border-color .25s, transform .18s;
+      user-select: none;
+    }
+    .table-card:hover {
+      box-shadow: 0 8px 40px rgba(0,0,0,.65);
+      z-index: 50;
+    }
+    .table-card.dragging {
+      box-shadow: 0 16px 60px rgba(0,0,0,.8);
+      z-index: 200;
+      transform: scale(1.02);
+    }
+
+    .card-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      border-radius: 9px 9px 0 0;
+      cursor: move;
+    }
+    .card-icon { font-size: 14px; }
+    .card-title {
+      font-size: 12px; font-weight: 700; letter-spacing: .5px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-body { padding: 6px 0; }
+    .col-row {
+      display: flex; align-items: center; gap: 0;
+      padding: 3px 14px;
+      font-size: 11px;
+      transition: background .15s;
+    }
+    .col-row:hover { background: rgba(255,255,255,.04); }
+    .col-badges { display: flex; gap: 3px; margin-right: 7px; min-width: 42px; }
+    .tag {
+      font-size: 9px; font-weight: 600; padding: 1px 5px;
+      border-radius: 4px; line-height: 1.5;
+    }
+    .tag-pk  { background: rgba(255,166,87,.2);  color: #ffa657; }
+    .tag-fk  { background: rgba(88,166,255,.2);  color: #58a6ff; }
+    .tag-uq  { background: rgba(126,231,135,.2); color: #7ee787; }
+    .col-name { font-family: 'JetBrains Mono', monospace; color: var(--text); flex: 1; }
+    .col-type { color: var(--text2); font-size: 10px; margin-left: 6px; white-space: nowrap; }
+
+    /* colour strip per layer */
+    .strip { height: 3px; border-radius: 9px 9px 0 0; }
+    .strip-users   { background: var(--color-users);   }
+    .strip-catalog { background: var(--color-catalog); }
+    .strip-tx      { background: var(--color-tx);      }
+    .strip-quality { background: var(--color-quality); }
+    .strip-pivot   { background: var(--color-pivot);   }
+
+    .card-hover-users   { border-color: var(--color-users);   }
+    .card-hover-catalog { border-color: var(--color-catalog); }
+    .card-hover-tx      { border-color: var(--color-tx);      }
+    .card-hover-quality { border-color: var(--color-quality); }
+    .card-hover-pivot   { border-color: var(--color-pivot);   }
+
+    /* ── TOOLTIP ── */
+    #tooltip {
+      position: fixed; z-index: 999;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 11px; color: var(--text2);
+      pointer-events: none; opacity: 0;
+      transition: opacity .15s;
+      max-width: 260px; line-height: 1.6;
+    }
+    #tooltip.show { opacity: 1; }
+
+    /* ── MINIMAP ── */
+    #minimap {
+      position: fixed; bottom: 20px; left: 20px; z-index: 100;
+      width: 160px; height: 100px;
+      background: rgba(22,27,34,.9);
+      border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    #minimap canvas { width: 100%; height: 100%; }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      position: absolute;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--text2); pointer-events: none;
+      opacity: .5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <h1>🧹 CleanOLX – Diagram Bazy Danych</h1>
+  <span style="flex:1"></span>
+  <span class="badge b-users">   <span class="badge-dot" style="background:var(--color-users)"></span>Użytkownicy</span>
+  <span class="badge b-catalog"> <span class="badge-dot" style="background:var(--color-catalog)"></span>Katalog</span>
+  <span class="badge b-tx">      <span class="badge-dot" style="background:var(--color-tx)"></span>Transakcje</span>
+  <span class="badge b-quality"> <span class="badge-dot" style="background:var(--color-quality)"></span>Jakość & Kom.</span>
+  <span class="badge b-pivot">   <span class="badge-dot" style="background:var(--color-pivot)"></span>Pivot</span>
+</header>
+
+<!-- CANVAS -->
+<div id="canvas-wrap">
+  <div id="canvas">
+    <svg id="svg-layer" width="4000" height="3000"></svg>
+    <!-- cards injected by JS -->
+  </div>
+</div>
+
+<!-- ZOOM CONTROLS -->
+<div class="controls">
+  <button class="ctrl-btn" id="btn-zoom-in"  title="Zoom in">＋</button>
+  <button class="ctrl-btn" id="btn-zoom-out" title="Zoom out">－</button>
+  <button class="ctrl-btn" id="btn-reset"    title="Reset widoku">⟳</button>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"></div>
+
+<!-- MINIMAP -->
+<div id="minimap"><canvas id="mm-canvas"></canvas></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA MODEL
+═══════════════════════════════════════════ */
+const TABLES = [
+  {
+    id:'users', layer:'users', icon:'👤', title:'USERS',
+    x:60, y:80,
+    desc:'Wszyscy użytkownicy systemu: klienci, usługodawcy i admini.',
+    cols:[
+      {name:'user_id',       type:'UUID',         tags:['pk']},
+      {name:'email',         type:'VARCHAR(255)',  tags:['uq']},
+      {name:'password_hash', type:'VARCHAR(512)',  tags:[]},
+      {name:'first_name',    type:'VARCHAR(100)',  tags:[]},
+      {name:'last_name',     type:'VARCHAR(100)',  tags:[]},
+      {name:'phone',         type:'VARCHAR(20)',   tags:['uq']},
+      {name:'role',          type:"ENUM",          tags:[]},
+      {name:'is_verified',   type:'BOOLEAN',       tags:[]},
+      {name:'created_at',    type:'TIMESTAMP',     tags:[]},
+      {name:'deleted_at',    type:'TIMESTAMP',     tags:[]},
+    ]
+  },
+  {
+    id:'provider_profiles', layer:'users', icon:'🏢', title:'PROVIDER_PROFILES',
+    x:380, y:80,
+    desc:'Rozszerzony profil usługodawcy (1:1 z USERS).',
+    cols:[
+      {name:'profile_id',    type:'UUID',          tags:['pk']},
+      {name:'user_id',       type:'UUID',          tags:['fk','uq']},
+      {name:'company_name',  type:'VARCHAR(200)',  tags:[]},
+      {name:'nip',           type:'VARCHAR(10)',   tags:['uq']},
+      {name:'description',   type:'TEXT',          tags:[]},
+      {name:'avg_rating',    type:'DECIMAL(3,2)',  tags:[]},
+      {name:'total_reviews', type:'INT',           tags:[]},
+      {name:'is_active',     type:'BOOLEAN',       tags:[]},
+      {name:'verified_at',   type:'TIMESTAMP',     tags:[]},
+    ]
+  },
+  {
+    id:'service_categories', layer:'catalog', icon:'📂', title:'SERVICE_CATEGORIES',
+    x:730, y:60,
+    desc:'Hierarchia kategorii usług (self-referencing FK).',
+    cols:[
+      {name:'category_id',   type:'SERIAL',        tags:['pk']},
+      {name:'parent_id',     type:'INT',            tags:['fk']},
+      {name:'name',          type:'VARCHAR(100)',   tags:[]},
+      {name:'slug',          type:'VARCHAR(100)',   tags:['uq']},
+      {name:'icon_url',      type:'TEXT',           tags:[]},
+      {name:'is_active',     type:'BOOLEAN',        tags:[]},
+    ]
+  },
+  {
+    id:'listings', layer:'catalog', icon:'📋', title:'LISTINGS',
+    x:730, y:330,
+    desc:'Ogłoszenia usługodawców widoczne na platformie.',
+    cols:[
+      {name:'listing_id',    type:'UUID',           tags:['pk']},
+      {name:'provider_id',   type:'UUID',           tags:['fk']},
+      {name:'category_id',   type:'INT',            tags:['fk']},
+      {name:'title',         type:'VARCHAR(200)',   tags:[]},
+      {name:'description',   type:'TEXT',           tags:[]},
+      {name:'price_type',    type:'ENUM',           tags:[]},
+      {name:'base_price',    type:'DECIMAL(10,2)',  tags:[]},
+      {name:'city',          type:'VARCHAR(100)',   tags:[]},
+      {name:'status',        type:'ENUM',           tags:[]},
+      {name:'views_count',   type:'INT',            tags:[]},
+      {name:'created_at',    type:'TIMESTAMP',      tags:[]},
+    ]
+  },
+  {
+    id:'listing_photos', layer:'catalog', icon:'🖼️', title:'LISTING_PHOTOS',
+    x:1060, y:330,
+    desc:'Zdjęcia dołączone do ogłoszeń.',
+    cols:[
+      {name:'photo_id',      type:'UUID',           tags:['pk']},
+      {name:'listing_id',    type:'UUID',           tags:['fk']},
+      {name:'url',           type:'TEXT',           tags:[]},
+      {name:'sort_order',    type:'SMALLINT',       tags:[]},
+      {name:'is_cover',      type:'BOOLEAN',        tags:[]},
+    ]
+  },
+  {
+    id:'tags', layer:'pivot', icon:'🏷️', title:'TAGS',
+    x:1060, y:560,
+    desc:'Tagi opisujące ogłoszenia (N:M przez LISTING_TAGS).',
+    cols:[
+      {name:'tag_id',        type:'SERIAL',         tags:['pk']},
+      {name:'name',          type:'VARCHAR(50)',     tags:['uq']},
+    ]
+  },
+  {
+    id:'listing_tags', layer:'pivot', icon:'🔗', title:'LISTING_TAGS',
+    x:860, y:620,
+    desc:'Tabela pośrednia: LISTINGS ↔ TAGS (N:M).',
+    cols:[
+      {name:'listing_id',    type:'UUID',           tags:['pk','fk']},
+      {name:'tag_id',        type:'INT',            tags:['pk','fk']},
+    ]
+  },
+  {
+    id:'orders', layer:'tx', icon:'📦', title:'ORDERS',
+    x:380, y:360,
+    desc:'Zamówienia składane przez klientów u usługodawców.',
+    cols:[
+      {name:'order_id',      type:'UUID',           tags:['pk']},
+      {name:'client_id',     type:'UUID',           tags:['fk']},
+      {name:'listing_id',    type:'UUID',           tags:['fk']},
+      {name:'provider_id',   type:'UUID',           tags:['fk']},
+      {name:'service_address',type:'TEXT',          tags:[]},
+      {name:'scheduled_date',type:'DATE',           tags:[]},
+      {name:'scheduled_time',type:'TIME',           tags:[]},
+      {name:'duration_hours',type:'DECIMAL(4,2)',   tags:[]},
+      {name:'total_price',   type:'DECIMAL(10,2)',  tags:[]},
+      {name:'status',        type:'ENUM',           tags:[]},
+      {name:'cancelled_by',  type:'UUID',           tags:['fk']},
+      {name:'created_at',    type:'TIMESTAMP',      tags:[]},
+    ]
+  },
+  {
+    id:'payments', layer:'tx', icon:'💳', title:'PAYMENTS',
+    x:60, y:360,
+    desc:'Płatności powiązane z zamówieniem (1:1 z ORDERS).',
+    cols:[
+      {name:'payment_id',    type:'UUID',           tags:['pk']},
+      {name:'order_id',      type:'UUID',           tags:['fk','uq']},
+      {name:'amount',        type:'DECIMAL(10,2)',  tags:[]},
+      {name:'currency',      type:'VARCHAR(3)',     tags:[]},
+      {name:'method',        type:'ENUM',           tags:[]},
+      {name:'status',        type:'ENUM',           tags:[]},
+      {name:'external_id',   type:'VARCHAR(255)',   tags:['uq']},
+      {name:'paid_at',       type:'TIMESTAMP',      tags:[]},
+      {name:'refund_amount', type:'DECIMAL(10,2)',  tags:[]},
+    ]
+  },
+  {
+    id:'reviews', layer:'quality', icon:'⭐', title:'REVIEWS',
+    x:380, y:640,
+    desc:'Recenzje wystawiane po zakończeniu zamówienia.',
+    cols:[
+      {name:'review_id',     type:'UUID',           tags:['pk']},
+      {name:'order_id',      type:'UUID',           tags:['fk']},
+      {name:'reviewer_id',   type:'UUID',           tags:['fk']},
+      {name:'reviewee_id',   type:'UUID',           tags:['fk']},
+      {name:'rating',        type:'SMALLINT (1-5)', tags:[]},
+      {name:'comment',       type:'TEXT',           tags:[]},
+      {name:'created_at',    type:'TIMESTAMP',      tags:[]},
+    ]
+  },
+  {
+    id:'messages', layer:'quality', icon:'💬', title:'MESSAGES',
+    x:60, y:640,
+    desc:'Wiadomości między użytkownikami w kontekście ogłoszenia lub zamówienia.',
+    cols:[
+      {name:'message_id',    type:'UUID',           tags:['pk']},
+      {name:'order_id',      type:'UUID',           tags:['fk']},
+      {name:'listing_id',    type:'UUID',           tags:['fk']},
+      {name:'sender_id',     type:'UUID',           tags:['fk']},
+      {name:'recipient_id',  type:'UUID',           tags:['fk']},
+      {name:'content',       type:'TEXT',           tags:[]},
+      {name:'is_read',       type:'BOOLEAN',        tags:[]},
+      {name:'sent_at',       type:'TIMESTAMP',      tags:[]},
+    ]
+  },
+  {
+    id:'availability', layer:'quality', icon:'📅', title:'AVAILABILITY',
+    x:730, y:620,
+    desc:'Dostępność czasowa usługodawcy (dni i godziny).',
+    cols:[
+      {name:'availability_id',type:'UUID',          tags:['pk']},
+      {name:'provider_id',   type:'UUID',           tags:['fk']},
+      {name:'day_of_week',   type:'SMALLINT (0-6)', tags:[]},
+      {name:'start_time',    type:'TIME',           tags:[]},
+      {name:'end_time',      type:'TIME',           tags:[]},
+      {name:'is_active',     type:'BOOLEAN',        tags:[]},
+    ]
+  },
+];
+
+/* Relations: from table → to table, label, colour */
+const RELATIONS = [
+  {from:'users',          to:'provider_profiles', label:'1:1',  color:'#f78166'},
+  {from:'provider_profiles',to:'listings',        label:'1:N',  color:'#7ee787'},
+  {from:'service_categories',to:'listings',       label:'1:N',  color:'#7ee787'},
+  {from:'service_categories',to:'service_categories',label:'self-ref',color:'#7ee787'},
+  {from:'listings',       to:'listing_photos',    label:'1:N',  color:'#7ee787'},
+  {from:'listings',       to:'listing_tags',      label:'N:M',  color:'#ffa657'},
+  {from:'tags',           to:'listing_tags',      label:'N:M',  color:'#ffa657'},
+  {from:'users',          to:'orders',            label:'1:N',  color:'#d2a8ff'},
+  {from:'listings',       to:'orders',            label:'1:N',  color:'#d2a8ff'},
+  {from:'provider_profiles',to:'orders',          label:'1:N',  color:'#d2a8ff'},
+  {from:'orders',         to:'payments',          label:'1:1',  color:'#d2a8ff'},
+  {from:'orders',         to:'reviews',           label:'1:N',  color:'#79c0ff'},
+  {from:'orders',         to:'messages',          label:'1:N',  color:'#79c0ff'},
+  {from:'provider_profiles',to:'availability',    label:'1:N',  color:'#79c0ff'},
+];
+
+/* ═══════════════════════════════════════════
+   BUILD CARDS
+═══════════════════════════════════════════ */
+const canvas  = document.getElementById('canvas');
+const svgEl   = document.getElementById('svg-layer');
+const tooltip = document.getElementById('tooltip');
+const wrap    = document.getElementById('canvas-wrap');
+
+const cardEls = {};
+
+function buildCard(t) {
+  const el = document.createElement('div');
+  el.className = `table-card card-hover-${t.layer}`;
+  el.id = 'card-' + t.id;
+  el.style.left = t.x + 'px';
+  el.style.top  = t.y + 'px';
+
+  const colsHTML = t.cols.map(c => {
+    const badges = c.tags.map(tag =>
+      `<span class="tag tag-${tag}">${tag.toUpperCase()}</span>`
+    ).join('');
+    return `<div class="col-row">
+      <div class="col-badges">${badges}</div>
+      <span class="col-name">${c.name}</span>
+      <span class="col-type">${c.type}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="strip strip-${t.layer}"></div>
+    <div class="card-header" title="${t.desc}">
+      <span class="card-icon">${t.icon}</span>
+      <span class="card-title" style="color:var(--color-${t.layer})">${t.title}</span>
+    </div>
+    <div class="card-body">${colsHTML}</div>
+  `;
+
+  canvas.appendChild(el);
+  cardEls[t.id] = el;
+  makeDraggable(el, t);
+}
+
+TABLES.forEach(buildCard);
+
+/* ═══════════════════════════════════════════
+   RELATIONS (SVG)
+═══════════════════════════════════════════ */
+function getCenter(id) {
+  const el = cardEls[id];
+  if (!el) return null;
+  const l = parseFloat(el.style.left);
+  const t = parseFloat(el.style.top);
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  return { x: l + w/2, y: t + h/2, l, t, r: l+w, b: t+h, w, h };
+}
+
+function edgePoint(from, to) {
+  /* Pick closest edge midpoint */
+  const dx = to.x - from.x, dy = to.y - from.y;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0
+      ? {x: from.r, y: from.y}
+      : {x: from.l, y: from.y};
+  } else {
+    return dy > 0
+      ? {x: from.x, y: from.b}
+      : {x: from.x, y: from.t};
+  }
+}
+
+function drawRelations() {
+  svgEl.innerHTML = '';
+  // define arrowheads
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const colors = [...new Set(RELATIONS.map(r=>r.color))];
+  colors.forEach(c => {
+    const mid = document.createElementNS('http://www.w3.org/2000/svg','marker');
+    mid.setAttribute('id','arrow-'+c.replace('#',''));
+    mid.setAttribute('markerWidth','8');
+    mid.setAttribute('markerHeight','8');
+    mid.setAttribute('refX','6');
+    mid.setAttribute('refY','3');
+    mid.setAttribute('orient','auto');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points','0 0, 8 3, 0 6');
+    poly.setAttribute('fill',c);
+    poly.setAttribute('opacity','0.8');
+    mid.appendChild(poly);
+    defs.appendChild(mid);
+  });
+  svgEl.appendChild(defs);
+
+  RELATIONS.forEach(r => {
+    const fc = getCenter(r.from);
+    const tc = getCenter(r.to);
+    if (!fc || !tc) return;
+
+    const p1 = edgePoint(fc, tc);
+    const p2 = edgePoint(tc, fc);
+
+    // cubic bezier
+    const mx = (p1.x + p2.x)/2;
+    const my = (p1.y + p2.y)/2;
+    const cx1 = mx; const cy1 = p1.y;
+    const cx2 = mx; const cy2 = p2.y;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${p1.x} ${p1.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${p2.x} ${p2.y}`);
+    path.setAttribute('stroke', r.color);
+    path.setAttribute('stroke-width','1.8');
+    path.setAttribute('fill','none');
+    path.setAttribute('opacity','0.55');
+    path.setAttribute('marker-end', `url(#arrow-${r.color.replace('#','')})`);
+
+    // label
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', mx);
+    text.setAttribute('y', my - 4);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-size','10');
+    text.setAttribute('font-family','JetBrains Mono, monospace');
+    text.setAttribute('fill', r.color);
+    text.setAttribute('opacity','0.9');
+    text.textContent = r.label;
+
+    svgEl.appendChild(path);
+    svgEl.appendChild(text);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   DRAGGABLE CARDS
+═══════════════════════════════════════════ */
+function makeDraggable(el, t) {
+  const header = el.querySelector('.card-header');
+  let ox, oy, startX, startY, dragging = false;
+
+  header.addEventListener('mousedown', e => {
+    e.preventDefault();
+    dragging = true;
+    ox = parseFloat(el.style.left);
+    oy = parseFloat(el.style.top);
+    startX = e.clientX;
+    startY = e.clientY;
+    el.classList.add('dragging');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  function onMove(e) {
+    if (!dragging) return;
+    const scale = currentScale;
+    const dx = (e.clientX - startX) / scale;
+    const dy = (e.clientY - startY) / scale;
+    el.style.left = (ox + dx) + 'px';
+    el.style.top  = (oy + dy) + 'px';
+    drawRelations();
+    drawMinimap();
+  }
+
+  function onUp() {
+    dragging = false;
+    el.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PAN & ZOOM
+═══════════════════════════════════════════ */
+let currentScale = 0.72;
+let panX = 40, panY = 20;
+let isPanning = false, panStartX, panStartY, panStartPX, panStartPY;
+
+function applyTransform() {
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+}
+applyTransform();
+
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.06 : 0.06;
+  currentScale = Math.min(2, Math.max(0.25, currentScale + delta));
+  applyTransform();
+  drawRelations();
+  drawMinimap();
+}, {passive:false});
+
+wrap.addEventListener('mousedown', e => {
+  if (e.target.closest('.table-card')) return;
+  isPanning = true;
+  panStartX = e.clientX; panStartY = e.clientY;
+  panStartPX = panX; panStartPY = panY;
+  wrap.classList.add('grabbing');
+});
+document.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = panStartPX + (e.clientX - panStartX);
+  panY = panStartPY + (e.clientY - panStartY);
+  applyTransform();
+  drawMinimap();
+});
+document.addEventListener('mouseup', () => {
+  isPanning = false;
+  wrap.classList.remove('grabbing');
+});
+
+document.getElementById('btn-zoom-in').addEventListener('click', () => {
+  currentScale = Math.min(2, currentScale + 0.1);
+  applyTransform(); drawRelations(); drawMinimap();
+});
+document.getElementById('btn-zoom-out').addEventListener('click', () => {
+  currentScale = Math.max(0.25, currentScale - 0.1);
+  applyTransform(); drawRelations(); drawMinimap();
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  currentScale = 0.72; panX = 40; panY = 20;
+  applyTransform(); drawRelations(); drawMinimap();
+});
+
+/* ═══════════════════════════════════════════
+   MINIMAP
+═══════════════════════════════════════════ */
+const mmCanvas = document.getElementById('mm-canvas');
+const mmCtx    = mmCanvas.getContext('2d');
+const LAYER_COLORS = {
+  users:'#f78166', catalog:'#7ee787', tx:'#d2a8ff', quality:'#79c0ff', pivot:'#ffa657'
+};
+
+function drawMinimap() {
+  mmCanvas.width  = 160;
+  mmCanvas.height = 100;
+  mmCtx.fillStyle = '#161b22';
+  mmCtx.fillRect(0,0,160,100);
+
+  const scaleX = 160 / 1400;
+  const scaleY = 100 / 900;
+
+  TABLES.forEach(t => {
+    const el = cardEls[t.id];
+    if (!el) return;
+    const lx = parseFloat(el.style.left) * scaleX;
+    const ly = parseFloat(el.style.top)  * scaleY;
+    const w  = el.offsetWidth  * scaleX;
+    const h  = el.offsetHeight * scaleY;
+    mmCtx.fillStyle = LAYER_COLORS[t.layer] + '55';
+    mmCtx.strokeStyle = LAYER_COLORS[t.layer];
+    mmCtx.lineWidth = 0.8;
+    mmCtx.beginPath();
+    mmCtx.roundRect(lx, ly, w, h, 2);
+    mmCtx.fill();
+    mmCtx.stroke();
+  });
+
+  // viewport indicator
+  const vx = (-panX / currentScale) * scaleX;
+  const vy = (-panY / currentScale) * scaleY;
+  const vw = (wrap.offsetWidth  / currentScale) * scaleX;
+  const vh = (wrap.offsetHeight / currentScale) * scaleY;
+  mmCtx.strokeStyle = '#58a6ff';
+  mmCtx.lineWidth = 1;
+  mmCtx.strokeRect(vx, vy, vw, vh);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+// Wait for cards to render
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    drawRelations();
+    drawMinimap();
+  });
+});
+
+// Redraw on resize
+window.addEventListener('resize', () => { drawRelations(); drawMinimap(); });
+</script>
+</body>
+</html>

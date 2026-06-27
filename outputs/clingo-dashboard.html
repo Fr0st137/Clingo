@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clingo Dashboard</title>
+    <link rel="stylesheet" href="./clingo-dashboard.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Clingo">
+        <span class="brand-mark"></span>
+        <span>clingo</span>
+      </a>
+      <nav class="nav-links" aria-label="Główna nawigacja">
+        <a href="#">Jak to działa?</a>
+        <a href="#">Standardy usług Clingo</a>
+      </nav>
+      <label class="search">
+        <span class="icon">⌕</span>
+        <input value="" placeholder="Imię i nazwisko | Nazwa firmy" />
+      </label>
+      <div class="quick-actions" aria-label="Skróty">
+        <button aria-label="Powiadomienia">○</button>
+        <button aria-label="Ulubione">♡</button>
+        <button aria-label="Konto">⌂</button>
+      </div>
+      <button class="account-button">Moje konto</button>
+      <button class="seller-button">Dla Wykonawców⌄</button>
+    </header>
+
+    <main class="page-shell">
+      <aside class="sidebar">
+        <section class="profile-card">
+          <div class="avatar avatar-user">K</div>
+          <div>
+            <h1>Kacper Jaskółka</h1>
+            <p>553 068 994</p>
+          </div>
+          <button class="edit-dot" aria-label="Edytuj profil">✎</button>
+        </section>
+
+        <nav class="menu" aria-label="Panel użytkownika">
+          <a class="active" href="#"><span>▣</span>Zamówienia</a>
+          <a href="#"><span>◉</span>Chat</a>
+          <a href="#"><span>◎</span>Twoje opinie</a>
+          <a href="#"><span>♡</span>Ulubione</a>
+          <a href="#"><span>▤</span>Standardy usług Clingo</a>
+          <a href="#"><span>♧</span>Regulaminy</a>
+          <a href="#"><span>⚙</span>Ustawienia</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="#">Pomoc</a>
+          <a href="#">Wyloguj się</a>
+        </div>
+      </aside>
+
+      <section class="content">
+        <div class="intro">
+          <div>
+            <h2>Zamówienia</h2>
+            <p>Sprawdzaj opinie pozostawione przez klientów po wykonanych zleceniach.</p>
+          </div>
+          <div class="tabs" aria-label="Widoki">
+            <button class="active">Zlecenia</button>
+            <button>Ulubione</button>
+            <button>Chat</button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="orders-column" aria-label="Lista zleceń">
+            <article class="order-card">
+              <div class="chips">
+                <span class="chip chip-green">Nadchodzące zlecenie</span>
+                <span class="chip chip-blue">Wielosesyjne</span>
+              </div>
+              <div class="order-main">
+                <div class="provider-logo">stepapp</div>
+                <div class="provider-copy">
+                  <h3>Stepapp</h3>
+                  <p>Sprzątanie obiektów · Biur i lokali użytkowych</p>
+                  <small>⌖ Warszawa, Marszałkowska 72/9</small>
+                </div>
+                <div class="date-stack">
+                  <span>13 Października 2025</span>
+                  <b>↓</b>
+                  <span>17 Października 2025</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="primary">Szczegóły zlecenia</button>
+                <button>Odwołaj zlecenie</button>
+              </div>
+            </article>
+
+            <article class="order-card">
+              <div class="chips">
+                <span class="chip chip-green">Nadchodzące zlecenie</span>
+                <span class="chip">Jednosesyjne</span>
+              </div>
+              <div class="order-main">
+                <div class="photo-avatar photo-one"></div>
+                <div class="provider-copy">
+                  <h3>Paulina Jagielska</h3>
+                  <p>Sprzątanie obiektów · Mieszkań i domów</p>
+                  <small>⌖ Warszawa, Floriańska 48/16</small>
+                </div>
+                <div class="date-stack">
+                  <span>12 Października 2025</span>
+                  <span>8:45 → 10:30</span>
+                </div>
+              </div>
+              <div class="card-actions split">
+                <button class="primary">Szczegóły zlecenia</button>
+                <span></span>
+                <button>Przełóż zlecenie</button>
+                <button>Odwołaj zlecenie</button>
+              </div>
+            </article>
+
+            <h2 class="section-title">Zakończone zlecenia</h2>
+            <article class="order-card compact">
+              <div class="completed-head">
+                <div class="chips">
+                  <span class="chip">Wykonane zlecenie</span>
+                  <span class="chip">Jednosesyjne</span>
+                </div>
+                <div class="card-actions inline">
+                  <button>Dodaj opinię</button>
+                  <button class="primary">Zamów ponownie</button>
+                </div>
+              </div>
+              <div class="order-main">
+                <div class="photo-avatar photo-two"></div>
+                <div class="provider-copy">
+                  <h3>Klaudia Targówek</h3>
+                  <p>Sprzątanie obiektów · Mieszkań i domów</p>
+                  <small>⌖ Warszawa, Floriańska 48/16</small>
+                </div>
+                <div class="date-stack">
+                  <span>12 Października 2025</span>
+                  <span>8:45 → 10:30</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="favorite-card">
+              <div class="provider-logo">stepapp</div>
+              <div class="favorite-copy">
+                <h3>Stepapp <span>✓</span></h3>
+                <p><b>★ 4.0</b> <a href="#">(27 ocen)</a> Doświadczenie: 5 lata</p>
+              </div>
+              <button aria-label="Usuń z ulubionych">♥</button>
+              <footer>
+                <span>Zamów usługę</span>
+                <span>→</span>
+              </footer>
+            </article>
+          </section>
+
+          <aside class="right-column">
+            <section class="summary-card">
+              <h2>Podsumowanie</h2>
+              <div class="estimate">
+                <span>Szacowany czas realizacji</span>
+                <strong>3 godziny 15 minut</strong>
+              </div>
+              <dl class="price-list">
+                <div><dt>Powierzchnia (62m²)</dt><dd>93 zł</dd></div>
+                <div><dt>Dojazd do lokalizacji</dt><dd>0 zł</dd></div>
+                <div><dt>Mycie piekarnika (1 szt.)</dt><dd>24 zł</dd></div>
+                <div><dt>Mycie okien (4 szt.)</dt><dd>48 zł</dd></div>
+                <div class="total"><dt>Suma</dt><dd>165 zł</dd></div>
+              </dl>
+              <button class="primary summary-button">Przejdź do zamówienia</button>
+            </section>
+
+            <section class="warning-card">
+              <h3>UWAGA!</h3>
+              <p>Rozliczenie odbywa się bezpośrednio z Wykonawcą (poza platformą), a szczegóły usługi możesz ustalić po złożeniu zamówienia.</p>
+            </section>
+
+            <section class="chat-card">
+              <header>
+                <div class="small-avatar"></div>
+                <strong>Anita Kowalska</strong>
+              </header>
+              <div class="messages">
+                <p class="message theirs">Dzień dobry. Klucze mogę zostawić w skrzynce na listy, kod to 5284.</p>
+                <p class="message mine">Dziękuję za informację. Po zakończeniu sprzątania odłożę klucze w to samo miejsce.</p>
+                <p class="message theirs">Tak, będzie w porządku. Proszę tylko pamiętać o zamku.</p>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
