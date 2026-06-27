@@ -7,24 +7,23 @@ echo.
 echo === Clingo Platform ===
 echo.
 
-where node >nul 2>nul
+call :ensure_node
 if errorlevel 1 (
-  echo Node.js nie jest zainstalowany albo nie jest dostepny w PATH.
-  echo Zainstaluj Node.js, a potem uruchom ten plik ponownie.
   pause
   exit /b 1
 )
 
-where npm >nul 2>nul
+call :ensure_npm
 if errorlevel 1 (
-  echo npm nie jest dostepny w PATH.
   pause
   exit /b 1
 )
+
+call :ensure_docker
 
 if not exist "node_modules" (
   echo Instalowanie zaleznosci npm...
-  call npm install
+  call npm.cmd install
   if errorlevel 1 (
     echo Instalacja zaleznosci nie powiodla sie.
     pause
@@ -36,6 +35,11 @@ where docker >nul 2>nul
 if not errorlevel 1 (
   echo Uruchamianie PostgreSQL/PostGIS i Redis przez Docker...
   docker compose up -d
+  if errorlevel 1 (
+    echo Docker jest zainstalowany, ale nie udalo sie uruchomic kontenerow.
+    echo Upewnij sie, ze Docker Desktop jest wlaczony, a potem uruchom ten plik ponownie.
+    echo Frontend nadal sie wlaczy, a API uzyje danych zapasowych tam, gdzie moze.
+  )
 ) else (
   echo Docker nie jest dostepny. Pomijam PostgreSQL/PostGIS i Redis.
   echo Frontend nadal sie wlaczy, a API uzyje danych zapasowych tam, gdzie moze.
@@ -66,3 +70,80 @@ timeout /t 5 >nul
 start http://localhost:%WEB_PORT%
 
 endlocal
+exit /b 0
+
+:ensure_winget
+where winget >nul 2>nul
+if not errorlevel 1 (
+  exit /b 0
+)
+
+echo Nie znaleziono winget, czyli instalatora aplikacji Windows.
+echo Zainstaluj "App Installer" ze sklepu Microsoft Store, a potem uruchom ten plik ponownie.
+exit /b 1
+
+:ensure_node
+where node >nul 2>nul
+if not errorlevel 1 (
+  echo Node.js jest zainstalowany.
+  exit /b 0
+)
+
+echo Node.js nie jest zainstalowany. Instaluje Node.js LTS...
+call :ensure_winget
+if errorlevel 1 (
+  exit /b 1
+)
+winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements
+if errorlevel 1 (
+  echo Nie udalo sie zainstalowac Node.js automatycznie.
+  exit /b 1
+)
+
+set "PATH=%ProgramFiles%\nodejs;%PATH%"
+where node >nul 2>nul
+if errorlevel 1 (
+  echo Node.js zostal zainstalowany, ale nie jest jeszcze dostepny w PATH.
+  echo Zamknij to okno i uruchom start-clingo-platform.bat ponownie.
+  exit /b 1
+)
+exit /b 0
+
+:ensure_npm
+where npm.cmd >nul 2>nul
+if not errorlevel 1 (
+  echo npm jest zainstalowany.
+  exit /b 0
+)
+
+echo npm nie jest dostepny, chociaz Node.js powinien go zawierac.
+echo Sprobuj zamknac to okno i uruchomic start-clingo-platform.bat ponownie.
+exit /b 1
+
+:ensure_docker
+where docker >nul 2>nul
+if not errorlevel 1 (
+  echo Docker jest zainstalowany.
+  exit /b 0
+)
+
+echo Docker Desktop nie jest zainstalowany. Instaluje Docker Desktop...
+call :ensure_winget
+if errorlevel 1 (
+  echo Kontynuuje bez Dockera.
+  exit /b 0
+)
+winget install --id Docker.DockerDesktop --exact --source winget --accept-package-agreements --accept-source-agreements
+if errorlevel 1 (
+  echo Nie udalo sie zainstalowac Docker Desktop automatycznie.
+  echo Kontynuuje bez Dockera.
+  exit /b 0
+)
+
+where docker >nul 2>nul
+if errorlevel 1 (
+  echo Docker Desktop zostal zainstalowany, ale moze wymagac restartu komputera lub recznego uruchomienia.
+  echo Kontynuuje bez Dockera.
+  exit /b 0
+)
+exit /b 0
