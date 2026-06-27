@@ -21,6 +21,8 @@ if errorlevel 1 (
 
 call :ensure_docker
 
+call :start_docker_if_needed
+
 if not exist "node_modules" (
   echo Instalowanie zaleznosci npm...
   call npm.cmd install
@@ -146,4 +148,39 @@ if errorlevel 1 (
   echo Kontynuuje bez Dockera.
   exit /b 0
 )
+exit /b 0
+
+:start_docker_if_needed
+where docker >nul 2>nul
+if errorlevel 1 (
+  exit /b 0
+)
+
+docker info >nul 2>nul
+if not errorlevel 1 (
+  echo Docker jest wlaczony.
+  exit /b 0
+)
+
+echo Docker jest zainstalowany, ale nie jest wlaczony. Uruchamiam Docker Desktop...
+if exist "%ProgramFiles%\Docker\Docker\Docker Desktop.exe" (
+  start "" "%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+) else if exist "%LocalAppData%\Docker\Docker Desktop.exe" (
+  start "" "%LocalAppData%\Docker\Docker Desktop.exe"
+) else (
+  start "" "Docker Desktop"
+)
+
+echo Czekam na uruchomienie Docker Engine...
+for /L %%i in (1,1,60) do (
+  docker info >nul 2>nul
+  if not errorlevel 1 (
+    echo Docker jest wlaczony.
+    exit /b 0
+  )
+  timeout /t 2 /nobreak >nul
+)
+
+echo Docker Desktop nie zdazyl sie uruchomic.
+echo Jesli widzisz okno Docker Desktop, poczekaj az zakonczy start i uruchom ten plik ponownie.
 exit /b 0
