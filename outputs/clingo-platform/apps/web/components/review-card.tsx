@@ -27,13 +27,13 @@ function RatingStars({ rating = 5 }: { rating?: number }) {
 
 export function PendingReviewCard({ item }: { item: PendingReviewData }) {
   return (
-    <article className="flex min-h-[84px] w-full items-center gap-4 rounded-xl border border-[#dce6f2] bg-white p-4 shadow-figma transition-all hover:-translate-y-0.5 hover:shadow-soft md:max-w-[745px]">
+    <article className="flex min-h-[84px] w-full items-center gap-4 rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px]">
       <Avatar tone={item.avatarTone} />
       <div className="min-w-0 flex-1">
         <h3 className="text-[14px] font-bold text-clingo-ink">{item.person}</h3>
         <p className="mt-1 truncate text-[12px] text-clingo-muted">{item.service}</p>
       </div>
-      <button className="inline-flex h-[41px] items-center gap-2 rounded-full bg-clingo-blue px-5 text-[13px] font-bold text-white transition-all hover:bg-clingo-blueDark">
+      <button className="inline-flex h-[41px] items-center gap-2 rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white">
         Dodaj opinię
         <Plus className="h-4 w-4" />
       </button>
@@ -43,7 +43,7 @@ export function PendingReviewCard({ item }: { item: PendingReviewData }) {
 
 export function ReviewCard({ review, showAuthor = false }: { review: ReviewCardData; showAuthor?: boolean }) {
   return (
-    <article className="w-full rounded-xl border border-[#dce6f2] bg-white p-4 shadow-figma transition-all hover:-translate-y-0.5 hover:shadow-soft md:max-w-[745px]">
+    <article className="w-full rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px]">
       <div className="flex items-start gap-4">
         <Avatar tone={review.avatarTone} />
         <div className="min-w-0 flex-1">
@@ -66,7 +66,7 @@ export function ReviewCard({ review, showAuthor = false }: { review: ReviewCardD
         ) : null}
 
         {review.editable ? (
-          <button className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-[#e1e9f3] bg-[#f7f9fc] text-[#75859a] transition-all hover:border-clingo-blue hover:text-clingo-blue">
+          <button className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-[#e1e9f3] bg-[#f7f9fc] text-[#75859a]">
             <Edit2 className="h-4 w-4" />
           </button>
         ) : null}

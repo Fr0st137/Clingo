@@ -1,79 +1,92 @@
-import { ArrowRight, Check, Heart, MapPin, Star } from "lucide-react";
 import { BoardListingData } from "../lib/public-mock-data";
 
-function ListingAvatar({ tone }: { tone: BoardListingData["avatarTone"] }) {
-  if (tone === "brand") {
-    return (
-      <div className="grid h-[74px] w-[74px] shrink-0 place-items-center rounded-full bg-[#facce2] text-[14px] font-extrabold text-[#53236e]">
-        stepapp
-      </div>
-    );
-  }
-
-  if (tone === "neutral") {
-    return <div className="h-[74px] w-[74px] shrink-0 rounded-full bg-gradient-to-br from-[#d9ecff] to-[#eef4fb]" />;
-  }
+function ListingImage({ listing }: { listing: BoardListingData }) {
+  const isContain = listing.imageFit === "contain";
 
   return (
-    <div className="h-[74px] w-[74px] shrink-0 rounded-full bg-[radial-gradient(circle_at_50%_34%,#4a3124_0_13%,transparent_14%),radial-gradient(circle_at_50%_72%,#eac09c_0_31%,transparent_32%),linear-gradient(135deg,#f8decf,#fff2e9)]" />
+    <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#ffd6e6] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]">
+      <img
+        alt=""
+        className={["absolute inset-0 h-full w-full", isContain ? "object-contain" : "object-cover"].join(" ")}
+        src={listing.image}
+        style={listing.imageScale ? { height: "24.84%", left: "5.12%", top: "37.14%", width: listing.imageScale } : undefined}
+      />
+    </div>
+  );
+}
+
+function Rating({ rating, reviews, experience }: { rating: number; reviews: number; experience: string }) {
+  return (
+    <div className="flex h-[24px] items-center gap-[5px] pt-px text-[14px] leading-6">
+      <span className="flex h-[24px] w-[18px] items-center justify-center">
+        <img alt="" className="h-[14px] w-[16px]" src="/figma-assets/board-rating-star.svg" />
+      </span>
+      <span className="h-[24px] w-[25px] font-semibold text-[#2e3b4c]">{rating.toFixed(1)}</span>
+      <span className="font-normal text-[#0079de]">({reviews} ocen)</span>
+      {experience ? <span className="font-normal text-[#2e3b4c]">Doświadczenie: {experience}</span> : null}
+    </div>
   );
 }
 
 export function BoardListingCard({ listing }: { listing: BoardListingData }) {
+  const modeClasses =
+    listing.modeTone === "blue" ? "bg-[#e9f5ff] text-[#0079de]" : "bg-[#f4f6f9] text-[#2e3b4c]";
+
   return (
-    <article className="overflow-hidden rounded-xl border border-[#dce6f2] bg-white shadow-figma transition-all hover:-translate-y-0.5 hover:shadow-soft">
-      <div className="grid gap-4 p-4 md:grid-cols-[auto_1fr_auto] md:p-5">
-        <ListingAvatar tone={listing.avatarTone} />
+    <article
+      className="flex h-[172px] w-[1075px] flex-col items-start overflow-hidden rounded-[20px] border border-[#e6edf3] bg-white shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+      data-name="Ogłoszenie na tablicy"
+    >
+      <div className="flex w-full items-start gap-[40px] overflow-hidden p-[15px]">
+        <ListingImage listing={listing} />
 
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[18px] font-bold text-clingo-ink">{listing.provider}</h3>
-            <Check className="h-4 w-4 text-clingo-blue" />
-            <span className="text-[12px] text-clingo-muted">{listing.completedOrders} wykonanych usług</span>
-          </div>
-          <p className="mt-1 text-[13px] text-clingo-muted">{listing.service}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px] text-[#536479]">
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-4 w-4 fill-[#f2bd1d] text-[#f2bd1d]" />
-              {listing.rating.toFixed(1)}
+        <div className="flex w-[541px] shrink-0 flex-col items-start gap-[10px] overflow-hidden pt-[5px]">
+          <h3 className="m-0 h-[24px] w-[541px] whitespace-nowrap text-[20px] font-semibold leading-normal text-[#2e3b4c]">
+            {listing.provider}
+          </h3>
+          <Rating rating={listing.rating} reviews={listing.reviews} experience={listing.experience} />
+          <div className="flex items-start gap-[15px] overflow-hidden">
+            <span className={`flex items-center rounded-[9999px] px-[10px] py-[4px] text-[14px] font-normal leading-normal ${modeClasses}`}>
+              {listing.mode}
             </span>
-            <span>({listing.reviews} ocen)</span>
-            <span>Doświadczenie: {listing.experience}</span>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-[13px] text-clingo-muted">
-            <MapPin className="h-4 w-4 text-clingo-blue" />
-            {listing.location}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {listing.tags.map((tag) => (
-              <span className="rounded-full bg-[#f3f6fa] px-3 py-1 text-[12px] text-[#66788e]" key={tag}>
-                {tag}
-              </span>
-            ))}
+            <span className="flex items-center justify-center gap-[8px] py-[4px] text-[14px] font-normal leading-normal text-[#2e3b4c]">
+              <img alt="" className="h-[14px] w-[14px]" src="/figma-assets/board-check.svg" />
+              {listing.completedOrders} Wykonanych usług
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 md:grid md:justify-items-end">
-          <span
-            aria-label={listing.favorite ? "Dodano do ulubionych" : "Ulubione"}
-            className={[
-              "grid h-[38px] w-[38px] place-items-center rounded-full transition-all",
-              listing.favorite ? "bg-[#fff0f2] text-[#ed3d4d]" : "bg-[#f7f9fc] text-[#8392a5]"
-            ].join(" ")}
-          >
-            <Heart className={listing.favorite ? "h-[15px] w-[15px] fill-current" : "h-[15px] w-[15px]"} />
-          </span>
-          <div className="text-right">
-            <p className="text-[18px] font-bold text-clingo-ink">{listing.price}</p>
-            <p className="mt-1 text-[12px] text-clingo-muted">Szacowana cena</p>
+        <div className="flex w-[242px] shrink-0 self-stretch flex-col items-start justify-center gap-[5px] pl-[10px]">
+          <div className="flex w-full flex-col items-start justify-center overflow-hidden rounded-[15px] px-[15px] py-[5px]">
+            <p className="m-0 w-full text-[20px] font-semibold leading-6 text-[#2e3b4c]">{listing.price}</p>
           </div>
+          <p className="m-0 w-full px-[15px] pr-[5px] text-[12px] font-medium leading-[14px] text-[#9ca3af]">
+            Koszt w danej konfiguracji
+          </p>
+          <p className="m-0 flex w-full items-center gap-[10px] px-[15px] pr-[5px] text-[12px] font-medium leading-[14px] text-[#9ca3af]">
+            <img alt="" className="h-[12px] w-[12px]" src="/figma-assets/board-truck.svg" />
+            Dojazd uwzględniony w cenie
+          </p>
         </div>
+
+        <button
+          aria-label="Ulubione"
+          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center overflow-hidden rounded-[30px] border border-[#e6edf3] bg-[#f9fafb] p-[11px]"
+          type="button"
+        >
+          <img alt="" className="h-[16px] w-[16px]" src="/figma-assets/board-heart.svg" />
+        </button>
       </div>
 
-      <footer className="flex h-[46px] items-center justify-between border-t border-[#e4ebf4] px-4 text-[13px] text-clingo-blue md:px-5">
-        <span>Zamów usługę</span>
-        <ArrowRight className="h-4 w-4" />
-      </footer>
+      <a
+        className="flex h-[48px] w-full shrink-0 items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
+        href="/zamowienie"
+      >
+        <span className="text-[12px] font-normal leading-normal text-[#9ca3af]">Zamów usługę</span>
+        <span className="flex items-center justify-center overflow-hidden rounded-[30px] px-[10px] py-[2px]">
+          <img alt="" className="h-[14px] w-[14px]" src="/figma-assets/board-arrow-right.svg" />
+        </span>
+      </a>
     </article>
   );
 }

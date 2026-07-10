@@ -1,72 +1,60 @@
-import {
-  Heart,
-  MessageCircle,
-  ScrollText,
-  Settings,
-  ShieldCheck,
-  Star,
-  UserRound,
-  WalletCards
-} from "lucide-react";
-
 export const menuItems = [
-  { label: "Zamówienie", icon: WalletCards, href: "/" },
-  { label: "Chat", icon: MessageCircle, href: "/chat" },
-  { label: "Twoje opinie", icon: Star, href: "/opinie" },
-  { label: "Ulubione", icon: Heart, href: "/ulubione" },
-  { label: "Standardy usług Clingo", icon: ShieldCheck, href: "/standardy-uslug" },
-  { label: "Regulaminy", icon: ScrollText, href: "/regulaminy" },
-  { label: "Ustawienia", icon: Settings, href: "/ustawienia" }
+  { label: "Zamówienia", href: "/zamowienia" },
+  { label: "Chat", href: "/chat" },
+  { label: "Twoje opinie", href: "/opinie" },
+  { label: "Ulubione", href: "/ulubione" },
+  { label: "Standardy usług Clingo", href: "/standardy-uslug" },
+  { label: "Regulaminy", href: "/regulaminy" },
+  { label: "Ustawienia", href: "/ustawienia" }
 ];
 
 export const orders = [
   {
+    actions: ["Szczegóły zlecenia", "Odwołaj zlecenie"],
+    address: "Warszawa, Marszałkowska 72/9",
+    dateLines: ["13 Października 2025", "17 Października 2025"],
+    details: "Sprzątanie obiektów · Biur i lokali użytkowych",
     id: "upcoming-stepapp",
-    status: "Nadchodzące zlecenie",
+    logo: "stepapp",
     mode: "Wielosesyjne",
     modeTone: "blue",
     provider: "Stepapp",
-    details: "Sprzątanie obiektów · Biur i lokali użytkowych",
-    address: "Warszawa, Marszałkowska 72/9",
-    logo: "stepapp",
-    dateLines: ["13 Października 2025", "17 Października 2025"],
     range: true,
-    actions: ["Szczegóły zlecenia", "Odwołaj zlecenie"]
+    status: "Nadchodzące zlecenie"
   },
   {
+    actions: ["Szczegóły zlecenia", "Przełóż zlecenie", "Odwołaj zlecenie"],
+    address: "Warszawa, Floriańska 48/16",
+    avatar: "paulina",
+    dateLines: ["12 Października 2025", "8:45", "10:30"],
+    details: "Sprzątanie obiektów · Mieszkań i domów",
     id: "upcoming-paulina",
-    status: "Nadchodzące zlecenie",
     mode: "Jednosesyjne",
     provider: "Paulina Jagielska",
-    details: "Sprzątanie obiektów · Mieszkań i domów",
-    address: "Warszawa, Floriańska 48/16",
-    avatar: "woman",
-    dateLines: ["12 Października 2025", "8:45  →  10:30"],
-    actions: ["Szczegóły zlecenia", "Przełóż zlecenie", "Odwołaj zlecenie"]
+    status: "Nadchodzące zlecenie"
   }
 ];
 
 export const completedOrder = {
+  actions: ["Dodaj opinię", "Zamów ponownie"],
+  address: "Warszawa, Floriańska 48/16",
+  avatar: "klaudia",
+  dateLines: ["12 Października 2025", "8:45", "10:30"],
+  details: "Sprzątanie obiektów · Mieszkań i domów",
   id: "completed-klaudia",
-  status: "Wykonane zlecenie",
   mode: "Jednosesyjne",
   provider: "Klaudia Targówek",
-  details: "Sprzątanie obiektów · Mieszkań i domów",
-  address: "Warszawa, Floriańska 48/16",
-  dateLines: ["12 Października 2025", "8:45  →  10:30"],
-  actions: ["Dodaj opinię", "Zamów ponownie"]
+  status: "Wykonane zlecenie"
 };
 
 export const user = {
+  initials: "K",
   name: "Kacper Jaskółka",
-  phone: "553 068 994",
-  initials: "K"
+  phone: "553 068 994"
 };
 
 export const dashboardFallback = {
-  user,
+  completedOrder,
   orders,
-  completedOrder
+  user
 };
-
-export const UserIcon = UserRound;

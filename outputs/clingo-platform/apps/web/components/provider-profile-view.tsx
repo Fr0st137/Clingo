@@ -149,9 +149,12 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
             </div>
           </dl>
 
-          <button className="mt-5 h-[46px] w-full rounded-full bg-clingo-blue text-[15px] font-bold text-white transition-all hover:bg-clingo-blueDark">
+          <a
+            className="mt-5 flex h-[46px] w-full items-center justify-center rounded-full bg-clingo-blue text-[15px] font-bold text-white transition-all hover:bg-clingo-blueDark"
+            href="/zamowienie"
+          >
             Przejdź do zamówienia
-          </button>
+          </a>
         </section>
 
         <section className="rounded-[24px] border border-[#dce6f2] bg-white p-6 shadow-figma">

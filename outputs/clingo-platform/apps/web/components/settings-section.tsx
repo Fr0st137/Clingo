@@ -13,7 +13,7 @@ export function SettingsFormSection({ section }: { section: SettingsSectionData 
   );
 
   return (
-    <section className="w-full rounded-xl border border-[#dce6f2] bg-white p-5 shadow-figma md:max-w-[745px] md:p-6">
+    <section className="w-full rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px] md:p-6">
       <header className="border-b border-[#e4ebf4] pb-4">
         <h3 className="text-[15px] font-bold text-clingo-ink">{section.title}</h3>
         <p className="mt-1 text-[12px] text-clingo-muted">{section.description}</p>
@@ -24,7 +24,7 @@ export function SettingsFormSection({ section }: { section: SettingsSectionData 
           <label className={field.id === "email" || field.id === "phone" ? "md:col-span-2" : ""} key={field.id}>
             <span className="mb-2 block text-[12px] text-[#536479]">{field.label}</span>
             <input
-              className="h-[46px] w-full rounded-xl border border-[#e4eaf2] bg-[#f3f5f8] px-4 text-[13px] text-clingo-ink outline-none transition-all placeholder:text-[#a2adba] focus:border-clingo-blue focus:bg-white"
+              className="h-[46px] w-full rounded-[15px] border border-[#e4eaf2] bg-[#f7f9fc] px-4 text-[13px] text-clingo-ink outline-none placeholder:text-[#a2adba]"
               onChange={(event) => setValues((current) => ({ ...current, [field.id]: event.target.value }))}
               placeholder={field.placeholder}
               type={field.type === "password" ? "password" : field.type ?? "text"}
@@ -35,7 +35,7 @@ export function SettingsFormSection({ section }: { section: SettingsSectionData 
       </div>
 
       {section.actionLabel ? (
-        <button className="mt-5 h-[41px] rounded-full bg-clingo-blue px-5 text-[13px] font-bold text-white transition-all hover:bg-clingo-blueDark">
+        <button className="mt-5 h-[41px] rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white">
           {section.actionLabel}
         </button>
       ) : null}
@@ -47,7 +47,7 @@ export function NotificationSection({ settings }: { settings: NotificationSettin
   const [items, setItems] = useState(settings);
 
   return (
-    <section className="w-full rounded-xl border border-[#dce6f2] bg-white p-5 shadow-figma md:max-w-[745px] md:p-6">
+    <section className="w-full rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px] md:p-6">
       <header className="border-b border-[#e4ebf4] pb-4">
         <h3 className="text-[15px] font-bold text-clingo-ink">Powiadomienia</h3>
         <p className="mt-1 text-[12px] text-clingo-muted">Zarządzaj powiadomieniami dotyczącymi Twoich zamówień.</p>
@@ -91,7 +91,7 @@ export function NotificationSection({ settings }: { settings: NotificationSettin
 
 export function ExternalConnectionsSection({ connections }: { connections: ExternalConnectionData[] }) {
   return (
-    <section className="w-full rounded-xl border border-[#dce6f2] bg-white p-5 shadow-figma md:max-w-[745px] md:p-6">
+    <section className="w-full rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px] md:p-6">
       <header className="border-b border-[#e4ebf4] pb-4">
         <h3 className="text-[15px] font-bold text-clingo-ink">Połączenia zewnętrzne</h3>
         <p className="mt-1 text-[12px] text-clingo-muted">Łatwiejsze logowanie za pomocą innych kont.</p>
@@ -100,7 +100,7 @@ export function ExternalConnectionsSection({ connections }: { connections: Exter
       <div className="mt-5 grid gap-3">
         {connections.map((connection) => (
           <button
-            className="flex h-[46px] items-center justify-center gap-3 rounded-full border border-[#dfe8f2] bg-white text-[13px] font-semibold text-clingo-ink transition-all hover:border-clingo-blue hover:text-clingo-blue"
+            className="flex h-[46px] items-center justify-center gap-3 rounded-[30px] border border-[#dfe8f2] bg-white text-[13px] font-semibold text-clingo-ink"
             key={connection.id}
             type="button"
           >

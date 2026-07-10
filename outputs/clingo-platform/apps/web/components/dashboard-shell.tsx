@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { AccountBackground } from "./account-background";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
@@ -15,7 +14,6 @@ export function DashboardShell({ active, children }: DashboardShellProps) {
 
   return (
     <>
-      <AccountBackground />
       <Topbar isMenuOpen={isMenuOpen} onMenuToggle={() => setIsMenuOpen((value) => !value)} />
       <main className="relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-5 px-4 pt-[122px] md:grid-cols-[320px_minmax(0,1090px)] md:gap-[30px] md:px-0 md:pt-[90px]">
         <div className="hidden md:block">

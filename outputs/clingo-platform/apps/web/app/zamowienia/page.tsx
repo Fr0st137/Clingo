@@ -6,12 +6,12 @@ export default async function OrdersPage() {
   const dashboard = await getDashboard();
 
   return (
-    <DashboardShell active="Zamowienia">
+    <DashboardShell active="Zamówienia">
       <section className="w-full md:w-[1090px]">
         <header className="pb-5 md:h-[90px] md:pb-0 md:pt-[21px]">
-          <h2 className="text-[22px] font-bold leading-5 text-clingo-ink">Zamowienia</h2>
+          <h2 className="text-[22px] font-bold leading-5 text-clingo-ink">Zamówienia</h2>
           <p className="mt-[13px] max-w-[560px] text-[14px] leading-5 text-clingo-muted">
-            Sprawdzaj opinie pozostawione przez klientow po wykonanych zleceniach.
+            Sprawdzaj opinie pozostawione przez klientów po wykonanych zleceniach.
           </p>
         </header>
 

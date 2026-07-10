@@ -1,39 +1,83 @@
-import { ArrowRight, Check, Heart, Star } from "lucide-react";
+const favoriteAssets = {
+  arrow: "/figma-assets/favorite-arrow.svg",
+  check: "/figma-assets/favorite-check.svg",
+  heart: "/figma-assets/favorite-heart.svg",
+  logo: "/figma-assets/favorite-stepapp.png",
+  star: "/figma-assets/favorite-star.svg"
+};
 
 export function FavoriteProviderCard() {
   return (
-    <article className="relative min-h-[142px] w-full overflow-hidden rounded-xl border border-[#dce6f2] bg-white shadow-figma transition-all hover:-translate-y-0.5 hover:shadow-soft md:w-[745px]">
-      <div className="flex min-h-[104px] items-center px-[15px]">
-        <div className="grid h-[74px] w-[74px] place-items-center rounded-full bg-[#facce2] text-[14px] font-extrabold text-[#54236e]">
-          stepapp
-        </div>
-
-        <div className="ml-5 flex h-[65px] flex-col justify-center">
-          <div className="flex h-[25px] items-center gap-[10px]">
-            <h3 className="text-[18px] font-bold leading-6 text-clingo-ink">Stepapp</h3>
-            <Check className="h-[14px] w-[14px] text-clingo-blue" strokeWidth={2} />
-            <span className="text-[12px] text-[#5c6f85]">166 Wykonanych usług</span>
+    <article
+      className="flex h-[142px] w-[745px] flex-col items-start overflow-hidden rounded-[20px] border border-[#e6edf3] bg-white shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+      data-name="Ogłoszenie na tablicy"
+      data-node-id="5296:9375"
+    >
+      <div className="flex w-full items-start justify-between overflow-hidden p-[15px]" data-node-id="5296:9376">
+        <div className="flex items-center gap-[20px] overflow-hidden" data-node-id="5296:9377">
+          <div
+            className="relative h-[74px] w-[74px] shrink-0 rounded-[99px] bg-[#ffd6e6] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]"
+            data-node-id="5296:9410"
+          >
+            <img
+              alt=""
+              className="absolute left-[5.12%] top-[37.14%] h-[24.84%] w-[89.28%] max-w-none"
+              src={favoriteAssets.logo}
+            />
           </div>
 
-          <div className="mt-[10px] flex h-6 items-center gap-[6px] text-[13px] text-[#536479]">
-            <Star className="h-[14px] w-[14px] fill-[#f5c542] text-[#f5c542]" strokeWidth={1.7} />
-            <span className="font-semibold text-[#2d3c50]">4.0</span>
-            <a className="text-clingo-blue" href="#">
-              (27 ocen)
-            </a>
-            <span>Doświadczenie: 5 lata</span>
+          <div className="flex flex-col items-start gap-[5px] overflow-hidden pt-[5px]" data-node-id="5296:9379">
+            <div className="flex items-center gap-[10px] overflow-hidden" data-node-id="5296:9380">
+              <h3 className="m-0 whitespace-nowrap text-[16px] font-bold leading-normal text-[#2e3b4c]">
+                Stepapp
+              </h3>
+              <div className="flex items-center justify-center gap-[8px] py-[4px]" data-node-id="5296:9394">
+                <img alt="" className="h-[14px] w-[14px]" src={favoriteAssets.check} />
+                <span className="whitespace-nowrap text-[14px] font-normal leading-normal text-[#2e3b4c]">
+                  166 Wykonanych usług
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-[5px] pt-px" data-node-id="5296:9411">
+              <div className="flex h-[24px] w-[18px] items-center justify-center">
+                <img alt="" className="h-[14px] w-[16px]" src={favoriteAssets.star} />
+              </div>
+              <span className="h-[24px] w-[25px] text-[14px] font-semibold leading-[24px] text-[#2e3b4c]">
+                4.0
+              </span>
+              <a className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#0079de]" href="#">
+                (27 ocen)
+              </a>
+              <span className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#2e3b4c]">
+                Doświadczenie: 5 lata
+              </span>
+            </div>
           </div>
         </div>
 
-        <button className="ml-auto mr-[0px] grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-[#f7f9fc] text-[#ed3d4d] transition-all hover:bg-[#fff0f2]">
-          <Heart className="h-[14px] w-[14px] fill-current" strokeWidth={2} />
+        <button
+          aria-label="Ulubione"
+          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center overflow-hidden rounded-[30px] border border-[#e6edf3] bg-[#f9fafb] p-[11px]"
+          data-name="Ikona Ulubione"
+          data-node-id="5296:9407"
+        >
+          <img alt="" className="h-[14px] w-[14px]" src={favoriteAssets.heart} />
         </button>
       </div>
 
-      <footer className="absolute bottom-0 left-0 right-0 flex h-[38px] items-center justify-between border-t border-[#e4ebf4] px-[15px] text-[12px] text-[#7f8ea2]">
-        <span>Zamów usługę</span>
-        <ArrowRight className="h-[14px] w-[14px]" strokeWidth={1.8} />
-      </footer>
+      <a
+        className="flex w-full items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
+        data-node-id="5296:9399"
+        href="/zamowienie"
+      >
+        <span className="whitespace-nowrap text-[12px] font-normal leading-normal text-[#9ca3af]">
+          Zamów usługę
+        </span>
+        <span className="flex items-center justify-center rounded-[30px] px-[10px] py-[2px]">
+          <img alt="" className="h-[14px] w-[14px]" src={favoriteAssets.arrow} />
+        </span>
+      </a>
     </article>
   );
 }
