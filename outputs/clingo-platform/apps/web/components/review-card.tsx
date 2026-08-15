@@ -1,5 +1,29 @@
 import { Edit2, Plus, Star } from "lucide-react";
-import { PendingReviewData, ReviewCardData } from "../lib/panel-mock-data";
+
+export interface ReviewImage {
+  id: string;
+  label: string;
+}
+
+export interface ReviewCardData {
+  id: string;
+  person: string;
+  service: string;
+  author?: string;
+  rating?: number;
+  date?: string;
+  content?: string;
+  images?: ReviewImage[];
+  avatarTone: "person" | "brand" | "light";
+  editable?: boolean;
+}
+
+export interface PendingReviewData {
+  id: string;
+  person: string;
+  service: string;
+  avatarTone: "person" | "brand" | "light";
+}
 
 function Avatar({ tone }: { tone: ReviewCardData["avatarTone"] }) {
   if (tone === "brand") {
@@ -33,10 +57,13 @@ export function PendingReviewCard({ item }: { item: PendingReviewData }) {
         <h3 className="text-[14px] font-bold text-clingo-ink">{item.person}</h3>
         <p className="mt-1 truncate text-[12px] text-clingo-muted">{item.service}</p>
       </div>
-      <button className="inline-flex h-[41px] items-center gap-2 rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white">
+      <a
+        className="inline-flex h-[41px] items-center gap-2 rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white"
+        href={`/opinie/dodaj?id=${encodeURIComponent(item.id)}`}
+      >
         Dodaj opinię
         <Plus className="h-4 w-4" />
-      </button>
+      </a>
     </article>
   );
 }
@@ -66,9 +93,13 @@ export function ReviewCard({ review, showAuthor = false }: { review: ReviewCardD
         ) : null}
 
         {review.editable ? (
-          <button className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-[#e1e9f3] bg-[#f7f9fc] text-[#75859a]">
+          <a
+            aria-label="Edytuj opinię"
+            className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-[#e1e9f3] bg-[#f7f9fc] text-[#75859a]"
+            href={`/opinie/edytuj?id=${encodeURIComponent(review.id)}`}
+          >
             <Edit2 className="h-4 w-4" />
-          </button>
+          </a>
         ) : null}
       </div>
 

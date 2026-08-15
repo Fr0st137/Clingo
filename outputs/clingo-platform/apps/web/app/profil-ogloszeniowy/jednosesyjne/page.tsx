@@ -1,11 +1,5 @@
-import { ProviderProfileView } from "../../../components/provider-profile-view";
-import { PublicShell } from "../../../components/public-shell";
-import { providerProfile } from "../../../lib/provider-profile-mock-data";
+import { redirect } from "next/navigation";
 
-export default function SingleSessionProviderProfilePage() {
-  return (
-    <PublicShell>
-      <ProviderProfileView profile={providerProfile} />
-    </PublicShell>
-  );
+export default async function SingleSessionProviderProfilePage() {
+  redirect("/profil-ogloszeniowy/paulina-jagielska");
 }

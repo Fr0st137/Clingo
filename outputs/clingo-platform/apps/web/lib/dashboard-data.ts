@@ -1,5 +1,5 @@
 export const menuItems = [
-  { label: "Zamówienia", href: "/zamowienia" },
+  { label: "Rezerwacje", href: "/zamowienia" },
   { label: "Chat", href: "/chat" },
   { label: "Twoje opinie", href: "/opinie" },
   { label: "Ulubione", href: "/ulubione" },

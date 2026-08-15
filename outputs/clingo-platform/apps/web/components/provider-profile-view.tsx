@@ -1,5 +1,54 @@
-import { Check, ChevronLeft, Heart, MapPin, Star } from "lucide-react";
-import { ProviderProfileData, providerTrustItems } from "../lib/provider-profile-mock-data";
+import { Award, Check, CheckCircle2, ChevronLeft, Clock, Heart, MapPin, ShieldCheck, Sparkles, Star } from "lucide-react";
+
+export interface ProviderProfileData {
+  id: string;
+  provider: string;
+  verified: boolean;
+  service: string;
+  location: string;
+  rating: number;
+  reviewsCount: number;
+  experience: string;
+  completedOrders: number;
+  priceFrom: string;
+  tags: string[];
+  description: string;
+  metrics: Array<{ id: string; label: string; value: string }>;
+  gallery: Array<{ id: string; label: string; gradient: string }>;
+  overview?: Array<{ id: string; label: string; value: string }>;
+  photos?: Array<{ id: string; label: string; gradient: string; image?: string }>;
+  pricing?: Array<{ id: string; label: string; description: string; price: string; priceValue: number; duration: string }>;
+  frequencies?: Array<{ id: string; label: string; description: string; discount: string }>;
+  addOns?: Array<{
+    id: string;
+    label: string;
+    description: string;
+    price: string;
+    priceValue: number;
+    durationMinutes: number;
+    selected?: boolean;
+  }>;
+  reviews: Array<{ id: string; author: string; rating: number; date: string; content: string }>;
+  standards: string[];
+  summary: {
+    duration: string;
+    lines: Array<{ id: string; label: string; value: string }>;
+    total: string;
+  };
+}
+
+const providerTrustItems = [
+  { id: "verified", label: "Zweryfikowany profil", icon: ShieldCheck },
+  { id: "quick", label: "Szybki kontakt po zamówieniu", icon: Clock },
+  { id: "quality", label: "Usługa zgodna ze standardami Clingo", icon: Sparkles }
+];
+
+const metricIcons = {
+  experience: Award,
+  location: MapPin,
+  orders: CheckCircle2,
+  rating: Star
+};
 
 function RatingStars({ rating }: { rating: number }) {
   return (
@@ -74,13 +123,17 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
         </article>
 
         <section className="grid gap-4 md:grid-cols-4">
-          {profile.metrics.map(({ id, label, value, icon: Icon }) => (
-            <article className="rounded-xl border border-[#dce6f2] bg-white p-4 shadow-figma" key={id}>
-              <Icon className="h-5 w-5 text-clingo-blue" />
-              <p className="mt-4 text-2xl font-extrabold text-clingo-ink">{value}</p>
-              <p className="mt-1 text-[12px] text-clingo-muted">{label}</p>
-            </article>
-          ))}
+          {profile.metrics.map(({ id, label, value }) => {
+            const Icon = metricIcons[id as keyof typeof metricIcons] ?? CheckCircle2;
+
+            return (
+              <article className="rounded-xl border border-[#dce6f2] bg-white p-4 shadow-figma" key={id}>
+                <Icon className="h-5 w-5 text-clingo-blue" />
+                <p className="mt-4 text-2xl font-extrabold text-clingo-ink">{value}</p>
+                <p className="mt-1 text-[12px] text-clingo-muted">{label}</p>
+              </article>
+            );
+          })}
         </section>
 
         <section className="rounded-xl border border-[#dce6f2] bg-white p-5 shadow-figma">

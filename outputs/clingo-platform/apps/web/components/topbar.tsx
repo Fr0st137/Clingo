@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, FormEvent, useState } from "react";
+import { CSSProperties, FormEvent, useEffect, useState } from "react";
 
 type TopbarProps = {
   isMenuOpen?: boolean;
@@ -12,6 +12,8 @@ const assetPath = (path: string) => `/clingo-homepage/${path}`;
 export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
   const [panelType, setPanelType] = useState<"notification" | "favorites" | "chat">("notification");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isAccountPanelOpen, setIsAccountPanelOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(isMenuOpen);
 
   const effectiveMobileOpen = isMenuOpen || isMobileOpen;
@@ -30,6 +32,10 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
     }
   };
 
+  useEffect(() => {
+    setIsAuthenticated(document.cookie.split("; ").some((cookie) => cookie === "clingo-auth=1"));
+  }, []);
+
   const submitHeaderSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -42,10 +48,17 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
     const shouldClose = isPanelOpen && panelType === nextPanelType;
     setPanelType(nextPanelType);
     setIsPanelOpen(!shouldClose);
+    setIsAccountPanelOpen(false);
+  };
+
+  const toggleAccountPanel = () => {
+    setIsPanelOpen(false);
+    setIsAccountPanelOpen((value) => !value);
   };
 
   const toggleMobile = () => {
     setIsPanelOpen(false);
+    setIsAccountPanelOpen(false);
     setIsMobileOpen((value) => !value);
     onMenuToggle?.();
   };
@@ -138,19 +151,53 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                 <div className="header-not-login__notifications-content">
                   <p className="header-not-login__notifications-title">{panelCopy[panelType].title}</p>
                   <p className="header-not-login__notifications-text">{panelCopy[panelType].text}</p>
-                  <a className="header-not-login__notifications-login" href="/zamowienia">
+                  <a className="header-not-login__notifications-login" href="/logowanie?next=/zamowienia">
                     Zaloguj się
                   </a>
                   <p className="header-not-login__notifications-register">
-                    Nie masz konta? <a href="/zamowienia">Zarejestruj się</a>
+                    Nie masz konta? <a href="/logowanie?mode=register&next=/zamowienia">Zarejestruj się</a>
                   </p>
                 </div>
               </div>
             </div>
 
-            <a className="header-not-login__account-button" href="/zamowienia">
-              Moje konto
-            </a>
+            <div className="relative">
+              {isAuthenticated ? (
+                <a className="header-not-login__account-button" href="/zamowienia">
+                  Moje konto
+                </a>
+              ) : (
+                <button
+                  aria-expanded={isAccountPanelOpen}
+                  className="header-not-login__account-button border-0"
+                  onClick={toggleAccountPanel}
+                  type="button"
+                >
+                  Moje konto
+                </button>
+              )}
+
+              {!isAuthenticated && isAccountPanelOpen ? (
+                <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-[300px] rounded-[20px] border border-[#e6edf3] bg-white p-5 text-[#2e3b4c] shadow-[0px_12px_32px_rgba(35,77,126,0.16)]">
+                  <p className="m-0 text-[18px] font-semibold leading-6">Moje konto</p>
+                  <p className="mb-4 mt-2 text-[14px] leading-5 text-[#7c8691]">
+                    Zaloguj się albo utwórz konto, żeby przejść do panelu i rezerwacji.
+                  </p>
+                  <a
+                    className="flex h-[42px] items-center justify-center rounded-[100px] bg-[#0079de] text-[14px] font-semibold text-white"
+                    href="/logowanie?next=/zamowienia"
+                  >
+                    Zaloguj się
+                  </a>
+                  <p className="mb-0 mt-3 text-center text-[14px] leading-5 text-[#7c8691]">
+                    Nie masz konta?{" "}
+                    <a className="font-semibold text-[#0079de]" href="/logowanie?mode=register&next=/zamowienia">
+                      Zarejestruj się
+                    </a>
+                  </p>
+                </div>
+              ) : null}
+            </div>
 
             <div className="header-not-login__contractor-menu">
               <button className="header-not-login__contractor-button" type="button" aria-haspopup="true">
@@ -159,10 +206,10 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
               </button>
 
               <div className="header-not-login__contractor-dropdown" aria-label="Menu dla wykonawców">
-                <a className="header-not-login__contractor-dropdown-link" href="/zamowienia">
+                <a className="header-not-login__contractor-dropdown-link" href="/logowanie?next=/zamowienia">
                   Zaloguj się
                 </a>
-                <a className="header-not-login__contractor-dropdown-link" href="/zamowienia">
+                <a className="header-not-login__contractor-dropdown-link" href="/logowanie?mode=register&next=/zamowienia">
                   Zostań Wykonawcą
                 </a>
               </div>
@@ -209,7 +256,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
               <a className="header-not-login__mobile-link" href="/ulubione">
                 Ulubione
               </a>
-              <a className="header-not-login__mobile-link" href="/zamowienia">
+              <a className="header-not-login__mobile-link" href="/logowanie?next=/zamowienia">
                 Moje konto
               </a>
             </nav>

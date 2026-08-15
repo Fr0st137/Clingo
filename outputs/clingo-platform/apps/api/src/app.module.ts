@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AuthModule } from "./auth/auth.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { RedisModule } from "./redis/redis.module";
@@ -9,6 +10,7 @@ import { RedisModule } from "./redis/redis.module";
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     RedisModule,
+    AuthModule,
     DashboardModule
   ]
 })

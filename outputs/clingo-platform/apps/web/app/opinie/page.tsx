@@ -1,9 +1,11 @@
 import { DashboardShell } from "../../components/dashboard-shell";
 import { PageHeading } from "../../components/page-heading";
 import { PendingReviewCard, ReviewCard } from "../../components/review-card";
-import { pendingReviews, userReviews } from "../../lib/panel-mock-data";
+import { getOpinions } from "../../lib/api";
 
-export default function OpinionsPage() {
+export default async function OpinionsPage() {
+  const opinions = await getOpinions();
+
   return (
     <DashboardShell active="Twoje opinie">
       <section className="w-full md:w-[1090px]">
@@ -16,7 +18,7 @@ export default function OpinionsPage() {
           <div>
             <h3 className="mb-3 text-[14px] font-bold text-clingo-ink">Ostatnie</h3>
             <div className="grid gap-3">
-              {pendingReviews.map((item) => (
+              {opinions.pendingReviews.map((item) => (
                 <PendingReviewCard item={item} key={item.id} />
               ))}
             </div>
@@ -25,7 +27,7 @@ export default function OpinionsPage() {
           <div>
             <h3 className="mb-3 text-[14px] font-bold text-clingo-ink">Ocenione</h3>
             <div className="grid gap-5">
-              {userReviews.map((review) => (
+              {opinions.userReviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>

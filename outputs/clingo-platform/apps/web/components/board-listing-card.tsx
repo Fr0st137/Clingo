@@ -1,4 +1,21 @@
-import { BoardListingData } from "../lib/public-mock-data";
+"use client";
+
+import { useState } from "react";
+
+export interface BoardListingData {
+  id: string;
+  provider: string;
+  rating: number;
+  reviews: number;
+  experience: string;
+  price: string;
+  completedOrders: number;
+  mode: "Jednosesyjne" | "Wielosesyjne";
+  modeTone: "blue" | "gray";
+  image: string;
+  imageFit?: "cover" | "contain";
+  imageScale?: string;
+}
 
 function ListingImage({ listing }: { listing: BoardListingData }) {
   const isContain = listing.imageFit === "contain";
@@ -29,6 +46,7 @@ function Rating({ rating, reviews, experience }: { rating: number; reviews: numb
 }
 
 export function BoardListingCard({ listing }: { listing: BoardListingData }) {
+  const [favorite, setFavorite] = useState(false);
   const modeClasses =
     listing.modeTone === "blue" ? "bg-[#e9f5ff] text-[#0079de]" : "bg-[#f4f6f9] text-[#2e3b4c]";
 
@@ -70,17 +88,22 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
         </div>
 
         <button
+          aria-pressed={favorite}
           aria-label="Ulubione"
-          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center overflow-hidden rounded-[30px] border border-[#e6edf3] bg-[#f9fafb] p-[11px]"
+          className={[
+            "flex h-[38px] w-[38px] shrink-0 items-center justify-center overflow-hidden rounded-[30px] border p-[11px] transition-colors",
+            favorite ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-[#f9fafb]"
+          ].join(" ")}
+          onClick={() => setFavorite((current) => !current)}
           type="button"
         >
-          <img alt="" className="h-[16px] w-[16px]" src="/figma-assets/board-heart.svg" />
+          <img alt="" className={["h-[16px] w-[16px]", favorite ? "opacity-100" : "opacity-70"].join(" ")} src="/figma-assets/board-heart.svg" />
         </button>
       </div>
 
       <a
         className="flex h-[48px] w-full shrink-0 items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
-        href="/zamowienie"
+        href={`/profil-ogloszeniowy/${listing.id}`}
       >
         <span className="text-[12px] font-normal leading-normal text-[#9ca3af]">Zamów usługę</span>
         <span className="flex items-center justify-center overflow-hidden rounded-[30px] px-[10px] py-[2px]">

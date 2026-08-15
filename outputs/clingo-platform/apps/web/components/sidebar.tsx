@@ -1,8 +1,15 @@
-import { menuItems, user } from "../lib/dashboard-data";
+import { menuItems, user as defaultUser } from "../lib/dashboard-data";
+
+export type SidebarUser = {
+  initials: string;
+  name: string;
+  phone: string;
+};
 
 type SidebarProps = {
   active?: string;
   compact?: boolean;
+  user?: SidebarUser;
 };
 
 type MenuIconName =
@@ -17,6 +24,7 @@ type MenuIconName =
 const iconByLabel: Record<string, MenuIconName> = {
   Chat: "chat",
   Regulaminy: "regulations",
+  Rezerwacje: "orders",
   "Standardy usług Clingo": "standards",
   "Twoje opinie": "reviews",
   Ulubione: "heart",
@@ -37,30 +45,55 @@ function normalize(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 }
 
-function MenuIcon({ name }: { name: MenuIconName }) {
+const activeIconStyle = {
+  filter: "brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(950%) hue-rotate(174deg) brightness(91%) contrast(90%)"
+};
+
+function MenuIcon({ active, name }: { active: boolean; name: MenuIconName }) {
+  const imageStyle = active ? activeIconStyle : undefined;
+
   if (name === "chat") {
     return (
       <span className="relative h-[14px] w-[14px] shrink-0">
-        <img alt="" className="absolute inset-0 h-full w-full" src="/figma-assets/sidebar-chat-main.svg" />
-        <img alt="" className="absolute inset-[29.17%_45.83%_62.5%_29.17%]" src="/figma-assets/sidebar-chat-dot1.svg" />
-        <img alt="" className="absolute inset-[45.83%_29.17%]" src="/figma-assets/sidebar-chat-dot2.svg" />
-        <img alt="" className="absolute inset-[62.5%_29.17%_29.17%_29.17%]" src="/figma-assets/sidebar-chat-dot3.svg" />
+        <span className="absolute inset-[-0.1%_0_0_0]">
+          <img alt="" className="absolute inset-0 h-full w-full max-w-none" src="/figma-assets/sidebar-chat-main.svg" style={imageStyle} />
+        </span>
+        <span className="absolute inset-[29.17%_45.83%_62.5%_29.17%]">
+          <img alt="" className="absolute inset-0 h-full w-full max-w-none" src="/figma-assets/sidebar-chat-dot1.svg" style={imageStyle} />
+        </span>
+        <span className="absolute inset-[45.83%_29.17%]">
+          <img alt="" className="absolute inset-0 h-full w-full max-w-none" src="/figma-assets/sidebar-chat-dot2.svg" style={imageStyle} />
+        </span>
+        <span className="absolute inset-[62.5%_29.17%_29.17%_29.17%]">
+          <img alt="" className="absolute inset-0 h-full w-full max-w-none" src="/figma-assets/sidebar-chat-dot3.svg" style={imageStyle} />
+        </span>
       </span>
     );
   }
 
   return (
     <span className="relative h-[14px] w-[14px] shrink-0">
-      <img alt="" className="absolute inset-0 h-full w-full" src={iconSrcByName[name]} />
+      <img alt="" className="absolute inset-0 h-full w-full" src={iconSrcByName[name]} style={imageStyle} />
       {name === "settings" ? (
-        <img alt="" className="absolute inset-[33.33%] h-[33.34%] w-[33.34%]" src="/figma-assets/sidebar-settings-dot.svg" />
+        <img
+          alt=""
+          className="absolute inset-[33.33%] h-[33.34%] w-[33.34%]"
+          src="/figma-assets/sidebar-settings-dot.svg"
+          style={imageStyle}
+        />
       ) : null}
     </span>
   );
 }
 
-export function Sidebar({ active = "Zamówienia", compact = false }: SidebarProps) {
-  const activeKey = normalize(active);
+export function Sidebar({ active = "Rezerwacje", compact = false, user = defaultUser }: SidebarProps) {
+  const activeKey = normalize(active === "Zamówienia" ? "Rezerwacje" : active);
+  const logout = () => {
+    document.cookie = "clingo-auth=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "clingo-user-email=; path=/; max-age=0; SameSite=Lax";
+    window.localStorage.removeItem("clingo-auth");
+    window.location.href = "/logowanie";
+  };
 
   return (
     <aside
@@ -104,13 +137,14 @@ export function Sidebar({ active = "Zamówienia", compact = false }: SidebarProp
             return (
               <a
                 className={[
-                  "flex h-[45px] w-[290px] items-center gap-[20px] overflow-hidden rounded-[50px] px-[20px] text-[14px] font-normal leading-normal",
+                  "flex h-[45px] w-[290px] items-center gap-[20px] overflow-hidden rounded-[50px] px-[20px] text-[14px] font-normal leading-normal transition-colors",
                   isActive ? "bg-[#f4f6f9] text-[#2e3b4c]" : "text-[#7c8691]"
                 ].join(" ")}
+                aria-current={isActive ? "page" : undefined}
                 href={href}
                 key={label}
               >
-                <MenuIcon name={iconByLabel[label]} />
+                <MenuIcon active={isActive} name={iconByLabel[label]} />
                 <span className="whitespace-nowrap">{label}</span>
               </a>
             );
@@ -119,7 +153,9 @@ export function Sidebar({ active = "Zamówienia", compact = false }: SidebarProp
 
         <div className="flex w-full items-center justify-between p-[20px] text-[14px] font-normal leading-normal text-[#0079de]">
           <a href="#">Pomoc</a>
-          <a href="#">Wyloguj się</a>
+          <button className="bg-transparent p-0 text-[14px] font-normal leading-normal text-[#0079de]" onClick={logout} type="button">
+            Wyloguj się
+          </button>
         </div>
       </section>
     </aside>

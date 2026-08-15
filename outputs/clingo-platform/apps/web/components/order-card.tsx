@@ -26,17 +26,19 @@ const orderAssets = {
   stepapp: "/figma-assets/favorite-stepapp.png"
 };
 
-function actionHref(action: string) {
+function actionHref(action: string, orderId?: string) {
+  const suffix = orderId ? `?id=${encodeURIComponent(orderId)}` : "";
+
   if (action.includes("Szczeg")) {
-    return "/zamowienia/szczegoly";
+    return `/zamowienia/szczegoly${suffix}`;
   }
 
   if (action.includes("Prze")) {
-    return "/zamowienia/przeloz";
+    return `/zamowienia/przeloz${suffix}`;
   }
 
   if (action.includes("Odwo")) {
-    return "/zamowienia/odwolaj";
+    return `/zamowienia/odwolaj${suffix}`;
   }
 
   if (action.includes("Dodaj")) {
@@ -115,10 +117,12 @@ function LocationLine({ address }: { address: string }) {
 
 function ButtonLink({
   children,
+  orderId,
   tone,
   width
 }: {
   children: string;
+  orderId?: string;
   tone: "blue" | "light";
   width: number;
 }) {
@@ -130,7 +134,7 @@ function ButtonLink({
   return (
     <a
       className={`flex h-[41px] items-center justify-center rounded-[30px] text-[14px] font-normal leading-[17px] ${classes}`}
-      href={actionHref(children)}
+      href={actionHref(children, orderId)}
       style={{ width }}
     >
       {children}
@@ -194,12 +198,12 @@ function UpcomingOrderCard({ order }: OrderCardProps) {
       <DateBlock dateLines={order.dateLines} range={order.range} />
 
       <div className="absolute left-[25px] top-[156px] flex h-[41px] w-[695px] items-center">
-        <ButtonLink tone="blue" width={168}>
+        <ButtonLink orderId={order.id} tone="blue" width={168}>
           {order.actions[0]}
         </ButtonLink>
         <div className="flex flex-1 justify-end gap-[15px]">
           {order.actions.slice(1).map((action) => (
-            <ButtonLink key={action} tone="light" width={action.includes("Prze") ? 148 : 152}>
+            <ButtonLink key={action} orderId={order.id} tone="light" width={action.includes("Prze") ? 148 : 152}>
               {action}
             </ButtonLink>
           ))}
@@ -225,10 +229,10 @@ export function CompletedOrderCard({ order }: OrderCardProps) {
       </div>
 
       <div className="absolute left-[423px] top-[35px] flex h-[41px] w-[297px] items-start gap-[15px]">
-        <ButtonLink tone="light" width={123}>
+        <ButtonLink orderId={order.id} tone="light" width={123}>
           {order.actions[0]}
         </ButtonLink>
-        <ButtonLink tone="blue" width={159}>
+        <ButtonLink orderId={order.id} tone="blue" width={159}>
           {order.actions[1]}
         </ButtonLink>
       </div>

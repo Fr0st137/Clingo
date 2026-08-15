@@ -1,7 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { SearchFieldData } from "../lib/public-mock-data";
+
+export interface SearchFieldData {
+  id: string;
+  label: string;
+  value: string;
+}
 
 export function PublicSearchBar({ fields }: { fields: SearchFieldData[] }) {
   const [values, setValues] = useState<Record<string, string>>(

@@ -1,7 +1,10 @@
 import { DashboardShell } from "../../components/dashboard-shell";
 import { FavoriteProviderCard } from "../../components/favorite-provider-card";
+import { getFavorites } from "../../lib/api";
 
-export default function FavoritesPage() {
+export default async function FavoritesPage() {
+  const favorites = await getFavorites();
+
   return (
     <DashboardShell active="Ulubione">
       <section className="w-full md:w-[1090px]">
@@ -12,8 +15,10 @@ export default function FavoritesPage() {
           </p>
         </header>
 
-        <section className="relative md:mt-[10px] md:min-h-[821px] md:w-[1090px]">
-          <FavoriteProviderCard />
+        <section className="grid gap-[15px] md:mt-[10px] md:min-h-[821px] md:w-[1090px]">
+          {favorites.map((provider) => (
+            <FavoriteProviderCard key={provider.id} provider={provider} />
+          ))}
         </section>
       </section>
     </DashboardShell>

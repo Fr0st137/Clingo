@@ -37,15 +37,15 @@ let refreshAreaFieldState = () => {};
 
 const addonItems = [
   { id: "mycie-okien", title: "Mycie okien", icon: "/clingo-homepage/assets/icons/addon-mycie-okien.png", quantity: 0 },
-  { id: "lodowka", title: "Czyszczenie lodĂłwki", icon: "/clingo-homepage/assets/icons/addon-lodowka.png", quantity: 0 },
-  { id: "naczynia", title: "Mycie naczyĹ„", icon: "/clingo-homepage/assets/icons/addon-naczynia.png", quantity: 0 },
+  { id: "lodowka", title: "Czyszczenie lodówki", icon: "/clingo-homepage/assets/icons/addon-lodowka.png", quantity: 0 },
+  { id: "naczynia", title: "Mycie naczyń", icon: "/clingo-homepage/assets/icons/addon-naczynia.png", quantity: 0 },
   { id: "piekarnik", title: "Mycie piekarnika", icon: "/clingo-homepage/assets/icons/addon-piekarnik.png", quantity: 0 },
   { id: "okap", title: "Mycie okapu", icon: "/clingo-homepage/assets/icons/addon-okap.png", quantity: 0 },
-  { id: "mikrofalowka", title: "Mycie mikrofalĂłwki", icon: "/clingo-homepage/assets/icons/addon-mikrofalowka.png", quantity: 0 },
+  { id: "mikrofalowka", title: "Mycie mikrofalówki", icon: "/clingo-homepage/assets/icons/addon-mikrofalowka.png", quantity: 0 },
   { id: "prasowanie-1", title: "Prasowanie", icon: "/clingo-homepage/assets/icons/addon-prasowanie.png", quantity: 0 },
-  { id: "szafa", title: "SprzÄ…tanie i mycie wnÄ™trza szafy", icon: "/clingo-homepage/assets/icons/addon-szafa.png", quantity: 0 },
-  { id: "szafki", title: "SprzÄ…tanie wnÄ™trza szafek", icon: "/clingo-homepage/assets/icons/addon-szafki.png", quantity: 0 },
-  { id: "kuweta", title: "SprzÄ…tanie kuwety", icon: "/clingo-homepage/assets/icons/addon-kuweta.png", quantity: 0 },
+  { id: "szafa", title: "Sprzątanie i mycie wnętrza szafy", icon: "/clingo-homepage/assets/icons/addon-szafa.png", quantity: 0 },
+  { id: "szafki", title: "Sprzątanie wnętrza szafek", icon: "/clingo-homepage/assets/icons/addon-szafki.png", quantity: 0 },
+  { id: "kuweta", title: "Sprzątanie kuwety", icon: "/clingo-homepage/assets/icons/addon-kuweta.png", quantity: 0 },
   { id: "prasowanie-2", title: "Prasowanie", icon: "/clingo-homepage/assets/icons/addon-prasowanie.png", quantity: 0 }
 ];
 
@@ -78,7 +78,7 @@ const collapseLocationMenuState = () => {
   const hasLocationValue = locationInput.value.trim() !== "";
   locationMenu.classList.remove("is-open");
   locationMenu.classList.toggle("has-value", hasLocationValue);
-  locationInput.placeholder = hasLocationValue ? "" : "Miejsce objÄ™te usĹ‚ugÄ…";
+  locationInput.placeholder = hasLocationValue ? "" : "Miejsce objęte usługą";
   locationInput.style.color = hasLocationValue ? "#2e3b4c" : "#7c8691";
   locationInput.blur();
 };
@@ -128,10 +128,10 @@ const renderAddons = () => {
       <p class="home-page__addon-title">${safeTitle}</p>
       <button class="home-page__addon-action" type="button">Wybierz</button>
       <div class="home-page__addon-counter">
-        <button class="home-page__addon-counter-button home-page__addon-counter-button--minus" type="button" aria-label="Zmniejsz iloĹ›Ä‡"></button>
+        <button class="home-page__addon-counter-button home-page__addon-counter-button--minus" type="button" aria-label="Zmniejsz ilość"></button>
         <span class="home-page__addon-counter-value">${item.quantity}</span>
         <span class="home-page__addon-counter-unit">szt.</span>
-        <button class="home-page__addon-counter-button home-page__addon-counter-button--plus" type="button" aria-label="ZwiÄ™ksz iloĹ›Ä‡"></button>
+        <button class="home-page__addon-counter-button home-page__addon-counter-button--plus" type="button" aria-label="Zwiększ ilość"></button>
       </div>
     `;
 
@@ -260,15 +260,15 @@ if (notificationsMenu) {
   const panelContentByType = {
     notification: {
       title: "Powiadomienia",
-      text: "Zaloguj siÄ™, aby otrzymywaÄ‡ powiadomienia o zamĂłwieniach, statusach i promocjach."
+      text: "Zaloguj się, aby otrzymywać powiadomienia o zamówieniach, statusach i promocjach."
     },
     favorites: {
       title: "Ulubione",
-      text: "Zaloguj siÄ™ i twĂłrz listÄ™ ulubionych, aby Ĺ‚atwo wracaÄ‡ do najciekawszych propozycji."
+      text: "Zaloguj się i twórz listę ulubionych, aby łatwo wracać do najciekawszych propozycji."
     },
     chat: {
       title: "Chat",
-      text: "Zaloguj siÄ™, aby korzystaÄ‡ z chatu i Ĺ‚atwo komunikowaÄ‡ siÄ™ z usĹ‚ugodawcami."
+      text: "Zaloguj się, aby korzystać z chatu i łatwo komunikować się z usługodawcami."
     }
   };
 
@@ -315,7 +315,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
   let selectedServiceValue = null;
 
   const renderServiceValue = () => {
-    serviceValue.textContent = selectedServiceValue || "Rodzaj usĹ‚ugi";
+    serviceValue.textContent = selectedServiceValue || "Rodzaj usługi";
     serviceValue.style.color = selectedServiceValue ? "#2e3b4c" : "#7c8691";
   };
 
@@ -332,7 +332,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
       const hasLocationValue = locationInput.value.trim() !== "";
       locationMenu.classList.remove("is-open");
       locationMenu.classList.toggle("has-value", hasLocationValue);
-      locationInput.placeholder = hasLocationValue ? "" : "Miejsce objÄ™te usĹ‚ugÄ…";
+      locationInput.placeholder = hasLocationValue ? "" : "Miejsce objęte usługą";
       locationInput.style.color = hasLocationValue ? "#2e3b4c" : "#7c8691";
       locationInput.blur();
     }
@@ -354,7 +354,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
       renderServiceValue();
       serviceMenu.classList.remove("is-open");
 
-      if (option.textContent && option.textContent.includes("MieszkaĹ„ i domĂłw")) {
+      if (option.textContent && option.textContent.includes("Mieszkań i domów")) {
         setAddonsPanelOpen(true);
       } else {
         setAddonsPanelOpen(false);
@@ -545,8 +545,8 @@ if (
   locationQueryLabel &&
   locationOptions.length > 0
 ) {
-  const defaultLocationText = "Miejsce objÄ™te usĹ‚ugÄ…";
-  const resolvedLocationText = "FloriaĹ„ska 48, Warszawa, Polska";
+  const defaultLocationText = "Miejsce objęte usługą";
+  const resolvedLocationText = "Floriańska 48, Warszawa, Polska";
   let selectedLocationValue = "";
 
   const renderLocationField = () => {

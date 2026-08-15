@@ -6,7 +6,16 @@ const favoriteAssets = {
   star: "/figma-assets/favorite-star.svg"
 };
 
-export function FavoriteProviderCard() {
+export type FavoriteProviderData = {
+  id: string;
+  name: string;
+  completedServices: number;
+  rating: number;
+  reviews: number;
+  experience: string;
+};
+
+export function FavoriteProviderCard({ provider }: { provider: FavoriteProviderData }) {
   return (
     <article
       className="flex h-[142px] w-[745px] flex-col items-start overflow-hidden rounded-[20px] border border-[#e6edf3] bg-white shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
@@ -29,12 +38,12 @@ export function FavoriteProviderCard() {
           <div className="flex flex-col items-start gap-[5px] overflow-hidden pt-[5px]" data-node-id="5296:9379">
             <div className="flex items-center gap-[10px] overflow-hidden" data-node-id="5296:9380">
               <h3 className="m-0 whitespace-nowrap text-[16px] font-bold leading-normal text-[#2e3b4c]">
-                Stepapp
+                {provider.name}
               </h3>
               <div className="flex items-center justify-center gap-[8px] py-[4px]" data-node-id="5296:9394">
                 <img alt="" className="h-[14px] w-[14px]" src={favoriteAssets.check} />
                 <span className="whitespace-nowrap text-[14px] font-normal leading-normal text-[#2e3b4c]">
-                  166 Wykonanych usług
+                  {provider.completedServices} Wykonanych usług
                 </span>
               </div>
             </div>
@@ -44,13 +53,13 @@ export function FavoriteProviderCard() {
                 <img alt="" className="h-[14px] w-[16px]" src={favoriteAssets.star} />
               </div>
               <span className="h-[24px] w-[25px] text-[14px] font-semibold leading-[24px] text-[#2e3b4c]">
-                4.0
+                {provider.rating.toFixed(1)}
               </span>
               <a className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#0079de]" href="#">
-                (27 ocen)
+                ({provider.reviews} ocen)
               </a>
               <span className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#2e3b4c]">
-                Doświadczenie: 5 lata
+                Doświadczenie: {provider.experience}
               </span>
             </div>
           </div>
@@ -69,7 +78,7 @@ export function FavoriteProviderCard() {
       <a
         className="flex w-full items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
         data-node-id="5296:9399"
-        href="/zamowienie"
+        href={`/profil-ogloszeniowy/${provider.id}`}
       >
         <span className="whitespace-nowrap text-[12px] font-normal leading-normal text-[#9ca3af]">
           Zamów usługę

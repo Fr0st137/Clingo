@@ -41,6 +41,9 @@ if not errorlevel 1 (
     echo Docker jest zainstalowany, ale nie udalo sie uruchomic kontenerow.
     echo Upewnij sie, ze Docker Desktop jest wlaczony, a potem uruchom ten plik ponownie.
     echo Frontend nadal sie wlaczy, a API uzyje danych zapasowych tam, gdzie moze.
+  ) else (
+    call :wait_for_docker_services
+    call :seed_provider_profiles
   )
 ) else (
   echo Docker nie jest dostepny. Pomijam PostgreSQL/PostGIS i Redis.
@@ -183,4 +186,48 @@ for /L %%i in (1,1,60) do (
 
 echo Docker Desktop nie zdazyl sie uruchomic.
 echo Jesli widzisz okno Docker Desktop, poczekaj az zakonczy start i uruchom ten plik ponownie.
+exit /b 0
+
+:wait_for_docker_services
+echo Czekam na gotowosc PostgreSQL/PostGIS...
+for /L %%i in (1,1,60) do (
+  docker compose exec -T postgres pg_isready -U clingo -d clingo >nul 2>nul
+  if not errorlevel 1 (
+    echo PostgreSQL/PostGIS jest gotowy.
+    goto :wait_for_redis
+  )
+  timeout /t 2 /nobreak >nul
+)
+
+echo PostgreSQL/PostGIS nie zdazyl potwierdzic gotowosci.
+echo API moze wystartowac z opoznieniem lub wymagac ponownego uruchomienia.
+
+:wait_for_redis
+echo Czekam na gotowosc Redis...
+for /L %%i in (1,1,30) do (
+  docker compose exec -T redis redis-cli ping >nul 2>nul
+  if not errorlevel 1 (
+    echo Redis jest gotowy.
+    exit /b 0
+  )
+  timeout /t 1 /nobreak >nul
+)
+
+echo Redis nie zdazyl potwierdzic gotowosci.
+echo API nadal sprobuje wystartowac.
+exit /b 0
+
+:seed_provider_profiles
+if not exist "scripts\seed-provider-profiles.js" (
+  exit /b 0
+)
+
+echo Uzupelnianie testowych profili w bazie danych...
+call node scripts\seed-provider-profiles.js
+if errorlevel 1 (
+  echo Nie udalo sie automatycznie uzupelnic profili w bazie danych.
+  echo API nadal sprobuje wystartowac. Jesli na tablicy widzisz za malo profili, zrestartuj platforme po uruchomieniu Dockera.
+  exit /b 0
+)
+
 exit /b 0

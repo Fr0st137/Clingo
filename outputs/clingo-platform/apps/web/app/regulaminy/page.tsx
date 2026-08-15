@@ -1,9 +1,11 @@
 import { DashboardShell } from "../../components/dashboard-shell";
 import { PageHeading } from "../../components/page-heading";
 import { ReviewCard } from "../../components/review-card";
-import { regulationsReviews } from "../../lib/panel-mock-data";
+import { getRegulationsReviews } from "../../lib/api";
 
-export default function RegulationsPage() {
+export default async function RegulationsPage() {
+  const reviews = await getRegulationsReviews();
+
   return (
     <DashboardShell active="Regulaminy">
       <section className="w-full md:w-[1090px]">
@@ -13,7 +15,7 @@ export default function RegulationsPage() {
         />
 
         <section className="grid gap-5 md:mt-[10px] md:max-w-[745px]">
-          {regulationsReviews.map((review) => (
+          {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} showAuthor />
           ))}
         </section>

@@ -1,9 +1,11 @@
 import { DashboardShell } from "../../components/dashboard-shell";
 import { PageHeading } from "../../components/page-heading";
 import { ReviewCard } from "../../components/review-card";
-import { standardsReviews } from "../../lib/panel-mock-data";
+import { getStandardsReviews } from "../../lib/api";
 
-export default function ServiceStandardsPage() {
+export default async function ServiceStandardsPage() {
+  const reviews = await getStandardsReviews();
+
   return (
     <DashboardShell active="Standardy usług Clingo">
       <section className="w-full md:w-[1090px]">
@@ -13,7 +15,7 @@ export default function ServiceStandardsPage() {
         />
 
         <section className="grid gap-5 md:mt-[10px] md:max-w-[745px]">
-          {standardsReviews.map((review) => (
+          {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} showAuthor />
           ))}
         </section>

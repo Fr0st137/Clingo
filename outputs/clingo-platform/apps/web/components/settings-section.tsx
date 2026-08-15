@@ -1,16 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ExternalConnectionData,
-  NotificationSettingData,
-  SettingsSectionData
-} from "../lib/panel-mock-data";
+import { updateAccountProfile } from "../lib/account";
+import type { AccountProfileUpdate } from "../lib/account";
 
-export function SettingsFormSection({ section }: { section: SettingsSectionData }) {
+export interface SettingsFieldData {
+  id: string;
+  label: string;
+  value: string;
+  placeholder?: string;
+  type?: "text" | "email" | "password";
+}
+
+export interface SettingsSectionData {
+  id: string;
+  title: string;
+  description: string;
+  fields?: SettingsFieldData[];
+  actionLabel?: string;
+}
+
+export interface NotificationSettingData {
+  id: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+}
+
+export interface ExternalConnectionData {
+  id: string;
+  provider: string;
+  icon: string;
+}
+
+export function SettingsFormSection({ accountEmail, section }: { accountEmail?: string; section: SettingsSectionData }) {
   const [values, setValues] = useState(
     Object.fromEntries((section.fields ?? []).map((field) => [field.id, field.value]))
   );
+  const [isSaving, setIsSaving] = useState(false);
+  const [status, setStatus] = useState("");
+
+  const saveSection = async () => {
+    if (!accountEmail || (section.id !== "personal" && section.id !== "address")) {
+      return;
+    }
+
+    const payload: AccountProfileUpdate =
+      section.id === "personal"
+        ? {
+            companyName: values.companyName,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            phone: values.phone
+          }
+        : {
+            apartment: values.apartment,
+            city: values.city,
+            postalCode: values.postalCode,
+            street: values.street
+          };
+
+    setIsSaving(true);
+    setStatus("");
+
+    try {
+      await updateAccountProfile(accountEmail, payload);
+      setStatus("Zapisano zmiany.");
+    } catch {
+      setStatus("Nie udało się zapisać zmian.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <section className="w-full rounded-[18px] border border-[#e6edf3] bg-white p-5 shadow-[0px_8px_24px_0px_rgba(15,23,42,0.06)] md:max-w-[745px] md:p-6">
@@ -21,12 +82,22 @@ export function SettingsFormSection({ section }: { section: SettingsSectionData 
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {section.fields?.map((field) => (
-          <label className={field.id === "email" || field.id === "phone" ? "md:col-span-2" : ""} key={field.id}>
+          <label
+            className={["email", "phone", "companyName", "street"].includes(field.id) ? "md:col-span-2" : ""}
+            key={field.id}
+          >
             <span className="mb-2 block text-[12px] text-[#536479]">{field.label}</span>
             <input
-              className="h-[46px] w-full rounded-[15px] border border-[#e4eaf2] bg-[#f7f9fc] px-4 text-[13px] text-clingo-ink outline-none placeholder:text-[#a2adba]"
-              onChange={(event) => setValues((current) => ({ ...current, [field.id]: event.target.value }))}
+              className={[
+                "h-[46px] w-full rounded-[15px] border border-[#e4eaf2] bg-[#f7f9fc] px-4 text-[13px] text-clingo-ink outline-none placeholder:text-[#a2adba]",
+                field.id === "email" ? "cursor-not-allowed text-[#7c8691]" : ""
+              ].join(" ")}
+              onChange={(event) => {
+                setStatus("");
+                setValues((current) => ({ ...current, [field.id]: event.target.value }));
+              }}
               placeholder={field.placeholder}
+              readOnly={field.id === "email"}
               type={field.type === "password" ? "password" : field.type ?? "text"}
               value={values[field.id] ?? ""}
             />
@@ -35,10 +106,17 @@ export function SettingsFormSection({ section }: { section: SettingsSectionData 
       </div>
 
       {section.actionLabel ? (
-        <button className="mt-5 h-[41px] rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white">
-          {section.actionLabel}
+        <button
+          className="mt-5 h-[41px] rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white disabled:cursor-wait disabled:opacity-70"
+          disabled={isSaving}
+          onClick={saveSection}
+          type="button"
+        >
+          {isSaving ? "Zapisywanie..." : section.actionLabel}
         </button>
       ) : null}
+
+      {status ? <p className="mt-3 text-[12px] font-medium text-[#2e3b4c]">{status}</p> : null}
     </section>
   );
 }
