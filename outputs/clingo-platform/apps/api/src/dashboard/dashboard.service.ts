@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import Redis from "ioredis";
-import { Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 import { REDIS_CLIENT } from "../redis/redis.module";
 import { BoardFilterEntity } from "./board-filter.entity";
 import { BoardListingEntity } from "./board-listing.entity";
@@ -38,6 +38,14 @@ const currentUser = {
   phone: "553 068 994",
   initials: "K"
 };
+
+type SeedImportSummary = {
+  inserted: number;
+  label: string;
+};
+
+type OrderSeedRecord = Pick<OrderEntity, "address" | "mode" | "provider" | "serviceType" | "status"> &
+  Partial<Pick<OrderEntity, "endsAt" | "location" | "startsAt">>;
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -245,7 +253,15 @@ export class DashboardService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.seedDashboardData();
+    if (process.env.CLINGO_SKIP_AUTO_SEED === "true") {
+      return;
+    }
+
+    await this.importMissingDashboardData();
+  }
+
+  async importMissingDashboardData(): Promise<SeedImportSummary[]> {
+    return this.seedDashboardData();
   }
 
   async getDashboard(): Promise<DashboardPayload> {
@@ -467,8 +483,8 @@ export class DashboardService implements OnModuleInit {
     }
   }
 
-  private async seedDashboardData() {
-    await Promise.all([
+  private async seedDashboardData(): Promise<SeedImportSummary[]> {
+    const results = await Promise.all([
       this.seedOrders(),
       this.seedFavorites(),
       this.seedChat(),
@@ -477,14 +493,56 @@ export class DashboardService implements OnModuleInit {
       this.seedBoard(),
       this.seedProviderProfiles()
     ]);
+
+    return results.flat();
   }
 
-  private async seedOrders() {
-    if ((await this.ordersRepository.count()) > 0) {
-      return;
+  private seedSummary(label: string, inserted: number): SeedImportSummary {
+    return { inserted, label };
+  }
+
+  private async saveMissingById<T extends ObjectLiteral & { id: string }>(
+    repository: Repository<T>,
+    records: T[]
+  ): Promise<number> {
+    const existing = await repository.find();
+    const existingIds = new Set(existing.map((record) => record.id));
+    const missingRecords = records.filter((record) => !existingIds.has(record.id));
+
+    if (missingRecords.length === 0) {
+      return 0;
     }
 
-    await this.ordersRepository.save([
+    await repository.save(missingRecords);
+    return missingRecords.length;
+  }
+
+  private orderSeedKey(order: Pick<OrderEntity, "address" | "mode" | "provider" | "serviceType">) {
+    return [order.provider, order.mode, order.serviceType, order.address].join("|");
+  }
+
+  private async saveMissingOrders(records: OrderSeedRecord[]): Promise<number> {
+    const existingOrders = await this.ordersRepository.find({
+      select: {
+        address: true,
+        mode: true,
+        provider: true,
+        serviceType: true
+      }
+    });
+    const existingKeys = new Set(existingOrders.map((order) => this.orderSeedKey(order)));
+    const missingOrders = records.filter((order) => !existingKeys.has(this.orderSeedKey(order)));
+
+    if (missingOrders.length === 0) {
+      return 0;
+    }
+
+    await this.ordersRepository.save(missingOrders);
+    return missingOrders.length;
+  }
+
+  private async seedOrders(): Promise<SeedImportSummary[]> {
+    const inserted = await this.saveMissingOrders([
       {
         provider: "Paulina Jagielska",
         status: "Zlecenie w trakcie",
@@ -516,38 +574,32 @@ export class DashboardService implements OnModuleInit {
         endsAt: new Date("2026-07-24T12:00:00+02:00")
       }
     ]);
+
+    return [this.seedSummary("orders", inserted)];
   }
 
-  private async seedFavorites() {
-    if ((await this.favoritesRepository.count()) > 0) {
-      return;
-    }
-
-    await this.favoritesRepository.save([
+  private async seedFavorites(): Promise<SeedImportSummary[]> {
+    const inserted = await this.saveMissingById(this.favoritesRepository, [
       { id: "stepapp", name: "Stepapp", completedServices: 166, rating: 4.0, reviews: 27, experience: "5 lata" },
       { id: "paulina-jagielska", name: "Paulina Jagielska", completedServices: 87, rating: 5.0, reviews: 42, experience: "3 lata" }
     ]);
+
+    return [this.seedSummary("favorite_providers", inserted)];
   }
 
-  private async seedChat() {
-    if ((await this.chatContactsRepository.count()) === 0) {
-      await this.chatContactsRepository.save([
-        { id: "anita-kowalska", name: "Anita Kowalska", preview: "Dzień dobry, chciałbym popro...", timeAgo: "2 godz.", orderIndex: 0 },
-        { id: "kajetan-mrowczynski", name: "Kajetan Mrowczyński", preview: "Ty: Dziękuję.", timeAgo: "6 godz.", orderIndex: 1 },
-        { id: "elzbieta-antkowiak", name: "Elżbieta Antkowiak", preview: "Do zobaczenia, pokażę Pani n...", timeAgo: "1 dzień", orderIndex: 2 },
-        { id: "jolanta-bartusiak", name: "Jolanta Bartusiak", preview: "Pod antresolą", timeAgo: "1 tydzień", orderIndex: 3 },
-        { id: "aleksander-twarowski", name: "Aleksander Twarowski", preview: "Ty: Nie ma żadnego problemu.", timeAgo: "2 dni", orderIndex: 4 },
-        { id: "magdalena-wojcik", name: "Magdalena Wójcik", preview: "Pozdrawiam i do zobaczenia.", timeAgo: "3 dni", orderIndex: 5 },
-        { id: "michal-trybulec", name: "Michał Trybulec", preview: "Dzień dobry, chciałbym poprosić...", timeAgo: "3 dni", orderIndex: 6 },
-        { id: "maryla-kacprowska", name: "Maryla Kacprowska", preview: "Ty: Zatem do zobaczenia.", timeAgo: "4 dni", orderIndex: 7 }
-      ]);
-    }
+  private async seedChat(): Promise<SeedImportSummary[]> {
+    const insertedContacts = await this.saveMissingById(this.chatContactsRepository, [
+      { id: "anita-kowalska", name: "Anita Kowalska", preview: "Dzień dobry, chciałbym popro...", timeAgo: "2 godz.", orderIndex: 0 },
+      { id: "kajetan-mrowczynski", name: "Kajetan Mrowczyński", preview: "Ty: Dziękuję.", timeAgo: "6 godz.", orderIndex: 1 },
+      { id: "elzbieta-antkowiak", name: "Elżbieta Antkowiak", preview: "Do zobaczenia, pokażę Pani n...", timeAgo: "1 dzień", orderIndex: 2 },
+      { id: "jolanta-bartusiak", name: "Jolanta Bartusiak", preview: "Pod antresolą", timeAgo: "1 tydzień", orderIndex: 3 },
+      { id: "aleksander-twarowski", name: "Aleksander Twarowski", preview: "Ty: Nie ma żadnego problemu.", timeAgo: "2 dni", orderIndex: 4 },
+      { id: "magdalena-wojcik", name: "Magdalena Wójcik", preview: "Pozdrawiam i do zobaczenia.", timeAgo: "3 dni", orderIndex: 5 },
+      { id: "michal-trybulec", name: "Michał Trybulec", preview: "Dzień dobry, chciałbym poprosić...", timeAgo: "3 dni", orderIndex: 6 },
+      { id: "maryla-kacprowska", name: "Maryla Kacprowska", preview: "Ty: Zatem do zobaczenia.", timeAgo: "4 dni", orderIndex: 7 }
+    ]);
 
-    if ((await this.chatMessagesRepository.count()) > 0) {
-      return;
-    }
-
-    await this.chatMessagesRepository.save([
+    const insertedMessages = await this.saveMissingById(this.chatMessagesRepository, [
       {
         id: "m1",
         side: "mine",
@@ -591,13 +643,11 @@ export class DashboardService implements OnModuleInit {
         orderIndex: 6
       }
     ]);
+
+    return [this.seedSummary("chat_contacts", insertedContacts), this.seedSummary("chat_messages", insertedMessages)];
   }
 
-  private async seedReviews() {
-    if ((await this.reviewsRepository.count()) > 0) {
-      return;
-    }
-
+  private async seedReviews(): Promise<SeedImportSummary[]> {
     const baseReviews = [
       {
         id: "paulina-jagielska",
@@ -672,7 +722,7 @@ export class DashboardService implements OnModuleInit {
       }
     ];
 
-    await this.reviewsRepository.save([
+    const inserted = await this.saveMissingById(this.reviewsRepository, [
       {
         id: "karolina-pokulska-pending",
         context: "opinions",
@@ -707,93 +757,85 @@ export class DashboardService implements OnModuleInit {
       ...baseReviews.map((review, index) => ({ ...review, id: `standard-${review.id}`, context: "standards" as const, pending: false, author: "Kacper Jaskółka", orderIndex: index })),
       ...baseReviews.map((review, index) => ({ ...review, id: `regulation-${review.id}`, context: "regulations" as const, pending: false, author: "Kacper Jaskółka", orderIndex: index }))
     ]);
+
+    return [this.seedSummary("panel_reviews", inserted)];
   }
 
-  private async seedSettings() {
-    if ((await this.settingsSectionsRepository.count()) === 0) {
-      await this.settingsSectionsRepository.save([
-        {
-          id: "personal",
-          title: "Informacje personalne",
-          description: "Zarządzaj swoimi danymi kontaktowymi.",
-          fields: [
-            { id: "name", label: "Imię i nazwisko", value: "Kacper Jaskółka" },
-            { id: "birthDate", label: "Data urodzenia", value: "", placeholder: "DD-MM-RRRR" },
-            { id: "email", label: "Adres e-mail", value: "kacper.jaskolka@example.com", type: "email" },
-            { id: "phone", label: "Numer telefonu", value: "+48 553 068 994" }
-          ],
-          actionLabel: null,
-          orderIndex: 0
-        },
-        {
-          id: "address",
-          title: "Adres",
-          description: "Twój adres wykorzystujemy jedynie do realizacji usługi.",
-          fields: [
-            { id: "street", label: "Ulica", value: "Floriańska 48" },
-            { id: "apartment", label: "Numer mieszkania", value: "16" },
-            { id: "city", label: "Miasto", value: "Warszawa" },
-            { id: "postalCode", label: "Kod pocztowy", value: "03-707" }
-          ],
-          actionLabel: null,
-          orderIndex: 1
-        },
-        {
-          id: "password",
-          title: "Zmień hasło",
-          description: "Uaktualnij swoje hasło bezpieczeństwa.",
-          fields: [
-            { id: "newPassword", label: "Nowe hasło", value: "••••••••", type: "password" },
-            { id: "confirmPassword", label: "Potwierdź hasło", value: "••••••••", type: "password" }
-          ],
-          actionLabel: "Zmień hasło",
-          orderIndex: 2
-        }
-      ]);
-    }
+  private async seedSettings(): Promise<SeedImportSummary[]> {
+    const insertedSections = await this.saveMissingById(this.settingsSectionsRepository, [
+      {
+        id: "personal",
+        title: "Informacje personalne",
+        description: "Zarządzaj swoimi danymi kontaktowymi.",
+        fields: [
+          { id: "name", label: "Imię i nazwisko", value: "Kacper Jaskółka" },
+          { id: "birthDate", label: "Data urodzenia", value: "", placeholder: "DD-MM-RRRR" },
+          { id: "email", label: "Adres e-mail", value: "kacper.jaskolka@example.com", type: "email" },
+          { id: "phone", label: "Numer telefonu", value: "+48 553 068 994" }
+        ],
+        actionLabel: null,
+        orderIndex: 0
+      },
+      {
+        id: "address",
+        title: "Adres",
+        description: "Twój adres wykorzystujemy jedynie do realizacji usługi.",
+        fields: [
+          { id: "street", label: "Ulica", value: "Floriańska 48" },
+          { id: "apartment", label: "Numer mieszkania", value: "16" },
+          { id: "city", label: "Miasto", value: "Warszawa" },
+          { id: "postalCode", label: "Kod pocztowy", value: "03-707" }
+        ],
+        actionLabel: null,
+        orderIndex: 1
+      },
+      {
+        id: "password",
+        title: "Zmień hasło",
+        description: "Uaktualnij swoje hasło bezpieczeństwa.",
+        fields: [
+          { id: "newPassword", label: "Nowe hasło", value: "••••••••", type: "password" },
+          { id: "confirmPassword", label: "Potwierdź hasło", value: "••••••••", type: "password" }
+        ],
+        actionLabel: "Zmień hasło",
+        orderIndex: 2
+      }
+    ]);
 
-    if ((await this.notificationsRepository.count()) === 0) {
-      await this.notificationsRepository.save([
-        { id: "email", title: "Powiadomienia e-mail", description: "Otrzymuj e-maile o zmianach statusu zamówienia.", enabled: true, orderIndex: 0 },
-        { id: "sms", title: "Powiadomienia SMS", description: "Otrzymuj SMS-y o ważnych zdarzeniach.", enabled: true, orderIndex: 1 }
-      ]);
-    }
+    const insertedNotifications = await this.saveMissingById(this.notificationsRepository, [
+      { id: "email", title: "Powiadomienia e-mail", description: "Otrzymuj e-maile o zmianach statusu zamówienia.", enabled: true, orderIndex: 0 },
+      { id: "sms", title: "Powiadomienia SMS", description: "Otrzymuj SMS-y o ważnych zdarzeniach.", enabled: true, orderIndex: 1 }
+    ]);
 
-    if ((await this.externalConnectionsRepository.count()) > 0) {
-      return;
-    }
-
-    await this.externalConnectionsRepository.save([
+    const insertedConnections = await this.saveMissingById(this.externalConnectionsRepository, [
       { id: "google", provider: "Połącz konto z Google", icon: "G", orderIndex: 0 },
       { id: "facebook", provider: "Połącz konto z Facebook", icon: "f", orderIndex: 1 },
       { id: "apple", provider: "Połącz konto z Apple", icon: "●", orderIndex: 2 }
     ]);
+
+    return [
+      this.seedSummary("settings_sections", insertedSections),
+      this.seedSummary("notification_settings", insertedNotifications),
+      this.seedSummary("external_connections", insertedConnections)
+    ];
   }
 
-  private async seedBoard() {
-    if ((await this.boardSearchFieldsRepository.count()) === 0) {
-      await this.boardSearchFieldsRepository.save([
-        { id: "service", label: "Rodzaj usługi", value: "Sprzątanie obiektów · Mieszkań i domów", orderIndex: 0 },
-        { id: "area", label: "Powierzchnia", value: "60m²", orderIndex: 1 },
-        { id: "location", label: "Lokalizacja", value: "Floriańska 48, Warszawa, Polska", orderIndex: 2 }
-      ]);
-    }
+  private async seedBoard(): Promise<SeedImportSummary[]> {
+    const insertedSearchFields = await this.saveMissingById(this.boardSearchFieldsRepository, [
+      { id: "service", label: "Rodzaj usługi", value: "Sprzątanie obiektów · Mieszkań i domów", orderIndex: 0 },
+      { id: "area", label: "Powierzchnia", value: "60m²", orderIndex: 1 },
+      { id: "location", label: "Lokalizacja", value: "Floriańska 48, Warszawa, Polska", orderIndex: 2 }
+    ]);
 
-    if ((await this.boardFiltersRepository.count()) === 0) {
-      await this.boardFiltersRepository.save([
-        { id: "rating", title: "Ocena", options: ["5", "4", "3", "2", "1"], orderIndex: 0 },
-        { id: "price", title: "Cena", options: ["od", "do"], orderIndex: 1 },
-        { id: "type", title: "Typ zlecenia", options: ["Jednosesyjne", "Wielosesyjne"], orderIndex: 2 },
-        { id: "facilities", title: "Ułatwienia przy zamówieniu", options: ["Bez wymaganych zdjęć lokalu", "Wykonawca zapewnia odkurzacz"], orderIndex: 3 },
-        { id: "orders", title: "Min. ilość wykonanych zleceń", options: ["27", "166"], orderIndex: 4 }
-      ]);
-    }
+    const insertedFilters = await this.saveMissingById(this.boardFiltersRepository, [
+      { id: "rating", title: "Ocena", options: ["5", "4", "3", "2", "1"], orderIndex: 0 },
+      { id: "price", title: "Cena", options: ["od", "do"], orderIndex: 1 },
+      { id: "type", title: "Typ zlecenia", options: ["Jednosesyjne", "Wielosesyjne"], orderIndex: 2 },
+      { id: "facilities", title: "Ułatwienia przy zamówieniu", options: ["Bez wymaganych zdjęć lokalu", "Wykonawca zapewnia odkurzacz"], orderIndex: 3 },
+      { id: "orders", title: "Min. ilość wykonanych zleceń", options: ["27", "166"], orderIndex: 4 }
+    ]);
 
-    if ((await this.boardListingsRepository.count()) > 0) {
-      return;
-    }
-
-    await this.boardListingsRepository.save([
+    const insertedListings = await this.saveMissingById(this.boardListingsRepository, [
       {
         id: "paulina-jagielska",
         provider: "Paulina Jagielska",
@@ -945,9 +987,15 @@ export class DashboardService implements OnModuleInit {
         orderIndex: 9
       }
     ]);
+
+    return [
+      this.seedSummary("board_search_fields", insertedSearchFields),
+      this.seedSummary("board_filters", insertedFilters),
+      this.seedSummary("board_listings", insertedListings)
+    ];
   }
 
-  private async seedProviderProfiles() {
+  private async seedProviderProfiles(): Promise<SeedImportSummary[]> {
     const providerProfiles: ProviderProfile[] = [
       {
         id: "paulina-jagielska",
@@ -2312,9 +2360,10 @@ export class DashboardService implements OnModuleInit {
     const missingProfiles = providerProfiles.filter((profile) => !existingIds.has(profile.id));
 
     if (missingProfiles.length === 0) {
-      return;
+      return [this.seedSummary("provider_profiles", 0)];
     }
 
     await this.providerProfilesRepository.save(missingProfiles);
+    return [this.seedSummary("provider_profiles", missingProfiles.length)];
   }
 }

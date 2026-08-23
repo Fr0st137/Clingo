@@ -23,6 +23,12 @@ call :ensure_docker
 
 call :start_docker_if_needed
 
+set "POSTGRES_HOST=127.0.0.1"
+set "POSTGRES_PORT=55432"
+set "POSTGRES_DB=clingo"
+set "POSTGRES_USER=clingo"
+set "POSTGRES_PASSWORD=clingo"
+
 if not exist "node_modules" (
   echo Instalowanie zaleznosci npm...
   call npm.cmd install
@@ -43,7 +49,7 @@ if not errorlevel 1 (
     echo Frontend nadal sie wlaczy, a API uzyje danych zapasowych tam, gdzie moze.
   ) else (
     call :wait_for_docker_services
-    call :seed_provider_profiles
+    call :seed_database
   )
 ) else (
   echo Docker nie jest dostepny. Pomijam PostgreSQL/PostGIS i Redis.
@@ -217,17 +223,20 @@ echo Redis nie zdazyl potwierdzic gotowosci.
 echo API nadal sprobuje wystartowac.
 exit /b 0
 
-:seed_provider_profiles
-if not exist "scripts\seed-provider-profiles.js" (
+:seed_database
+if not exist "apps\api\src\seed.ts" (
+  echo Nie znaleziono skryptu importu danych startowych.
   exit /b 0
 )
 
-echo Uzupelnianie testowych profili w bazie danych...
-call node scripts\seed-provider-profiles.js
+echo Sprawdzanie i uzupelnianie danych startowych w bazie danych...
+cmd /c "set CLINGO_SKIP_AUTO_SEED=true&& set TYPEORM_SYNC=true&& call npm.cmd --workspace apps/api run seed"
 if errorlevel 1 (
-  echo Nie udalo sie automatycznie uzupelnic profili w bazie danych.
-  echo API nadal sprobuje wystartowac. Jesli na tablicy widzisz za malo profili, zrestartuj platforme po uruchomieniu Dockera.
+  echo [BLAD] Nie udalo sie automatycznie zaimportowac danych startowych.
+  echo Szczegoly bledu powinny byc widoczne powyzej.
+  echo API nadal sprobuje wystartowac. Jesli dane sa niepelne, sprawdz Docker Desktop i uruchom ten plik ponownie.
   exit /b 0
 )
 
+echo Dane startowe w bazie danych sa gotowe.
 exit /b 0
