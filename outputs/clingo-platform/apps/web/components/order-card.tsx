@@ -9,8 +9,14 @@ export type OrderCardData = {
   mode: string;
   modeTone?: string;
   provider: string;
+  providerId?: string | null;
   range?: boolean;
   status: string;
+  summary?: {
+    duration: string;
+    lines: Array<{ id: string; label: string; value: string }>;
+    total: string;
+  } | null;
 };
 
 type OrderCardProps = {
@@ -26,7 +32,7 @@ const orderAssets = {
   stepapp: "/figma-assets/favorite-stepapp.png"
 };
 
-function actionHref(action: string, orderId?: string) {
+function actionHref(action: string, orderId?: string, providerId?: string | null) {
   const suffix = orderId ? `?id=${encodeURIComponent(orderId)}` : "";
 
   if (action.includes("Szczeg")) {
@@ -46,7 +52,7 @@ function actionHref(action: string, orderId?: string) {
   }
 
   if (action.includes("ponownie")) {
-    return "/zamowienie";
+    return providerId ? `/zamowienie?provider=${encodeURIComponent(providerId)}` : "/tablica-ogloszen";
   }
 
   return "#";
@@ -118,11 +124,13 @@ function LocationLine({ address }: { address: string }) {
 function ButtonLink({
   children,
   orderId,
+  providerId,
   tone,
   width
 }: {
   children: string;
   orderId?: string;
+  providerId?: string | null;
   tone: "blue" | "light";
   width: number;
 }) {
@@ -134,7 +142,7 @@ function ButtonLink({
   return (
     <a
       className={`flex h-[41px] items-center justify-center rounded-[30px] text-[14px] font-normal leading-[17px] ${classes}`}
-      href={actionHref(children, orderId)}
+      href={actionHref(children, orderId, providerId)}
       style={{ width }}
     >
       {children}
@@ -198,12 +206,12 @@ function UpcomingOrderCard({ order }: OrderCardProps) {
       <DateBlock dateLines={order.dateLines} range={order.range} />
 
       <div className="absolute left-[25px] top-[156px] flex h-[41px] w-[695px] items-center">
-        <ButtonLink orderId={order.id} tone="blue" width={168}>
+        <ButtonLink orderId={order.id} providerId={order.providerId} tone="blue" width={168}>
           {order.actions[0]}
         </ButtonLink>
         <div className="flex flex-1 justify-end gap-[15px]">
           {order.actions.slice(1).map((action) => (
-            <ButtonLink key={action} orderId={order.id} tone="light" width={action.includes("Prze") ? 148 : 152}>
+            <ButtonLink key={action} orderId={order.id} providerId={order.providerId} tone="light" width={action.includes("Prze") ? 148 : 152}>
               {action}
             </ButtonLink>
           ))}
@@ -229,10 +237,10 @@ export function CompletedOrderCard({ order }: OrderCardProps) {
       </div>
 
       <div className="absolute left-[423px] top-[35px] flex h-[41px] w-[297px] items-start gap-[15px]">
-        <ButtonLink orderId={order.id} tone="light" width={123}>
+        <ButtonLink orderId={order.id} providerId={order.providerId} tone="light" width={123}>
           {order.actions[0]}
         </ButtonLink>
-        <ButtonLink orderId={order.id} tone="blue" width={159}>
+        <ButtonLink orderId={order.id} providerId={order.providerId} tone="blue" width={159}>
           {order.actions[1]}
         </ButtonLink>
       </div>

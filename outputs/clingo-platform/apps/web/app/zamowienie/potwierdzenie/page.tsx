@@ -1,5 +1,5 @@
-import { OrderConfirmationPage } from "../../../components/order-flow";
+import { StaticOrderConfirmationScreen } from "../../../components/order-static-screens";
 
 export default function OrderConfirmationRoute() {
-  return <OrderConfirmationPage />;
+  return <StaticOrderConfirmationScreen />;
 }

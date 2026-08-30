@@ -235,6 +235,8 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
   const pricing = profile.pricing?.length ? profile.pricing : fallbackPricing;
   const frequencies = profile.frequencies?.length ? profile.frequencies : fallbackFrequencies;
   const addOns = profile.addOns ?? [];
+  const [selectedPricingId, setSelectedPricingId] = useState(pricing[0]?.id ?? "");
+  const [selectedFrequencyId, setSelectedFrequencyId] = useState(frequencies[0]?.id ?? "");
   const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => initialQuantities(addOns));
 
   const selectedAddOnItems = useMemo(
@@ -242,9 +244,29 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
     [addOns, addOnQuantities]
   );
 
-  const baseTotal = priceFromText(profile.summary.total);
-  const liveTotal = baseTotal + selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
+  const selectedPricing = pricing.find((item) => item.id === selectedPricingId) ?? pricing[0];
+  const selectedFrequency = frequencies.find((item) => item.id === selectedFrequencyId) ?? frequencies[0];
+  const discount = Math.abs(Number(selectedFrequency?.discount.replace(/[^\d]/g, "") ?? 0));
+  const baseTotal = selectedPricing?.priceValue ?? priceFromText(profile.summary.total);
+  const discountedBase = Math.round(baseTotal * (1 - discount / 100));
+  const liveTotal = discountedBase + selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
   const addOnDuration = selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.durationMinutes * quantity, 0);
+  const checkoutHref = useMemo(() => {
+    const params = new URLSearchParams({
+      frequency: selectedFrequency?.id ?? "",
+      pricing: selectedPricing?.id ?? "",
+      provider: profile.id
+    });
+
+    if (selectedAddOnItems.length > 0) {
+      params.set(
+        "addons",
+        selectedAddOnItems.map(({ addOn, quantity }) => `${addOn.id}:${quantity}`).join(",")
+      );
+    }
+
+    return `/zamowienie?${params.toString()}`;
+  }, [profile.id, selectedAddOnItems, selectedFrequency?.id, selectedPricing?.id]);
 
   const setAddOnQuantity = (id: string, updater: (current: number) => number) => {
     setAddOnQuantities((current) => {
@@ -358,19 +380,35 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
         <SectionCard title="Cennik i częstotliwość sprzątania">
           <div className="mt-[20px] grid gap-[15px]">
             {pricing.map((item) => (
-              <article className="flex min-h-[82px] items-center justify-between gap-[20px] rounded-[15px] border border-[#e6edf3] bg-[#f9fafb] px-[15px] py-[14px]" key={item.id}>
+              <button
+                className={[
+                  "flex min-h-[82px] w-full items-center justify-between gap-[20px] rounded-[15px] border px-[15px] py-[14px] text-left transition-colors",
+                  item.id === selectedPricing?.id ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-[#f9fafb]"
+                ].join(" ")}
+                key={item.id}
+                onClick={() => setSelectedPricingId(item.id)}
+                type="button"
+              >
                 <div>
                   <h3 className="m-0 text-[15px] font-semibold leading-5 text-[#2e3b4c]">{item.label}</h3>
                   <p className="m-0 mt-[4px] text-[13px] font-normal leading-[18px] text-[#7c8691]">{item.description}</p>
                   <p className="m-0 mt-[6px] text-[12px] font-normal leading-4 text-[#9ca3af]">{item.duration}</p>
                 </div>
                 <p className="m-0 shrink-0 text-[18px] font-bold leading-6 text-[#2e3b4c]">{item.price}</p>
-              </article>
+              </button>
             ))}
           </div>
           <div className="mt-[15px] grid grid-cols-1 gap-[15px] md:grid-cols-3">
             {frequencies.map((frequency) => (
-              <article className="min-h-[92px] rounded-[15px] border border-[#e6edf3] bg-white p-[15px]" key={frequency.id}>
+              <button
+                className={[
+                  "min-h-[92px] rounded-[15px] border p-[15px] text-left transition-colors",
+                  frequency.id === selectedFrequency?.id ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-white"
+                ].join(" ")}
+                key={frequency.id}
+                onClick={() => setSelectedFrequencyId(frequency.id)}
+                type="button"
+              >
                 <div className="flex items-start justify-between gap-[10px]">
                   <h3 className="m-0 text-[14px] font-semibold leading-5 text-[#2e3b4c]">{frequency.label}</h3>
                   <span className="rounded-[30px] bg-[#e9f5ff] px-[10px] py-[4px] text-[12px] font-normal leading-[15px] text-[#0079de]">
@@ -378,7 +416,7 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
                   </span>
                 </div>
                 <p className="m-0 mt-[8px] text-[12px] font-normal leading-[18px] text-[#7c8691]">{frequency.description}</p>
-              </article>
+              </button>
             ))}
           </div>
         </SectionCard>
@@ -422,18 +460,18 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
           <div className="mt-[20px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px]">
             <p className="m-0 text-[14px] font-normal leading-5 text-[#2e3b4c]">Szacowany czas realizacji</p>
             <p className="m-0 mt-[5px] inline-flex min-h-[32px] items-center rounded-[10px] border border-[#e5e7eb] bg-white px-[20px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
-              {profile.summary.duration}
+              {selectedPricing?.duration ?? profile.summary.duration}
               {addOnDuration ? ` + ${addOnDuration} min` : ""}
             </p>
           </div>
 
           <dl className="mt-[20px] grid gap-[8px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
-            {profile.summary.lines.map((line) => (
-              <div className="flex min-h-[20px] justify-between gap-[14px]" key={line.id}>
-                <dt>{line.label}</dt>
-                <dd className="m-0 shrink-0">{line.value}</dd>
+            {selectedPricing ? (
+              <div className="flex min-h-[20px] justify-between gap-[14px]">
+                <dt>{selectedPricing.label}</dt>
+                <dd className="m-0 shrink-0">{formatPrice(discountedBase)}</dd>
               </div>
-            ))}
+            ) : null}
             {selectedAddOnItems.map(({ addOn, quantity }) => (
               <div className="flex min-h-[20px] justify-between gap-[14px]" key={addOn.id}>
                 <dt>
@@ -451,7 +489,7 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
 
           <a
             className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white"
-            href="/zamowienie"
+            href={checkoutHref}
           >
             Przejdź do zamówienia
           </a>

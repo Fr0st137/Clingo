@@ -4,6 +4,7 @@ export type DashboardOrder = {
   mode: string;
   modeTone?: "blue";
   provider: string;
+  providerId?: string | null;
   details: string;
   address: string;
   logo?: string;
@@ -11,6 +12,11 @@ export type DashboardOrder = {
   dateLines: string[];
   range?: boolean;
   actions: string[];
+  summary?: {
+    duration: string;
+    lines: Array<{ id: string; label: string; value: string }>;
+    total: string;
+  } | null;
 };
 
 export type DashboardPayload = {

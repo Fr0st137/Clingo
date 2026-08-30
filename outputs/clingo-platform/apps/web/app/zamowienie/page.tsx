@@ -1,5 +1,5 @@
-import { OrderCheckoutPage } from "../../components/order-flow";
+import { StaticOrderDateScreen } from "../../components/order-static-screens";
 
 export default function OrderPage() {
-  return <OrderCheckoutPage />;
+  return <StaticOrderDateScreen />;
 }

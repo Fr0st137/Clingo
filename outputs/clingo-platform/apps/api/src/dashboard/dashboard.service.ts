@@ -1,8 +1,9 @@
-import { BadRequestException, Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import Redis from "ioredis";
 import { ObjectLiteral, Repository } from "typeorm";
 import { REDIS_CLIENT } from "../redis/redis.module";
+import { UserEntity } from "../auth/user.entity";
 import { BoardFilterEntity } from "./board-filter.entity";
 import { BoardListingEntity } from "./board-listing.entity";
 import { BoardSearchFieldEntity } from "./board-search-field.entity";
@@ -31,13 +32,9 @@ import { PanelReviewEntity } from "./panel-review.entity";
 import { ProviderProfileEntity } from "./provider-profile.entity";
 import { SettingsSectionEntity } from "./settings-section.entity";
 
-const dashboardCacheKey = "dashboard:orders:kacper-jaskolka";
-
-const currentUser = {
-  name: "Kacper Jaskółka",
-  phone: "553 068 994",
-  initials: "K"
-};
+function dashboardCacheKey(email: string) {
+  return `dashboard:orders:${email}`;
+}
 
 type SeedImportSummary = {
   inserted: number;
@@ -46,6 +43,52 @@ type SeedImportSummary = {
 
 type OrderSeedRecord = Pick<OrderEntity, "address" | "mode" | "provider" | "serviceType" | "status"> &
   Partial<Pick<OrderEntity, "endsAt" | "location" | "startsAt">>;
+
+type CreateOrderInput = {
+  addOns?: Array<{ id?: string; quantity?: number }>;
+  address?: string;
+  email?: string;
+  frequencyId?: string;
+  pricingId?: string;
+  providerId?: string;
+  startsAt?: string;
+};
+
+function normalizeOrderEmail(value?: string) {
+  const email = (value ?? "").trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new BadRequestException("Valid email is required.");
+  }
+
+  return email;
+}
+
+function parseDurationMinutes(value: string) {
+  const hours = Number(value.match(/(\d+)\s*godz/)?.[1] ?? 0);
+  const minutes = Number(value.match(/(\d+)\s*min/)?.[1] ?? 0);
+  return Math.max(30, hours * 60 + minutes);
+}
+
+function formatDuration(minutes: number) {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const parts = [];
+
+  if (hours) {
+    parts.push(`${hours} godz.`);
+  }
+
+  if (rest) {
+    parts.push(`${rest} min`);
+  }
+
+  return parts.join(" ") || "30 min";
+}
+
+function discountPercent(value: string) {
+  return Math.abs(Number(value.replace(/[^\d]/g, "")) || 0);
+}
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -114,11 +157,13 @@ function toDashboardOrder(order: OrderEntity): DashboardOrder {
     mode: order.mode,
     modeTone: order.mode === "Wielosesyjne" ? ("blue" as const) : undefined,
     provider: order.provider,
+    providerId: order.providerId,
     details: order.serviceType,
     address: order.address,
     dateLines: lines,
     range: lines.length === 2,
     actions: orderActions(order),
+    summary: order.summary,
     ...providerVisual(order)
   };
 }
@@ -249,7 +294,8 @@ export class DashboardService implements OnModuleInit {
     @InjectRepository(OrderEntity) private readonly ordersRepository: Repository<OrderEntity>,
     @InjectRepository(PanelReviewEntity) private readonly reviewsRepository: Repository<PanelReviewEntity>,
     @InjectRepository(ProviderProfileEntity) private readonly providerProfilesRepository: Repository<ProviderProfileEntity>,
-    @InjectRepository(SettingsSectionEntity) private readonly settingsSectionsRepository: Repository<SettingsSectionEntity>
+    @InjectRepository(SettingsSectionEntity) private readonly settingsSectionsRepository: Repository<SettingsSectionEntity>,
+    @InjectRepository(UserEntity) private readonly usersRepository: Repository<UserEntity>
   ) {}
 
   async onModuleInit() {
@@ -264,13 +310,16 @@ export class DashboardService implements OnModuleInit {
     return this.seedDashboardData();
   }
 
-  async getDashboard(): Promise<DashboardPayload> {
+  async getDashboard(emailValue?: string): Promise<DashboardPayload> {
+    const email = normalizeOrderEmail(emailValue);
+    const cacheKey = dashboardCacheKey(email);
+
     try {
       if (this.redis.status === "wait") {
         await this.redis.connect();
       }
 
-      const cached = await this.redis.get(dashboardCacheKey);
+      const cached = await this.redis.get(cacheKey);
       if (cached) {
         return JSON.parse(cached) as DashboardPayload;
       }
@@ -278,23 +327,42 @@ export class DashboardService implements OnModuleInit {
       // Redis is optional; PostgreSQL remains the source of truth.
     }
 
-    const orders = await this.ordersRepository.find({
-      order: {
-        startsAt: "ASC"
-      }
-    });
+    const [orders, user] = await Promise.all([
+      this.ordersRepository.find({
+        where: { userEmail: email },
+        order: {
+          startsAt: "ASC"
+        }
+      }),
+      this.usersRepository.findOne({ where: { email } })
+    ]);
 
-    const upcoming = orders.filter((order) => !isCompleted(order.status)).map(toDashboardOrder);
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    const upcoming = orders
+      .filter((order) => !isCompleted(order.status) && !order.status.toLowerCase().includes("odwo"))
+      .map(toDashboardOrder);
     const completedOrder = orders.find((order) => isCompleted(order.status));
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.email;
 
     const payload: DashboardPayload = {
-      user: currentUser,
+      user: {
+        initials: name
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("") || "U",
+        name,
+        phone: user.phone ?? ""
+      },
       orders: upcoming,
       completedOrder: completedOrder ? toDashboardOrder(completedOrder) : null
     };
 
     try {
-      await this.redis.set(dashboardCacheKey, JSON.stringify(payload), "EX", 60);
+      await this.redis.set(cacheKey, JSON.stringify(payload), "EX", 60);
     } catch {
       // Cache write failure should not block real dashboard data.
     }
@@ -302,13 +370,99 @@ export class DashboardService implements OnModuleInit {
     return payload;
   }
 
-  async getOrder(id: string): Promise<DashboardOrder | null> {
-    const order = await this.ordersRepository.findOne({ where: { id } });
+  async getOrder(id: string, emailValue?: string): Promise<DashboardOrder | null> {
+    const email = normalizeOrderEmail(emailValue);
+    const order = await this.ordersRepository.findOne({ where: { id, userEmail: email } });
     return order ? toDashboardOrder(order) : null;
   }
 
-  async cancelOrder(id: string): Promise<DashboardOrder | null> {
-    const order = await this.ordersRepository.findOne({ where: { id } });
+  async createOrder(input: CreateOrderInput): Promise<DashboardOrder> {
+    const email = normalizeOrderEmail(input.email);
+    const address = (input.address ?? "").trim();
+    const providerId = (input.providerId ?? "").trim();
+    const startsAt = input.startsAt ? new Date(input.startsAt) : null;
+
+    if (!address || address.length > 400) {
+      throw new BadRequestException("A valid address is required.");
+    }
+
+    if (!startsAt || Number.isNaN(startsAt.getTime())) {
+      throw new BadRequestException("A valid startsAt value is required.");
+    }
+
+    const [user, profile] = await Promise.all([
+      this.usersRepository.findOne({ where: { email } }),
+      this.providerProfilesRepository.findOne({ where: { id: providerId } })
+    ]);
+
+    if (!user) {
+      throw new NotFoundException("User not found.");
+    }
+
+    if (!profile) {
+      throw new NotFoundException("Provider profile not found.");
+    }
+
+    const pricing = profile.pricing?.find((item) => item.id === input.pricingId) ?? profile.pricing?.[0];
+    const frequency = profile.frequencies?.find((item) => item.id === input.frequencyId) ?? profile.frequencies?.[0];
+
+    if (!pricing || !frequency) {
+      throw new BadRequestException("The provider has no order configuration.");
+    }
+
+    const selectedAddOns = (input.addOns ?? []).flatMap((selection) => {
+      const addOn = profile.addOns?.find((item) => item.id === selection.id);
+      const quantity = Math.min(20, Math.max(0, Math.floor(Number(selection.quantity) || 0)));
+      return addOn && quantity > 0 ? [{ addOn, quantity }] : [];
+    });
+    const addOnsTotal = selectedAddOns.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
+    const discount = discountPercent(frequency.discount);
+    const discountedBase = Math.round(pricing.priceValue * (1 - discount / 100));
+    const total = discountedBase + addOnsTotal;
+    const durationMinutes =
+      parseDurationMinutes(pricing.duration) +
+      selectedAddOns.reduce((sum, { addOn, quantity }) => sum + addOn.durationMinutes * quantity, 0);
+    const endsAt = new Date(startsAt.getTime() + durationMinutes * 60_000);
+    const summary = {
+      duration: formatDuration(durationMinutes),
+      lines: [
+        { id: pricing.id, label: pricing.label, value: `${discountedBase} zł` },
+        ...selectedAddOns.map(({ addOn, quantity }) => ({
+          id: addOn.id,
+          label: `${addOn.label}${quantity > 1 ? ` (${quantity} szt.)` : ""}`,
+          value: `${addOn.priceValue * quantity} zł`
+        }))
+      ],
+      total: `${total} zł`
+    };
+    const mode = ["once", "single", "custom"].includes(frequency.id) ? "Jednosesyjne" : "Wielosesyjne";
+    const order = this.ordersRepository.create({
+      address,
+      endsAt,
+      location: null,
+      mode,
+      provider: profile.provider,
+      providerId: profile.id,
+      selectedOptions: {
+        addOns: selectedAddOns.map(({ addOn, quantity }) => ({ id: addOn.id, label: addOn.label, quantity })),
+        frequencyId: frequency.id,
+        pricingId: pricing.id
+      },
+      serviceType: profile.service,
+      startsAt,
+      status: "Zaplanowane zlecenie",
+      summary,
+      userEmail: email
+    });
+    const saved = await this.ordersRepository.save(order);
+    await this.clearDashboardCache(email);
+
+    return toDashboardOrder(saved);
+  }
+
+  async cancelOrder(id: string, emailValue?: string): Promise<DashboardOrder | null> {
+    const email = normalizeOrderEmail(emailValue);
+    const order = await this.ordersRepository.findOne({ where: { id, userEmail: email } });
 
     if (!order) {
       return null;
@@ -316,13 +470,14 @@ export class DashboardService implements OnModuleInit {
 
     order.status = "Odwołane zlecenie";
     const saved = await this.ordersRepository.save(order);
-    await this.clearDashboardCache();
+    await this.clearDashboardCache(email);
 
     return toDashboardOrder(saved);
   }
 
-  async rescheduleOrder(id: string, startsAt: Date, endsAt: Date): Promise<DashboardOrder | null> {
-    const order = await this.ordersRepository.findOne({ where: { id } });
+  async rescheduleOrder(id: string, emailValue: string | undefined, startsAt: Date, endsAt: Date): Promise<DashboardOrder | null> {
+    const email = normalizeOrderEmail(emailValue);
+    const order = await this.ordersRepository.findOne({ where: { id, userEmail: email } });
 
     if (!order) {
       return null;
@@ -331,7 +486,7 @@ export class DashboardService implements OnModuleInit {
     order.startsAt = startsAt;
     order.endsAt = endsAt;
     const saved = await this.ordersRepository.save(order);
-    await this.clearDashboardCache();
+    await this.clearDashboardCache(email);
 
     return toDashboardOrder(saved);
   }
@@ -475,9 +630,9 @@ export class DashboardService implements OnModuleInit {
     };
   }
 
-  private async clearDashboardCache() {
+  private async clearDashboardCache(email: string) {
     try {
-      await this.redis.del(dashboardCacheKey);
+      await this.redis.del(dashboardCacheKey(email));
     } catch {
       // Cache invalidation failure should not block writes.
     }

@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 type GeoPoint = {
   type: "Point";
@@ -9,6 +9,13 @@ type GeoPoint = {
 export class OrderEntity {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
+
+  @Index()
+  @Column({ length: 320, name: "user_email", nullable: true, type: "varchar" })
+  userEmail!: string | null;
+
+  @Column({ name: "provider_id", nullable: true, type: "varchar" })
+  providerId!: string | null;
 
   @Column()
   provider!: string;
@@ -38,4 +45,18 @@ export class OrderEntity {
 
   @Column({ type: "timestamptz", nullable: true })
   endsAt!: Date | null;
+
+  @Column({ nullable: true, type: "simple-json" })
+  summary!: {
+    duration: string;
+    lines: Array<{ id: string; label: string; value: string }>;
+    total: string;
+  } | null;
+
+  @Column({ name: "selected_options", nullable: true, type: "simple-json" })
+  selectedOptions!: {
+    addOns: Array<{ id: string; label: string; quantity: number }>;
+    frequencyId: string;
+    pricingId: string;
+  } | null;
 }

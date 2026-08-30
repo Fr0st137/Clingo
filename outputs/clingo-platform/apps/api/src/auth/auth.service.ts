@@ -1,6 +1,6 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { randomBytes, scryptSync } from "crypto";
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { Repository } from "typeorm";
 import { UserEntity } from "./user.entity";
 
@@ -11,6 +11,11 @@ type RegisterUserInput = {
   lastName?: string;
   password?: string;
   phone?: string;
+};
+
+type LoginUserInput = {
+  email?: string;
+  password?: string;
 };
 
 type UpdateUserProfileInput = {
@@ -113,6 +118,25 @@ export class AuthService {
     return {
       user: toProfile(savedUser)
     };
+  }
+
+  async login(input: LoginUserInput) {
+    const email = normalizeEmail(input.email);
+    const password = (input.password ?? "").trim();
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new UnauthorizedException("Invalid email or password.");
+    }
+
+    const expectedHash = Buffer.from(user.passwordHash, "hex");
+    const actualHash = scryptSync(password, user.passwordSalt, expectedHash.length);
+
+    if (actualHash.length !== expectedHash.length || !timingSafeEqual(actualHash, expectedHash)) {
+      throw new UnauthorizedException("Invalid email or password.");
+    }
+
+    return { user: toProfile(user) };
   }
 
   async getProfile(emailValue?: string) {

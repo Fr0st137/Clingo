@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { UserEntity } from "../auth/user.entity";
 import { BoardFilterEntity } from "./board-filter.entity";
 import { BoardListingEntity } from "./board-listing.entity";
 import { BoardSearchFieldEntity } from "./board-search-field.entity";
@@ -29,7 +30,8 @@ import { SettingsSectionEntity } from "./settings-section.entity";
       OrderEntity,
       PanelReviewEntity,
       ProviderProfileEntity,
-      SettingsSectionEntity
+      SettingsSectionEntity,
+      UserEntity
     ])
   ],
   controllers: [DashboardController],

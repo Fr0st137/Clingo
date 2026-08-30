@@ -1,4 +1,5 @@
 import { OrderCardData } from "../components/order-card";
+import { unstable_noStore as noStore } from "next/cache";
 import { FavoriteProviderData } from "../components/favorite-provider-card";
 import { ChatPayload } from "../components/chat-view";
 import { BoardListingData } from "../components/board-listing-card";
@@ -61,6 +62,7 @@ function apiBaseUrl() {
 }
 
 async function fetchDashboardJson<T>(path: string): Promise<T> {
+  noStore();
   const baseUrl = apiBaseUrl();
   const response = await fetch(`${baseUrl}${path}`, {
     cache: "no-store"
@@ -73,26 +75,26 @@ async function fetchDashboardJson<T>(path: string): Promise<T> {
   return response.json();
 }
 
-export async function getDashboard(): Promise<DashboardPayload> {
+export async function getDashboard(email: string): Promise<DashboardPayload> {
   try {
-    return await fetchDashboardJson<DashboardPayload>("/dashboard/orders");
+    return await fetchDashboardJson<DashboardPayload>(`/dashboard/orders?email=${encodeURIComponent(email)}`);
   } catch {
-    return getDashboardFromDb();
+    return getDashboardFromDb(email);
   }
 }
 
-export async function getOrder(id: string): Promise<OrderCardData> {
+export async function getOrder(id: string, email: string): Promise<OrderCardData> {
   try {
-    return await fetchDashboardJson<OrderCardData>(`/dashboard/orders/${id}`);
+    return await fetchDashboardJson<OrderCardData>(`/dashboard/orders/${id}?email=${encodeURIComponent(email)}`);
   } catch {
-    return getOrderFromDb(id);
+    return getOrderFromDb(id, email);
   }
 }
 
-export async function cancelOrder(id: string): Promise<OrderCardData> {
+export async function cancelOrder(id: string, email: string): Promise<OrderCardData> {
   const baseUrl = apiBaseUrl();
 
-  const response = await fetch(`${baseUrl}/dashboard/orders/${id}/cancel`, {
+  const response = await fetch(`${baseUrl}/dashboard/orders/${id}/cancel?email=${encodeURIComponent(email)}`, {
     method: "PATCH",
     cache: "no-store"
   });
@@ -104,10 +106,10 @@ export async function cancelOrder(id: string): Promise<OrderCardData> {
   return response.json();
 }
 
-export async function rescheduleOrder(id: string, startsAt: string, endsAt: string): Promise<OrderCardData> {
+export async function rescheduleOrder(id: string, email: string, startsAt: string, endsAt: string): Promise<OrderCardData> {
   const baseUrl = apiBaseUrl();
 
-  const response = await fetch(`${baseUrl}/dashboard/orders/${id}/reschedule`, {
+  const response = await fetch(`${baseUrl}/dashboard/orders/${id}/reschedule?email=${encodeURIComponent(email)}`, {
     method: "PATCH",
     body: JSON.stringify({ endsAt, startsAt }),
     cache: "no-store",

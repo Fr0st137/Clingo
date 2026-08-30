@@ -17,14 +17,20 @@ export const defaultOrderSummary: OrderSummaryData = {
 
 export function OrderSummaryCard({
   actionHref = "/zamowienie/potwierdzenie",
+  actionLabel = "Przejdź do zamówienia",
+  disabled = false,
+  submit = false,
   summary = defaultOrderSummary
 }: {
   actionHref?: string;
+  actionLabel?: string;
+  disabled?: boolean;
+  submit?: boolean;
   summary?: OrderSummaryData;
 }) {
   return (
     <aside className="grid w-full max-w-[380px] gap-[10px] xl:w-[380px]" data-node-id="6066:10463">
-      <section className="h-[449px] w-full rounded-[32px] border border-[#e5e7eb] bg-white px-[30px] pt-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)] xl:w-[380px]">
+      <section className="min-h-[449px] w-full rounded-[32px] border border-[#e5e7eb] bg-white px-[30px] py-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)] xl:w-[380px]">
         <h2 className="m-0 text-[24px] font-bold leading-6 text-[#2e3b4c]">Podsumowanie</h2>
 
         <section className="mt-[20px] h-[87px] w-full rounded-[15px] bg-[#f7f9fc] px-[15px] pt-[15px] xl:w-[320px]">
@@ -34,7 +40,7 @@ export function OrderSummaryCard({
           </div>
         </section>
 
-        <section className="mt-[20px] h-[172px] w-full rounded-[15px] bg-[#f7f9fc] px-[15px] pt-[15px] xl:w-[320px]">
+        <section className="mt-[20px] min-h-[172px] w-full rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px] xl:w-[320px]">
           <dl className="m-0 grid w-full gap-[8px] text-[14px] font-normal leading-5 text-[#2e3b4c] xl:w-[290px]">
             {summary.lines.map((line) => (
               <div className="flex h-[20px] justify-between" key={line.id}>
@@ -49,12 +55,22 @@ export function OrderSummaryCard({
           </dl>
         </section>
 
-        <a
-          className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white xl:w-[320px]"
-          href={actionHref}
-        >
-          Przejdź do zamówienia
-        </a>
+        {submit ? (
+          <button
+            className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] border-0 bg-[#0079de] text-[15px] font-bold leading-5 text-white disabled:cursor-wait disabled:opacity-70 xl:w-[320px]"
+            disabled={disabled}
+            type="submit"
+          >
+            {actionLabel}
+          </button>
+        ) : (
+          <a
+            className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white xl:w-[320px]"
+            href={actionHref}
+          >
+            {actionLabel}
+          </a>
+        )}
       </section>
 
       <section className="min-h-[148px] w-full rounded-[32px] border border-[#e5e7eb] bg-white px-[30px] pb-[30px] pt-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)] xl:h-[148px] xl:w-[380px]">

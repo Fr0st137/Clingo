@@ -56,11 +56,13 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
       data-name="Ogłoszenie na tablicy"
     >
       <div className="flex w-full items-start gap-[40px] overflow-hidden p-[15px]">
-        <ListingImage listing={listing} />
+        <a aria-label={`Profil wykonawcy ${listing.provider}`} href={`/wykonawcy/${listing.id}`}>
+          <ListingImage listing={listing} />
+        </a>
 
         <div className="flex w-[541px] shrink-0 flex-col items-start gap-[10px] overflow-hidden pt-[5px]">
           <h3 className="m-0 h-[24px] w-[541px] whitespace-nowrap text-[20px] font-semibold leading-normal text-[#2e3b4c]">
-            {listing.provider}
+            <a href={`/wykonawcy/${listing.id}`}>{listing.provider}</a>
           </h3>
           <Rating rating={listing.rating} reviews={listing.reviews} experience={listing.experience} />
           <div className="flex items-start gap-[15px] overflow-hidden">

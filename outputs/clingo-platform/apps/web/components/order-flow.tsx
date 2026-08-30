@@ -1,6 +1,7 @@
 import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
 import { OrderCardData } from "./order-card";
 import { OrderSummaryCard } from "./order-summary-card";
+import { OrderProcessShell } from "./order-process-shell";
 import { PublicShell } from "./public-shell";
 
 function OrderField({ label, value, icon }: { label: string; value: string; icon?: "calendar" | "clock" | "map" }) {
@@ -41,33 +42,13 @@ function orderTerm(order: OrderCardData) {
   return order.dateLines[0] ?? "Termin do ustalenia";
 }
 
-export function OrderCheckoutPage() {
-  return (
-    <PublicShell>
-      <section className="mx-auto grid w-[1200px] grid-cols-[800px_380px] gap-[20px] pb-[60px]">
-        <main className="grid gap-[20px]">
-          <section className="w-[800px] rounded-[30px] border border-[#dce6f2] bg-white p-[30px] shadow-figma">
-            <h1 className="m-0 text-[24px] font-bold leading-6 text-[#2e3b4c]">Zamówienie</h1>
-            <div className="mt-[20px] grid grid-cols-2 gap-[15px]">
-              <OrderField label="Wykonawca" value="Paulina Jagielska" />
-              <OrderField label="Usługa" value="Sprzątanie obiektów · Mieszkań i domów" />
-              <OrderField label="Data" value="12 Października 2025" icon="calendar" />
-              <OrderField label="Godzina" value="8:45 → 10:30" icon="clock" />
-              <div className="col-span-2">
-                <OrderField label="Adres" value="Warszawa, Floriańska 48/16" icon="map" />
-              </div>
-            </div>
-          </section>
-        </main>
-        <OrderSummaryCard />
-      </section>
-    </PublicShell>
-  );
-}
+export function OrderConfirmationPage({ order }: { order: OrderCardData | null }) {
+  if (!order) {
+    return <MissingOrder message="Nie udało się pobrać złożonego zlecenia." />;
+  }
 
-export function OrderConfirmationPage() {
   return (
-    <PublicShell>
+    <OrderProcessShell activeStep={3}>
       <section className="mx-auto grid w-[800px] gap-[20px] pb-[60px]">
         <section className="grid h-[300px] place-items-center rounded-[32px] border border-[#dce6f2] bg-white px-[30px] shadow-figma">
           <div className="grid justify-items-center">
@@ -76,15 +57,18 @@ export function OrderConfirmationPage() {
             </span>
             <h1 className="mt-[25px] text-[24px] font-bold leading-6 text-[#2e3b4c]">Zamówienie zostało złożone</h1>
             <p className="mt-[15px] w-[420px] text-center text-[14px] leading-[22px] text-[#2e3b4c]">
-              Szczegóły usługi możesz ustalić po złożeniu zamówienia.
+              {order.provider} · {orderTerm(order)}
             </p>
-            <a className="mt-[25px] flex h-[46px] w-[260px] items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white" href="/zamowienia">
+            <a
+              className="mt-[25px] flex h-[46px] w-[260px] items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white"
+              href={`/zamowienia/szczegoly?id=${encodeURIComponent(order.id ?? "")}`}
+            >
               Szczegóły zlecenia
             </a>
           </div>
         </section>
       </section>
-    </PublicShell>
+    </OrderProcessShell>
   );
 }
 
@@ -106,7 +90,7 @@ export function OrderDetailsPage({ order }: { order: OrderCardData | null }) {
             <OrderField label="Termin" value={orderTerm(order)} icon="calendar" />
           </div>
         </main>
-        <OrderSummaryCard actionHref="/zamowienia" />
+        <OrderSummaryCard actionHref="/zamowienia" actionLabel="Wróć do rezerwacji" summary={order.summary ?? undefined} />
       </section>
     </PublicShell>
   );
@@ -157,7 +141,11 @@ export function OrderReschedulePage({
             </button>
           </form>
         </main>
-        <OrderSummaryCard actionHref={`/zamowienia/szczegoly?id=${encodeURIComponent(order.id ?? "")}`} />
+        <OrderSummaryCard
+          actionHref={`/zamowienia/szczegoly?id=${encodeURIComponent(order.id ?? "")}`}
+          actionLabel="Wróć do szczegółów"
+          summary={order.summary ?? undefined}
+        />
       </section>
     </PublicShell>
   );

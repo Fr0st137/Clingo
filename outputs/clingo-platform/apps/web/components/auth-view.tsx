@@ -6,7 +6,7 @@ import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 type AuthMode = "login" | "register";
-type AuthStep = "email" | "register-details" | "activation" | "login-code";
+type AuthStep = "email" | "register-details" | "activation" | "login-password";
 
 type AuthViewProps = {
   initialMode?: AuthMode;
@@ -273,8 +273,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
 
     try {
       const result = await postAuthJson<{ exists: boolean }>("/auth/lookup", { email: checkedEmail });
-      setActivationCode(["", "", "", ""]);
-      setStep(result.exists ? "login-code" : "register-details");
+      setStep(result.exists ? "login-password" : "register-details");
     } catch {
       setStatusMessage("Nie udało się sprawdzić adresu w bazie. Sprawdź, czy API i baza danych są uruchomione.");
     } finally {
@@ -301,7 +300,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
     } catch (error) {
       if ((error as AuthApiError).status === 409) {
         setStatusMessage("Konto z tym adresem już istnieje. Przenoszę do logowania.");
-        setStep("login-code");
+        setStep("login-password");
         return;
       }
 
@@ -311,9 +310,19 @@ export function AuthView({ nextPath }: AuthViewProps) {
     }
   };
 
-  const submitLogin = (event: FormEvent<HTMLFormElement>) => {
+  const submitLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    completeAuth();
+    setIsSubmitting(true);
+    setStatusMessage("");
+
+    try {
+      await postAuthJson("/auth/login", { email, password });
+      completeAuth();
+    } catch {
+      setStatusMessage("Nieprawidłowy adres e-mail lub hasło.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateActivationDigit = (index: number, value: string) => {
@@ -423,29 +432,58 @@ export function AuthView({ nextPath }: AuthViewProps) {
     );
   }
 
-  if (step === "login-code") {
+  if (step === "login-password") {
     return (
-      <AuthShell subtitle="wpisz jednorazowy kod z e-maila" title="Zaloguj się">
+      <AuthShell subtitle="aby przejść do swojego konta" title="Zaloguj się">
         <form className="flex w-full flex-col gap-5" onSubmit={submitLogin}>
-          <FloatingInput autoComplete="email" label="Adres e-mail" name="email" onChange={updateEmail} type="email" value={email} />
-          {statusMessage ? <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">{statusMessage}</p> : null}
-          <section className="flex w-full flex-col gap-5 rounded-[20px]">
-            <p className="m-0 text-[14px] font-medium leading-normal text-[#2e3b4c]">Wpisz kod przesłany na adres e-mail</p>
-            <CodeFields code={activationCode} inputRefs={codeInputRefs} onChange={updateActivationDigit} />
-          </section>
+          <FloatingInput
+            autoComplete="email"
+            label="Adres e-mail"
+            name="email"
+            onChange={updateEmail}
+            readOnly
+            rightSlot={
+              <button
+                className="border-0 bg-transparent p-0 text-[14px] font-medium text-[#0079de]"
+                onClick={() => {
+                  setPassword("");
+                  setStatusMessage("");
+                  setStep("email");
+                }}
+                type="button"
+              >
+                Edytuj
+              </button>
+            }
+            type="email"
+            value={email}
+          />
+          <FloatingInput
+            autoComplete="current-password"
+            label="Hasło"
+            name="login-password"
+            onChange={setPassword}
+            rightSlot={
+              <button
+                aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                className="grid h-4 w-4 place-items-center border-0 bg-transparent p-0 text-[#2e3b4c]"
+                onClick={() => setShowPassword((value) => !value)}
+                type="button"
+              >
+                <Eye aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+              </button>
+            }
+            type={showPassword ? "text" : "password"}
+            value={password}
+          />
+          {statusMessage ? <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#d63b3b]">{statusMessage}</p> : null}
           <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
-            Wiadomość nie dotarła?{" "}
+            Nie pamiętasz hasła?{" "}
             <button className="border-0 bg-transparent p-0 font-semibold text-[#0079de]" type="button">
-              Wyślij kod ponownie
+              Przypomnij hasło
             </button>
           </p>
-          <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
-            To nie ten adres?{" "}
-            <button className="border-0 bg-transparent p-0 font-semibold text-[#0079de]" onClick={() => setStep("email")} type="button">
-              Zmień adres e-mail
-            </button>
-          </p>
-          <PrimaryButton>Zaloguj się</PrimaryButton>
+          <PrimaryButton disabled={isSubmitting}>{isSubmitting ? "Logowanie..." : "Zaloguj się"}</PrimaryButton>
         </form>
       </AuthShell>
     );

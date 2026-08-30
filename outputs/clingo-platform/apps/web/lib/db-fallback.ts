@@ -21,15 +21,18 @@ type OrderRow = {
   id: string;
   mode: string;
   provider: string;
+  providerId: string | null;
   serviceType: string;
   startsAt: Date | string | null;
   status: string;
+  summary: OrderCardData["summary"] | string | null;
 };
 
-const currentUser = {
-  initials: "K",
-  name: "Kacper Jaskółka",
-  phone: "553 068 994"
+type UserRow = {
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
 };
 
 function createClient(): DbClient {
@@ -140,28 +143,57 @@ function toOrder(row: OrderRow): OrderCardData {
     mode: row.mode,
     modeTone: row.mode === "Wielosesyjne" ? "blue" : undefined,
     provider: row.provider,
+    providerId: row.providerId,
     range: lines.length === 2,
     status: row.status,
+    summary: asJson(row.summary),
     ...providerVisual(row.provider)
   };
 }
 
-export async function getDashboardFromDb(): Promise<DashboardPayload> {
+export async function getDashboardFromDb(email: string): Promise<DashboardPayload> {
   return withDb(async (client) => {
-    const result = await client.query<OrderRow>('select id, provider, status, mode, "serviceType", address, "startsAt", "endsAt" from orders order by "startsAt" asc');
+    const [result, users] = await Promise.all([
+      client.query<OrderRow>(
+        'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary from orders where "user_email" = $1 order by "startsAt" asc',
+        [email]
+      ),
+      client.query<UserRow>(
+        'select email, first_name as "firstName", last_name as "lastName", phone from users where email = $1 limit 1',
+        [email]
+      )
+    ]);
     const orders = result.rows.map(toOrder);
+    const user = users.rows[0];
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.email;
 
     return {
       completedOrder: orders.find((order) => isCompleted(order.status)) ?? null,
-      orders: orders.filter((order) => !isCompleted(order.status)),
-      user: currentUser
+      orders: orders.filter((order) => !isCompleted(order.status) && !order.status.toLowerCase().includes("odwo")),
+      user: {
+        initials: name
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("") || "U",
+        name,
+        phone: user.phone ?? ""
+      }
     };
   });
 }
 
-export async function getOrderFromDb(id: string): Promise<OrderCardData> {
+export async function getOrderFromDb(id: string, email: string): Promise<OrderCardData> {
   return withDb(async (client) => {
-    const result = await client.query<OrderRow>('select id, provider, status, mode, "serviceType", address, "startsAt", "endsAt" from orders where id = $1 limit 1', [id]);
+    const result = await client.query<OrderRow>(
+      'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary from orders where id = $1 and "user_email" = $2 limit 1',
+      [id, email]
+    );
 
     if (!result.rows[0]) {
       throw new Error("Order not found.");

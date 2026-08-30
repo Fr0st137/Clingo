@@ -5,6 +5,11 @@ type LookupEmailBody = {
   email?: string;
 };
 
+type LoginUserBody = {
+  email?: string;
+  password?: string;
+};
+
 type RegisterUserBody = {
   companyName?: string;
   email?: string;
@@ -37,6 +42,11 @@ export class AuthController {
   @Post("register")
   register(@Body() body: RegisterUserBody) {
     return this.authService.register(body);
+  }
+
+  @Post("login")
+  login(@Body() body: LoginUserBody) {
+    return this.authService.login(body);
   }
 
   @Get("profile")
