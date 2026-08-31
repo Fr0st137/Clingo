@@ -1,5 +1,8 @@
 import { OrderCardData } from "../components/order-card";
 import { unstable_noStore as noStore } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { fetchOrderData, OrderApiResponseError } from "./order-api";
 import { FavoriteProviderData } from "../components/favorite-provider-card";
 import { ChatPayload } from "../components/chat-view";
 import { BoardListingData } from "../components/board-listing-card";
@@ -15,10 +18,8 @@ import {
 import {
   getBoardFromDb,
   getChatFromDb,
-  getDashboardFromDb,
   getFavoritesFromDb,
   getOpinionsFromDb,
-  getOrderFromDb,
   getProviderProfileFromDb,
   getReviewsFromDb,
   getSettingsFromDb
@@ -52,7 +53,7 @@ export type BoardPayload = {
 };
 
 function apiBaseUrl() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_API_URL is not configured.");
@@ -65,7 +66,8 @@ async function fetchDashboardJson<T>(path: string): Promise<T> {
   noStore();
   const baseUrl = apiBaseUrl();
   const response = await fetch(`${baseUrl}${path}`, {
-    cache: "no-store"
+    cache: "no-store",
+    signal: AbortSignal.timeout(3000)
   });
 
   if (!response.ok) {
@@ -75,19 +77,41 @@ async function fetchDashboardJson<T>(path: string): Promise<T> {
   return response.json();
 }
 
+// Only the public catalogue is shared between visitors. Orders and account
+// data must always go through their authenticated, uncached requests.
+async function fetchCatalogueJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${apiBaseUrl()}${path}`, {
+    next: { revalidate: 30 },
+    signal: AbortSignal.timeout(3000)
+  });
+  if (!response.ok) throw new Error(`Catalogue request failed: ${response.status}.`);
+  return response.json();
+}
+
 export async function getDashboard(email: string): Promise<DashboardPayload> {
-  try {
-    return await fetchDashboardJson<DashboardPayload>(`/dashboard/orders?email=${encodeURIComponent(email)}`);
-  } catch {
-    return getDashboardFromDb(email);
-  }
+  return fetchOrderJson<DashboardPayload>("/dashboard/orders");
 }
 
 export async function getOrder(id: string, email: string): Promise<OrderCardData> {
+  return fetchOrderJson<OrderCardData>(`/dashboard/orders/${encodeURIComponent(id)}`);
+}
+
+async function orderHeaders() {
+  const store = await cookies();
+  const token = store.get("clingo-session")?.value;
+  if (!token) redirect("/logowanie?next=%2Fzamowienia");
+  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+}
+
+async function fetchOrderJson<T>(path: string): Promise<T> {
+  const headers = await orderHeaders();
   try {
-    return await fetchDashboardJson<OrderCardData>(`/dashboard/orders/${id}?email=${encodeURIComponent(email)}`);
-  } catch {
-    return getOrderFromDb(id, email);
+    return await fetchOrderData<T>(`${apiBaseUrl()}${path}`, headers);
+  } catch (error) {
+    if (error instanceof OrderApiResponseError && error.status === 401) {
+      redirect("/logowanie?next=%2Fzamowienia");
+    }
+    throw error;
   }
 }
 
@@ -95,6 +119,7 @@ export async function cancelOrder(id: string, email: string): Promise<OrderCardD
   const baseUrl = apiBaseUrl();
 
   const response = await fetch(`${baseUrl}/dashboard/orders/${id}/cancel?email=${encodeURIComponent(email)}`, {
+    headers: await orderHeaders(),
     method: "PATCH",
     cache: "no-store"
   });
@@ -113,9 +138,7 @@ export async function rescheduleOrder(id: string, email: string, startsAt: strin
     method: "PATCH",
     body: JSON.stringify({ endsAt, startsAt }),
     cache: "no-store",
-    headers: {
-      "Content-Type": "application/json"
-    }
+    headers: await orderHeaders()
   });
 
   if (!response.ok) {
@@ -175,7 +198,7 @@ export async function getSettings(): Promise<SettingsPayload> {
 
 export async function getBoard(): Promise<BoardPayload> {
   try {
-    return await fetchDashboardJson<BoardPayload>("/dashboard/board");
+    return await fetchCatalogueJson<BoardPayload>("/dashboard/board");
   } catch {
     return getBoardFromDb();
   }
@@ -183,7 +206,7 @@ export async function getBoard(): Promise<BoardPayload> {
 
 export async function getProviderProfile(id: string): Promise<ProviderProfileData> {
   try {
-    return await fetchDashboardJson<ProviderProfileData>(`/dashboard/provider-profiles/${id}`);
+    return await fetchCatalogueJson<ProviderProfileData>(`/dashboard/provider-profiles/${encodeURIComponent(id)}`);
   } catch {
     return getProviderProfileFromDb(id);
   }

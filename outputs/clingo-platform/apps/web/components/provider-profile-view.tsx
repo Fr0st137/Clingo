@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Award, Check, CheckCircle2, ChevronLeft, Clock, Heart, MapPin, ShieldCheck, Sparkles, Star } from "lucide-react";
 
 export interface ProviderProfileData {
@@ -70,10 +71,10 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
   return (
     <section className="grid gap-5 pb-12 md:grid-cols-[minmax(0,800px)_380px]">
       <div className="grid gap-5">
-        <a className="inline-flex w-fit items-center gap-2 text-[13px] font-semibold text-clingo-blue" href="/tablica-ogloszen">
+        <Link className="inline-flex w-fit items-center gap-2 text-[13px] font-semibold text-clingo-blue" href="/tablica-ogloszen">
           <ChevronLeft className="h-4 w-4" />
           Wróć do tablicy ogłoszeń
-        </a>
+        </Link>
 
         <article className="rounded-xl border border-[#dce6f2] bg-white p-5 shadow-figma md:p-6">
           <div className="grid gap-5 md:grid-cols-[auto_1fr_auto] md:items-start">
@@ -202,12 +203,12 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
             </div>
           </dl>
 
-          <a
+          <Link
             className="mt-5 flex h-[46px] w-full items-center justify-center rounded-full bg-clingo-blue text-[15px] font-bold text-white transition-all hover:bg-clingo-blueDark"
-            href="/zamowienie"
+            href={`/zamowienie?provider=${encodeURIComponent(profile.id)}`}
           >
             Przejdź do zamówienia
-          </a>
+          </Link>
         </section>
 
         <section className="rounded-[24px] border border-[#dce6f2] bg-white p-6 shadow-figma">

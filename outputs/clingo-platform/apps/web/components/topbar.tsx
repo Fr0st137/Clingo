@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { CSSProperties, FormEvent, useEffect, useState } from "react";
 
 type TopbarProps = {
@@ -10,6 +13,7 @@ type TopbarProps = {
 const assetPath = (path: string) => `/clingo-homepage/${path}`;
 
 export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
+  const router = useRouter();
   const [panelType, setPanelType] = useState<"notification" | "favorites" | "chat">("notification");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isAccountPanelOpen, setIsAccountPanelOpen] = useState(false);
@@ -41,7 +45,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
     const formData = new FormData(event.currentTarget);
     const query = String(formData.get("header-search") || "").trim();
     const suffix = query ? `?q=${encodeURIComponent(query)}` : "";
-    window.location.href = `/tablica-ogloszen${suffix}`;
+    router.push(`/tablica-ogloszen${suffix}`);
   };
 
   const togglePanel = (nextPanelType: "notification" | "favorites" | "chat") => {
@@ -72,17 +76,17 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
       >
         <div className="header-not-login__inner">
           <div className="header-not-login__left-group">
-            <a className="header-not-login__logo" href="/home" aria-label="Clingo">
+            <Link className="header-not-login__logo" href="/home" aria-label="Clingo">
               <img src={assetPath("assets/images/logo-clingo-color-new.png")} alt="Clingo" />
-            </a>
+            </Link>
 
             <nav className="header-not-login__nav" aria-label="Główna nawigacja">
-              <a className="header-not-login__nav-link header-not-login__nav-link--narrow" href="/home#jak-to-dziala">
+              <Link className="header-not-login__nav-link header-not-login__nav-link--narrow" href="/home#jak-to-dziala">
                 Jak to działa?
-              </a>
-              <a className="header-not-login__nav-link" href="/standardy-uslug">
+              </Link>
+              <Link className="header-not-login__nav-link" href="/standardy-uslug">
                 Standardy usług Clingo
-              </a>
+              </Link>
             </nav>
           </div>
 
@@ -151,11 +155,11 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                 <div className="header-not-login__notifications-content">
                   <p className="header-not-login__notifications-title">{panelCopy[panelType].title}</p>
                   <p className="header-not-login__notifications-text">{panelCopy[panelType].text}</p>
-                  <a className="header-not-login__notifications-login" href="/logowanie?next=/zamowienia">
+                  <Link className="header-not-login__notifications-login" href="/logowanie?next=/zamowienia">
                     Zaloguj się
-                  </a>
+                  </Link>
                   <p className="header-not-login__notifications-register">
-                    Nie masz konta? <a href="/logowanie?mode=register&next=/zamowienia">Zarejestruj się</a>
+                    Nie masz konta? <Link href="/logowanie?mode=register&next=/zamowienia">Zarejestruj się</Link>
                   </p>
                 </div>
               </div>
@@ -163,9 +167,9 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
 
             <div className="relative">
               {isAuthenticated ? (
-                <a className="header-not-login__account-button" href="/zamowienia">
+                <Link className="header-not-login__account-button" href="/zamowienia">
                   Moje konto
-                </a>
+                </Link>
               ) : (
                 <button
                   aria-expanded={isAccountPanelOpen}
@@ -183,17 +187,17 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                   <p className="mb-4 mt-2 text-[14px] leading-5 text-[#7c8691]">
                     Zaloguj się albo utwórz konto, żeby przejść do panelu i rezerwacji.
                   </p>
-                  <a
+                  <Link
                     className="flex h-[42px] items-center justify-center rounded-[100px] bg-[#0079de] text-[14px] font-semibold text-white"
                     href="/logowanie?next=/zamowienia"
                   >
                     Zaloguj się
-                  </a>
+                  </Link>
                   <p className="mb-0 mt-3 text-center text-[14px] leading-5 text-[#7c8691]">
                     Nie masz konta?{" "}
-                    <a className="font-semibold text-[#0079de]" href="/logowanie?mode=register&next=/zamowienia">
+                    <Link className="font-semibold text-[#0079de]" href="/logowanie?mode=register&next=/zamowienia">
                       Zarejestruj się
-                    </a>
+                    </Link>
                   </p>
                 </div>
               ) : null}
@@ -206,12 +210,12 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
               </button>
 
               <div className="header-not-login__contractor-dropdown" aria-label="Menu dla wykonawców">
-                <a className="header-not-login__contractor-dropdown-link" href="/logowanie?next=/zamowienia">
+                <Link className="header-not-login__contractor-dropdown-link" href="/logowanie?next=/zamowienia">
                   Zaloguj się
-                </a>
-                <a className="header-not-login__contractor-dropdown-link" href="/logowanie?mode=register&next=/zamowienia">
+                </Link>
+                <Link className="header-not-login__contractor-dropdown-link" href="/logowanie?mode=register&next=/zamowienia">
                   Zostań Wykonawcą
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -247,18 +251,18 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
             </form>
 
             <nav className="header-not-login__mobile-nav" aria-label="Mobilna nawigacja">
-              <a className="header-not-login__mobile-link" href="/home#jak-to-dziala">
+              <Link className="header-not-login__mobile-link" href="/home#jak-to-dziala">
                 Jak to działa?
-              </a>
-              <a className="header-not-login__mobile-link" href="/standardy-uslug">
+              </Link>
+              <Link className="header-not-login__mobile-link" href="/standardy-uslug">
                 Standardy usług Clingo
-              </a>
-              <a className="header-not-login__mobile-link" href="/ulubione">
+              </Link>
+              <Link className="header-not-login__mobile-link" href="/ulubione">
                 Ulubione
-              </a>
-              <a className="header-not-login__mobile-link" href="/logowanie?next=/zamowienia">
+              </Link>
+              <Link className="header-not-login__mobile-link" href="/logowanie?next=/zamowienia">
                 Moje konto
-              </a>
+              </Link>
             </nav>
           </div>
         </div>

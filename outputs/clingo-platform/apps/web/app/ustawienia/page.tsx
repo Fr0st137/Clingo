@@ -16,8 +16,10 @@ import { getSettings } from "../../lib/api";
 export default async function SettingsPage() {
   const cookieStore = await cookies();
   const accountEmail = cookieStore.get("clingo-user-email")?.value;
-  const settings = await getSettings();
-  const accountProfile = await getAccountProfile(accountEmail ? decodeURIComponent(accountEmail) : undefined);
+  const [settings, accountProfile] = await Promise.all([
+    getSettings(),
+    getAccountProfile(accountEmail ? decodeURIComponent(accountEmail) : undefined)
+  ]);
   const accountSettings = settingsFromAccountProfile(settings, accountProfile);
   const accountUser = accountProfileToSidebarUser(accountProfile);
 

@@ -1,8 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
+import { OfferSummaryUnavailable } from "./offer-summary-unavailable";
+import { offerAddOnQuantities, offerRequestState, pricingArea, requestPricing } from "../lib/offer-request";
+import type { OfferRequest } from "../lib/offer-request";
+import { declaredServiceAreas } from "../../api/src/dashboard/service-area";
 
 type AddOn = NonNullable<ProviderProfileData["addOns"]>[number];
 
@@ -35,7 +42,7 @@ function priceFromText(value: string) {
 }
 
 function formatPrice(value: number) {
-  return `${value.toLocaleString("pl-PL", { maximumFractionDigits: 0 })} zł`;
+  return `${value.toLocaleString("pl-PL", { maximumFractionDigits: 2 })} zł`;
 }
 
 function SectionCard({ children, title }: { children: ReactNode; title?: string }) {
@@ -164,7 +171,7 @@ function AddOnTile({
       </span>
 
       <span className="flex items-center justify-center rounded-[30px] p-[5px]">
-        <img alt="" className="h-[40px] w-[40px] object-contain" src={addOnIcon(addOn)} />
+        <Image width={40} height={40} alt="" className="h-[40px] w-[40px] object-contain" src={addOnIcon(addOn)} />
       </span>
 
       <span className="flex h-[36px] w-[124px] items-center justify-center px-0 py-[2px] text-center text-[13px] font-normal leading-[17px] text-[#2e3b4c]">
@@ -210,23 +217,13 @@ function AddOnTile({
   );
 }
 
-function initialQuantities(addOns: AddOn[]) {
-  return addOns.reduce<Record<string, number>>((accumulator, addOn) => {
-    if (addOn.selected) {
-      accumulator[addOn.id] = 1;
-    }
-
-    return accumulator;
-  }, {});
-}
-
 function selectedQuantityEntries(addOns: AddOn[], quantities: Record<string, number>) {
   return addOns
     .map((addOn) => ({ addOn, quantity: quantities[addOn.id] ?? 0 }))
     .filter((entry) => entry.quantity > 0);
 }
 
-export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) {
+export function OfferDetailsView({ profile, initialRequest = {} }: { profile: ProviderProfileData; initialRequest?: OfferRequest }) {
   const headerImage = profileHeaderImage(profile.id);
   const photos: Array<{ id: string; label: string; gradient: string; image?: string }> = profile.photos?.length
     ? profile.photos
@@ -235,9 +232,15 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
   const pricing = profile.pricing?.length ? profile.pricing : fallbackPricing;
   const frequencies = profile.frequencies?.length ? profile.frequencies : fallbackFrequencies;
   const addOns = profile.addOns ?? [];
-  const [selectedPricingId, setSelectedPricingId] = useState(pricing[0]?.id ?? "");
-  const [selectedFrequencyId, setSelectedFrequencyId] = useState(frequencies[0]?.id ?? "");
-  const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => initialQuantities(addOns));
+  const [area, setArea] = useState(initialRequest.area ?? "");
+  const [address, setAddress] = useState(initialRequest.address ?? "");
+  const [selectedPricingId, setSelectedPricingId] = useState(() =>
+    requestPricing(pricing, initialRequest.area ?? "", initialRequest.pricing)?.id ?? "");
+  const [selectedFrequencyId, setSelectedFrequencyId] = useState(() => frequencies.find(item => item.id === initialRequest.frequency)?.id ?? frequencies[0]?.id ?? "");
+  const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => offerAddOnQuantities(profile, initialRequest.addons));
+  const requestState = offerRequestState(profile, area, address);
+  const coveredAreas = declaredServiceAreas(profile.metrics);
+  const areaOptions = [...new Set(pricing.map(pricingArea).filter((value): value is number => value !== null))];
 
   const selectedAddOnItems = useMemo(
     () => selectedQuantityEntries(addOns, addOnQuantities),
@@ -255,7 +258,9 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
     const params = new URLSearchParams({
       frequency: selectedFrequency?.id ?? "",
       pricing: selectedPricing?.id ?? "",
-      provider: profile.id
+      provider: profile.id,
+      area,
+      address: address.trim()
     });
 
     if (selectedAddOnItems.length > 0) {
@@ -266,11 +271,23 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
     }
 
     return `/zamowienie?${params.toString()}`;
-  }, [profile.id, selectedAddOnItems, selectedFrequency?.id, selectedPricing?.id]);
+  }, [profile.id, selectedAddOnItems, selectedFrequency?.id, selectedPricing?.id, area, address]);
+
+  useEffect(() => {
+    // Preserve the user's choices through refresh, copied links and checkout.
+    const url = new URL(window.location.href);
+    const request = new URL(checkoutHref, window.location.origin).searchParams;
+    for (const key of ["area", "address", "pricing", "frequency", "addons"]) {
+      const value = request.get(key);
+      if (value) url.searchParams.set(key, value); else url.searchParams.delete(key);
+    }
+    url.searchParams.delete("location");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+  }, [checkoutHref]);
 
   const setAddOnQuantity = (id: string, updater: (current: number) => number) => {
     setAddOnQuantities((current) => {
-      const nextQuantity = Math.max(0, updater(current[id] ?? 0));
+      const nextQuantity = Math.min(20, Math.max(0, updater(current[id] ?? 0)));
       const next = { ...current };
 
       if (nextQuantity === 0) {
@@ -285,11 +302,31 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
 
   return (
     <section className="mx-auto grid w-full max-w-[1200px] gap-[20px] pb-[60px] xl:grid-cols-[800px_380px]" data-node-id="812:1568">
+      <section aria-label="Dane do wyceny" className="grid gap-[15px] rounded-[20px] border border-[#e5e7eb] bg-white p-[20px] shadow-[0_4px_18px_0_rgba(15,23,42,0.08)] sm:grid-cols-[200px_minmax(0,1fr)] xl:col-span-2">
+        <label className="min-w-0 text-[12px] text-[#7c8691]">
+          Metraż
+          <select aria-label="Metraż" className="mt-2 h-[44px] w-full rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] text-[14px] text-[#2e3b4c] outline-none focus:border-[#0079de]" value={areaOptions.includes(Number(area)) ? area : ""} onChange={event => {
+            const value = event.target.value;
+            setArea(value);
+            const option = pricing.find(item => pricingArea(item) === Number(value));
+            if (option) setSelectedPricingId(option.id);
+          }}>
+            <option value="">Wybierz metraż</option>
+            {areaOptions.map(value => <option key={value} value={String(value)}>{value} m²</option>)}
+          </select>
+          <span className="mt-2 block">Warianty dostępne w cenniku wykonawcy.</span>
+        </label>
+        <label className="min-w-0 text-[12px] text-[#7c8691]">
+          Lokalizacja usługi
+          <input aria-label="Lokalizacja usługi" aria-invalid={requestState === "unsupported-location"} aria-describedby="offer-location-help" maxLength={350} className={`mt-2 h-[44px] w-full rounded-[15px] border px-[15px] text-[14px] text-[#2e3b4c] outline-none focus:border-[#0079de] ${requestState === "unsupported-location" ? "border-[#f3a5a5] bg-[#fff5f5]" : "border-[#e5e7eb] bg-[#f9fafb]"}`} placeholder="Miejscowość, ulica i numer" value={address} onChange={event => setAddress(event.target.value)} />
+          <span id="offer-location-help" className="mt-2 block">Podaj adres z miejscowością, np. Warszawa, Floriańska 48.{coveredAreas.length ? ` Obsługiwany obszar: ${coveredAreas.join(", ")}.` : ""}</span>
+        </label>
+      </section>
       <main className="grid w-full gap-[20px] xl:w-[800px]">
         <SectionCard>
           <div className="flex items-start gap-[20px]">
             <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#ffd6e6] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]">
-              <img alt="" className={`absolute inset-0 h-full w-full ${headerImage.fit}`} src={headerImage.src} />
+              <Image width={104} height={104} sizes="104px" priority alt="" className={`absolute inset-0 h-full w-full ${headerImage.fit}`} src={headerImage.src} />
             </div>
             <div className="min-w-0 flex-1 pt-[4px]">
               <div className="flex flex-wrap items-center gap-[10px]">
@@ -386,7 +423,7 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
                   item.id === selectedPricing?.id ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-[#f9fafb]"
                 ].join(" ")}
                 key={item.id}
-                onClick={() => setSelectedPricingId(item.id)}
+                onClick={() => { setSelectedPricingId(item.id); const itemArea = pricingArea(item); if (itemArea !== null) setArea(String(itemArea)); }}
                 type="button"
               >
                 <div>
@@ -455,6 +492,17 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
       </main>
 
       <aside className="self-start xl:sticky xl:top-[96px]">
+        {requestState !== "ready" ? (
+          <OfferSummaryUnavailable
+            state={requestState}
+            area={areaOptions.includes(Number(area)) ? area : ""}
+            duration={`${selectedPricing?.duration ?? profile.summary.duration}${addOnDuration ? ` + ${addOnDuration} min` : ""}`}
+            basePrice={formatPrice(discountedBase - priceFromText(profile.summary.lines.find(line => line.id === "travel")?.value ?? "0"))}
+            travelPrice={profile.summary.lines.find(line => line.id === "travel")?.value ?? "W cenie usługi"}
+            total={formatPrice(liveTotal)}
+            addOns={selectedAddOnItems.map(({ addOn, quantity }) => ({ id: addOn.id, label: addOn.label, quantity, price: formatPrice(addOn.priceValue * quantity) }))}
+          />
+        ) : (
         <section className="w-full max-w-[380px] rounded-[32px] border border-[#e5e7eb] bg-white px-[30px] py-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)] xl:w-[380px]">
           <h2 className="m-0 text-[24px] font-bold leading-6 text-[#2e3b4c]">Podsumowanie</h2>
           <div className="mt-[20px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px]">
@@ -487,17 +535,18 @@ export function OfferDetailsView({ profile }: { profile: ProviderProfileData }) 
             </div>
           </dl>
 
-          <a
+          <Link
             className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white"
             href={checkoutHref}
           >
             Przejdź do zamówienia
-          </a>
+          </Link>
 
           <p className="m-0 mt-[18px] text-[12px] font-normal leading-[18px] text-[#7c8691]">
             Rozliczenie odbywa się bezpośrednio z Wykonawcą poza platformą.
           </p>
         </section>
+        )}
       </aside>
     </section>
   );

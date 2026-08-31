@@ -18,8 +18,8 @@ function EmptyOrderCard({ children, height }: { children: string; height: number
 
 export function OrdersPanel({ orders, completedOrder }: OrdersPanelProps) {
   return (
-    <section className="relative h-[821px] w-[1090px]" data-node-id="4943:7839">
-      <div className="absolute left-0 top-0 flex w-[745px] flex-col gap-[30px]">
+    <section className="relative min-h-[821px] w-full overflow-x-auto pb-[40px] md:w-[1090px]" data-node-id="4943:7839">
+      <div className="flex min-h-[474px] w-[745px] flex-col gap-[30px]">
         {orders.length > 0 ? (
           orders.map((order) => <OrderCard key={order.id ?? order.provider} order={order} />)
         ) : (
@@ -27,11 +27,11 @@ export function OrdersPanel({ orders, completedOrder }: OrdersPanelProps) {
         )}
       </div>
 
-      <h2 className="absolute left-0 top-[504px] m-0 text-[22px] font-bold leading-5 text-[#2e3b4c]">
+      <h2 className="mb-0 mt-[30px] text-[22px] font-bold leading-5 text-[#2e3b4c]">
         Zakończone zlecenia
       </h2>
 
-      <div className="absolute left-0 top-[554px]">
+      <div className="mt-[30px]">
         {completedOrder ? (
           <CompletedOrderCard order={completedOrder} />
         ) : (

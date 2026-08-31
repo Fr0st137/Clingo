@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Edit2, Plus, Star } from "lucide-react";
 
 export interface ReviewImage {
@@ -57,13 +58,13 @@ export function PendingReviewCard({ item }: { item: PendingReviewData }) {
         <h3 className="text-[14px] font-bold text-clingo-ink">{item.person}</h3>
         <p className="mt-1 truncate text-[12px] text-clingo-muted">{item.service}</p>
       </div>
-      <a
+      <Link
         className="inline-flex h-[41px] items-center gap-2 rounded-[30px] bg-[#0079de] px-5 text-[13px] font-bold text-white"
         href={`/opinie/dodaj?id=${encodeURIComponent(item.id)}`}
       >
         Dodaj opinię
         <Plus className="h-4 w-4" />
-      </a>
+      </Link>
     </article>
   );
 }
@@ -93,13 +94,13 @@ export function ReviewCard({ review, showAuthor = false }: { review: ReviewCardD
         ) : null}
 
         {review.editable ? (
-          <a
+          <Link
             aria-label="Edytuj opinię"
             className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full border border-[#e1e9f3] bg-[#f7f9fc] text-[#75859a]"
             href={`/opinie/edytuj?id=${encodeURIComponent(review.id)}`}
           >
             <Edit2 className="h-4 w-4" />
-          </a>
+          </Link>
         ) : null}
       </div>
 

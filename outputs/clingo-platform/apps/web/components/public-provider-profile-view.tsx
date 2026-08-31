@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
+
 import { BarChart3, Check, ChevronDown, Heart, MapPin, Share2, Truck, UserRound } from "lucide-react";
 import { useState } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
@@ -83,7 +86,7 @@ function ProfileSummary({ profile }: { profile: ProviderProfileData }) {
   return (
     <article className="relative flex min-h-[180px] min-w-0 flex-col items-start gap-[20px] overflow-hidden rounded-[30px] border border-[#e6edf3] bg-white p-[20px] shadow-[0_2px_14px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:gap-[30px] sm:p-[30px]">
       <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-[20px] bg-[#f4f6f9] shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)] sm:h-[120px] sm:w-[120px]">
-        <img alt={profile.provider} className={`h-full w-full ${image.fit}`} src={image.src} />
+        <Image width={104} height={104} sizes="104px" priority alt={profile.provider} className={`h-full w-full ${image.fit}`} src={image.src} />
       </div>
 
       <div className="min-w-0 w-full sm:pr-[76px]">
@@ -177,9 +180,9 @@ function ServiceCard({
               0 zł / km
             </span>
           </div>
-          <a className="flex h-[41px] w-full shrink-0 items-center justify-center rounded-full bg-[#0079de] text-[14px] font-medium text-white sm:w-[187px]" href={href}>
+          <Link className="flex h-[41px] w-full shrink-0 items-center justify-center rounded-full bg-[#0079de] text-[14px] font-medium text-white sm:w-[187px]" href={href}>
             Przejdź do ogłoszenia
-          </a>
+          </Link>
         </div>
       </div>
     </article>

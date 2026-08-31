@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (request.cookies.get("clingo-auth")?.value === "1") {
+  if (request.cookies.get("clingo-auth")?.value === "1" && request.cookies.get("clingo-session")?.value) {
     return NextResponse.next();
   }
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 const favoriteAssets = {
   arrow: "/figma-assets/favorite-arrow.svg",
   check: "/figma-assets/favorite-check.svg",
@@ -55,9 +56,9 @@ export function FavoriteProviderCard({ provider }: { provider: FavoriteProviderD
               <span className="h-[24px] w-[25px] text-[14px] font-semibold leading-[24px] text-[#2e3b4c]">
                 {provider.rating.toFixed(1)}
               </span>
-              <a className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#0079de]" href="#">
+              <Link className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#0079de]" href="#">
                 ({provider.reviews} ocen)
-              </a>
+              </Link>
               <span className="whitespace-nowrap text-[14px] font-normal leading-[24px] text-[#2e3b4c]">
                 Doświadczenie: {provider.experience}
               </span>
@@ -75,7 +76,7 @@ export function FavoriteProviderCard({ provider }: { provider: FavoriteProviderD
         </button>
       </div>
 
-      <a
+      <Link
         className="flex w-full items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
         data-node-id="5296:9399"
         href={`/profil-ogloszeniowy/${provider.id}`}
@@ -86,7 +87,7 @@ export function FavoriteProviderCard({ provider }: { provider: FavoriteProviderD
         <span className="flex items-center justify-center rounded-[30px] px-[10px] py-[2px]">
           <img alt="" className="h-[14px] w-[14px]" src={favoriteAssets.arrow} />
         </span>
-      </a>
+      </Link>
     </article>
   );
 }

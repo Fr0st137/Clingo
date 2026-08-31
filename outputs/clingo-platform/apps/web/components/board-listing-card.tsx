@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
+
 import { useState } from "react";
 
 export interface BoardListingData {
@@ -22,7 +25,7 @@ function ListingImage({ listing }: { listing: BoardListingData }) {
 
   return (
     <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#ffd6e6] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]">
-      <img
+      <Image width={104} height={104} sizes="104px"
         alt=""
         className={["absolute inset-0 h-full w-full", isContain ? "object-contain" : "object-cover"].join(" ")}
         src={listing.image}
@@ -56,13 +59,13 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
       data-name="Ogłoszenie na tablicy"
     >
       <div className="flex w-full items-start gap-[40px] overflow-hidden p-[15px]">
-        <a aria-label={`Profil wykonawcy ${listing.provider}`} href={`/wykonawcy/${listing.id}`}>
+        <Link aria-label={`Profil wykonawcy ${listing.provider}`} href={`/wykonawcy/${listing.id}`}>
           <ListingImage listing={listing} />
-        </a>
+        </Link>
 
         <div className="flex w-[541px] shrink-0 flex-col items-start gap-[10px] overflow-hidden pt-[5px]">
           <h3 className="m-0 h-[24px] w-[541px] whitespace-nowrap text-[20px] font-semibold leading-normal text-[#2e3b4c]">
-            <a href={`/wykonawcy/${listing.id}`}>{listing.provider}</a>
+            <Link href={`/wykonawcy/${listing.id}`}>{listing.provider}</Link>
           </h3>
           <Rating rating={listing.rating} reviews={listing.reviews} experience={listing.experience} />
           <div className="flex items-start gap-[15px] overflow-hidden">
@@ -103,7 +106,7 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
         </button>
       </div>
 
-      <a
+      <Link
         className="flex h-[48px] w-full shrink-0 items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
         href={`/profil-ogloszeniowy/${listing.id}`}
       >
@@ -111,7 +114,7 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
         <span className="flex items-center justify-center overflow-hidden rounded-[30px] px-[10px] py-[2px]">
           <img alt="" className="h-[14px] w-[14px]" src="/figma-assets/board-arrow-right.svg" />
         </span>
-      </a>
+      </Link>
     </article>
   );
 }

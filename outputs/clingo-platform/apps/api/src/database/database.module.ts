@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserEntity } from "../auth/user.entity";
+import { AuthSessionEntity } from "../auth/auth-session.entity";
 import { BoardFilterEntity } from "../dashboard/board-filter.entity";
 import { BoardListingEntity } from "../dashboard/board-listing.entity";
 import { BoardSearchFieldEntity } from "../dashboard/board-search-field.entity";
@@ -27,6 +28,7 @@ import { SettingsSectionEntity } from "../dashboard/settings-section.entity";
         password: config.get<string>("POSTGRES_PASSWORD", "clingo"),
         database: config.get<string>("POSTGRES_DB", "clingo"),
         entities: [
+          AuthSessionEntity,
           BoardFilterEntity,
           BoardListingEntity,
           BoardSearchFieldEntity,

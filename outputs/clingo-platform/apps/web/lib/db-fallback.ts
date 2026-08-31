@@ -10,8 +10,6 @@ type QueryResult<T> = {
 };
 
 type DbClient = {
-  connect(): Promise<void>;
-  end(): Promise<void>;
   query<T = Record<string, unknown>>(text: string, values?: unknown[]): Promise<QueryResult<T>>;
 };
 
@@ -35,27 +33,32 @@ type UserRow = {
   phone: string | null;
 };
 
-function createClient(): DbClient {
-  const { Client } = require("pg") as { Client: new (config: Record<string, unknown>) => DbClient };
+const dbRuntime = globalThis as typeof globalThis & { clingoFallbackPool?: DbClient };
 
-  return new Client({
+function getPool(): DbClient {
+  if (dbRuntime.clingoFallbackPool) return dbRuntime.clingoFallbackPool;
+  const { Pool } = require("pg") as { Pool: new (config: Record<string, unknown>) => DbClient & { on(event: "error", handler: () => void): void } };
+
+  const pool = new Pool({
+    max: 4,
+    connectionTimeoutMillis: 1000,
+    idleTimeoutMillis: 30_000,
+    statement_timeout: 3000,
     database: process.env.POSTGRES_DB ?? "clingo",
     host: process.env.POSTGRES_HOST ?? "127.0.0.1",
     password: process.env.POSTGRES_PASSWORD ?? "clingo",
     port: Number(process.env.POSTGRES_PORT ?? 55432),
     user: process.env.POSTGRES_USER ?? "clingo"
   });
+  // An idle connection can disappear during a database restart.
+  // Active query errors still propagate to the page.
+  pool.on("error", () => {});
+  dbRuntime.clingoFallbackPool = pool;
+  return dbRuntime.clingoFallbackPool;
 }
 
 async function withDb<T>(query: (client: DbClient) => Promise<T>): Promise<T> {
-  const client = createClient();
-  await client.connect();
-
-  try {
-    return await query(client);
-  } finally {
-    await client.end();
-  }
+  return query(getPool());
 }
 
 function asJson<T>(value: T | string | null): T | null {

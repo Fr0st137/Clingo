@@ -7,7 +7,14 @@
     "dev:api": "npm --workspace apps/api run start:dev",
     "build:web": "npm --workspace apps/web run build",
     "build:api": "npm --workspace apps/api run build",
-    "lint:web": "npm --workspace apps/web run lint"
+    "start:web": "npm --workspace apps/web run start --",
+    "preview:web": "npm run build:web && npm run start:web",
+    "lint:web": "npm --workspace apps/web run lint",
+    "test:booking": "npm run build:api && node --test scripts/booking.test.cjs",
+    "verify:booking": "node scripts/verify-booking.cjs",
+    "verify:navigation": "node scripts/verify-navigation.cjs",
+    "test:order-api": "node --test scripts/order-api.test.cjs",
+    "test:offer-request": "node --test scripts/offer-request.test.cjs"
   },
   "workspaces": [
     "apps/web",

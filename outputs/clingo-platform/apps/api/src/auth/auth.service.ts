@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { AuthSessionEntity } from "./auth-session.entity";
 import { Repository } from "typeorm";
 import { UserEntity } from "./user.entity";
 
@@ -79,7 +80,9 @@ function toProfile(user: UserEntity) {
 export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>
+    private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(AuthSessionEntity)
+    private readonly sessions: Repository<AuthSessionEntity>
   ) {}
 
   async lookupEmail(emailValue?: string) {
@@ -115,9 +118,7 @@ export class AuthService {
     });
     const savedUser = await this.usersRepository.save(user);
 
-    return {
-      user: toProfile(savedUser)
-    };
+    return { user: toProfile(savedUser), token: await this.createSession(savedUser.email) };
   }
 
   async login(input: LoginUserInput) {
@@ -136,7 +137,24 @@ export class AuthService {
       throw new UnauthorizedException("Invalid email or password.");
     }
 
-    return { user: toProfile(user) };
+    return { user: toProfile(user), token: await this.createSession(user.email) };
+  }
+
+  private async createSession(email: string) {
+    const token = randomBytes(32).toString("hex");
+    await this.sessions.save({ tokenHash: createHash("sha256").update(token).digest("hex"), email,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) });
+    return token;
+  }
+
+  async sessionEmail(authorization?: string) {
+    const token = authorization?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
+    if (!token) throw new UnauthorizedException("Zaloguj się ponownie, aby kontynuować zamówienie.");
+    const session = await this.sessions.findOneBy({ tokenHash: createHash("sha256").update(token).digest("hex") });
+    if (!session || session.expiresAt.getTime() <= Date.now()) {
+      throw new UnauthorizedException("Sesja wygasła. Zaloguj się ponownie.");
+    }
+    return session.email;
   }
 
   async getProfile(emailValue?: string) {

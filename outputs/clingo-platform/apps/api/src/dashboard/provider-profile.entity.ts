@@ -2,6 +2,9 @@ import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity({ name: "provider_profiles" })
 export class ProviderProfileEntity {
+  @Column({ nullable: true, type: "simple-json", name: "booking_settings" })
+  bookingSettings!: import("./booking").WorkingHours | null;
+
   @PrimaryColumn()
   id!: string;
 

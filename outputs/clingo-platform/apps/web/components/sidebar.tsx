@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { clearAccountProfileCache } from "../lib/account";
 import { menuItems, user as defaultUser } from "../lib/dashboard-data";
 
 export type SidebarUser = {
@@ -89,6 +91,7 @@ function MenuIcon({ active, name }: { active: boolean; name: MenuIconName }) {
 export function Sidebar({ active = "Rezerwacje", compact = false, user = defaultUser }: SidebarProps) {
   const activeKey = normalize(active === "Zamówienia" ? "Rezerwacje" : active);
   const logout = () => {
+    clearAccountProfileCache();
     document.cookie = "clingo-auth=; path=/; max-age=0; SameSite=Lax";
     document.cookie = "clingo-user-email=; path=/; max-age=0; SameSite=Lax";
     window.localStorage.removeItem("clingo-auth");
@@ -135,7 +138,7 @@ export function Sidebar({ active = "Rezerwacje", compact = false, user = default
             const isActive = normalize(label) === activeKey;
 
             return (
-              <a
+              <Link
                 className={[
                   "flex h-[45px] w-[290px] items-center gap-[20px] overflow-hidden rounded-[50px] px-[20px] text-[14px] font-normal leading-normal transition-colors",
                   isActive ? "bg-[#f4f6f9] text-[#2e3b4c]" : "text-[#7c8691]"
@@ -146,13 +149,13 @@ export function Sidebar({ active = "Rezerwacje", compact = false, user = default
               >
                 <MenuIcon active={isActive} name={iconByLabel[label]} />
                 <span className="whitespace-nowrap">{label}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>
 
         <div className="flex w-full items-center justify-between p-[20px] text-[14px] font-normal leading-normal text-[#0079de]">
-          <a href="#">Pomoc</a>
+          <Link href="#">Pomoc</Link>
           <button className="bg-transparent p-0 text-[14px] font-normal leading-normal text-[#0079de]" onClick={logout} type="button">
             Wyloguj się
           </button>

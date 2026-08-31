@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Eye } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
@@ -21,7 +23,7 @@ type AuthApiError = Error & {
 };
 
 async function postAuthJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const response = await fetch(`${authApiBaseUrl}${path}`, {
+  const response = await fetch(`/api${path}`, {
     body: JSON.stringify(body),
     cache: "no-store",
     headers: {
@@ -76,9 +78,9 @@ function AuthShell({
 }) {
   return (
     <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[420px] flex-col gap-5 px-4 pb-20 pt-[50px] sm:px-0">
-      <a className="relative block h-[55px] w-[180px]" href="/home" aria-label="Clingo">
+      <Link className="relative block h-[55px] w-[180px]" href="/home" aria-label="Clingo">
         <img alt="Clingo" className="absolute inset-0 h-full w-full object-contain" src={logoSrc} />
-      </a>
+      </Link>
 
       <header className="pl-[5px] text-[#2e3b4c]">
         <h1 className="m-0 text-[30px] font-semibold leading-[48px]">
@@ -161,17 +163,17 @@ function TermsText() {
   return (
     <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
       Zakładając konto, akceptujesz nasze{" "}
-      <a className="font-semibold text-[#0079de]" href="#">
+      <Link className="font-semibold text-[#0079de]" href="#">
         Warunki użytkowania
-      </a>
+      </Link>
       . Dowiedz się, w jaki sposób postępujemy z Twoimi danymi w naszej{" "}
-      <a className="font-semibold text-[#0079de]" href="#">
+      <Link className="font-semibold text-[#0079de]" href="#">
         Polityce prywatności
-      </a>
+      </Link>
       . Sprawdź{" "}
-      <a className="font-semibold text-[#0079de]" href="#">
+      <Link className="font-semibold text-[#0079de]" href="#">
         Dane firmy
-      </a>{" "}
+      </Link>{" "}
       Clingo.
     </p>
   );
@@ -295,8 +297,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
         password,
         phone
       });
-      setActivationCode(["", "", "", ""]);
-      setStep("activation");
+      completeAuth();
     } catch (error) {
       if ((error as AuthApiError).status === 409) {
         setStatusMessage("Konto z tym adresem już istnieje. Przenoszę do logowania.");
@@ -318,8 +319,8 @@ export function AuthView({ nextPath }: AuthViewProps) {
     try {
       await postAuthJson("/auth/login", { email, password });
       completeAuth();
-    } catch {
-      setStatusMessage("Nieprawidłowy adres e-mail lub hasło.");
+    } catch (error) {
+      setStatusMessage((error as AuthApiError).status === 401 ? "Nieprawidłowy adres e-mail lub hasło." : "Nie udało się połączyć z serwerem. Spróbuj zalogować się ponownie.");
     } finally {
       setIsSubmitting(false);
     }

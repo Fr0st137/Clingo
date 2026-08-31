@@ -1,37 +1,42 @@
+"use strict";
+
+window.initializeClingoHomepage = function(root, navigate, images = {}) {
+  const controller = new AbortController();
+  const listen = (target, type, callback, options = {}) => target.addEventListener(type, callback, { ...(typeof options === "boolean" ? { capture: options } : options), signal: controller.signal });
 ﻿"use strict";
 
 document.documentElement.classList.add("js");
 
-const serviceTrigger = document.querySelector("[data-service-trigger]");
-const serviceMenu = document.querySelector(".home-page__search-field-menu--service");
-const serviceValue = document.querySelector("[data-service-value]");
-const serviceOptions = document.querySelectorAll("[data-service-option]");
-const areaOptionsRoot = document.querySelector("[data-area-options]");
-const areaTrigger = document.querySelector("[data-area-trigger]");
-const areaMenu = document.querySelector(".home-page__search-field-menu--area");
-const areaInput = document.querySelector("[data-area-input]");
-const areaSizer = document.querySelector("[data-area-sizer]");
-const areaUnit = document.querySelector("[data-area-unit]");
-const locationMenu = document.querySelector(".home-page__search-field-menu--location");
-const locationTrigger = document.querySelector("[data-location-trigger]");
-const locationInput = document.querySelector("[data-location-input]");
-const locationClear = document.querySelector("[data-location-clear]");
-const locationPrimaryLabel = document.querySelector("[data-location-primary-label]");
-const locationQueryLabel = document.querySelector("[data-location-query-label]");
-const locationOptions = document.querySelectorAll("[data-location-option]");
-const addonToggle = document.querySelector("[data-addon-toggle]");
-const addonTotal = document.querySelector("[data-addon-total]");
-const searchSubmit = document.querySelector("[data-search-submit]");
-const searchShell = document.querySelector(".home-page__search-shell");
-const addonsPanel = document.querySelector("[data-addons-panel]");
-const addonsGrid = document.querySelector("[data-addons-grid]");
-const notificationsMenu = document.querySelector("[data-notifications-menu]");
-const notificationsTitle = document.querySelector(".header-not-login__notifications-title");
-const notificationsText = document.querySelector(".header-not-login__notifications-text");
-const headerElement = document.querySelector(".header-not-login");
-const headerMobileToggle = document.querySelector("[data-header-mobile-toggle]");
-const headerMobileBackdrop = document.querySelector("[data-header-mobile-backdrop]");
-const headerMobileMenu = document.querySelector("[data-header-mobile-menu]");
+const serviceTrigger = root.querySelector("[data-service-trigger]");
+const serviceMenu = root.querySelector(".home-page__search-field-menu--service");
+const serviceValue = root.querySelector("[data-service-value]");
+const serviceOptions = root.querySelectorAll("[data-service-option]");
+const areaOptionsRoot = root.querySelector("[data-area-options]");
+const areaTrigger = root.querySelector("[data-area-trigger]");
+const areaMenu = root.querySelector(".home-page__search-field-menu--area");
+const areaInput = root.querySelector("[data-area-input]");
+const areaSizer = root.querySelector("[data-area-sizer]");
+const areaUnit = root.querySelector("[data-area-unit]");
+const locationMenu = root.querySelector(".home-page__search-field-menu--location");
+const locationTrigger = root.querySelector("[data-location-trigger]");
+const locationInput = root.querySelector("[data-location-input]");
+const locationClear = root.querySelector("[data-location-clear]");
+const locationPrimaryLabel = root.querySelector("[data-location-primary-label]");
+const locationQueryLabel = root.querySelector("[data-location-query-label]");
+const locationOptions = root.querySelectorAll("[data-location-option]");
+const addonToggle = root.querySelector("[data-addon-toggle]");
+const addonTotal = root.querySelector("[data-addon-total]");
+const searchSubmit = root.querySelector("[data-search-submit]");
+const searchShell = root.querySelector(".home-page__search-shell");
+const addonsPanel = root.querySelector("[data-addons-panel]");
+const addonsGrid = root.querySelector("[data-addons-grid]");
+const notificationsMenu = root.querySelector("[data-notifications-menu]");
+const notificationsTitle = root.querySelector(".header-not-login__notifications-title");
+const notificationsText = root.querySelector(".header-not-login__notifications-text");
+const headerElement = root.querySelector(".header-not-login");
+const headerMobileToggle = root.querySelector("[data-header-mobile-toggle]");
+const headerMobileBackdrop = root.querySelector("[data-header-mobile-backdrop]");
+const headerMobileMenu = root.querySelector("[data-header-mobile-menu]");
 let setNotificationsOpen = () => {};
 let refreshAreaFieldState = () => {};
 
@@ -123,7 +128,7 @@ const renderAddons = () => {
         <img src="/clingo-homepage/assets/icons/check.svg" alt="">
       </span>
       <div class="home-page__addon-icon-shell">
-        <img class="home-page__addon-icon" src="${item.icon}" alt="">
+        <img class="home-page__addon-icon" src="${images[item.icon] || item.icon}" loading="lazy" decoding="async" alt="">
       </div>
       <p class="home-page__addon-title">${safeTitle}</p>
       <button class="home-page__addon-action" type="button">Wybierz</button>
@@ -144,7 +149,7 @@ const renderAddons = () => {
       renderAddons();
     };
 
-    card.addEventListener("click", () => {
+    listen(card, "click", () => {
       if (item.quantity === 0) {
         activateAddon();
         return;
@@ -154,18 +159,18 @@ const renderAddons = () => {
       renderAddons();
     });
 
-    chooseButton.addEventListener("click", (event) => {
+    listen(chooseButton, "click", (event) => {
       event.stopPropagation();
       activateAddon();
     });
 
-    minusButton.addEventListener("click", (event) => {
+    listen(minusButton, "click", (event) => {
       event.stopPropagation();
       item.quantity = Math.max(0, item.quantity - 1);
       renderAddons();
     });
 
-    plusButton.addEventListener("click", (event) => {
+    listen(plusButton, "click", (event) => {
       event.stopPropagation();
       item.quantity = Math.min(50, item.quantity + 1);
       renderAddons();
@@ -181,7 +186,7 @@ if (addonsGrid && addonTotal) {
 }
 
 if (addonToggle) {
-  addonToggle.addEventListener("click", (event) => {
+  listen(addonToggle, "click", (event) => {
     event.stopPropagation();
     setNotificationsOpen(false);
 
@@ -195,13 +200,13 @@ if (addonToggle) {
 }
 
 if (searchSubmit) {
-  searchSubmit.addEventListener("click", () => {
-    window.location.href = "/tablica-ogloszen";
+  listen(searchSubmit, "click", () => {
+    navigate("/tablica-ogloszen");
   });
 }
 
 if (addonToggle && addonsPanel && searchShell) {
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     const clickedTarget = event.target;
 
     if (!(clickedTarget instanceof Node)) {
@@ -225,7 +230,7 @@ if (addonToggle && addonsPanel && searchShell) {
 }
 
 if (headerElement && headerMobileToggle && headerMobileMenu) {
-  headerMobileToggle.addEventListener("click", (event) => {
+  listen(headerMobileToggle, "click", (event) => {
     event.stopPropagation();
     setNotificationsOpen(false);
     const willOpen = !headerElement.classList.contains("is-mobile-menu-open");
@@ -233,18 +238,18 @@ if (headerElement && headerMobileToggle && headerMobileMenu) {
   });
 
   if (headerMobileBackdrop) {
-    headerMobileBackdrop.addEventListener("click", () => {
+    listen(headerMobileBackdrop, "click", () => {
       setHeaderMobileMenuOpen(false);
     });
   }
 
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     if (!headerElement.contains(event.target)) {
       setHeaderMobileMenuOpen(false);
     }
   });
 
-  window.addEventListener("resize", () => {
+  listen(window, "resize", () => {
     if (window.innerWidth > 992) {
       setHeaderMobileMenuOpen(false);
     }
@@ -292,7 +297,7 @@ if (notificationsMenu) {
   notificationButtons.forEach((button, index) => {
     const panelType = button.dataset.headerPanelTrigger || (index === 2 ? "chat" : "notification");
 
-    button.addEventListener("click", (event) => {
+    listen(button, "click", (event) => {
       event.stopPropagation();
       closeSearchDropdowns();
       const isSamePanel = notificationsMenu.classList.contains("is-open")
@@ -302,7 +307,7 @@ if (notificationsMenu) {
     });
   });
 
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     if (!notificationsMenu.contains(event.target)) {
       setNotificationsOpen(false);
     }
@@ -319,7 +324,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
     serviceValue.style.color = selectedServiceValue ? "#2e3b4c" : "#7c8691";
   };
 
-  serviceTrigger.addEventListener("click", (event) => {
+  listen(serviceTrigger, "click", (event) => {
     event.stopPropagation();
     setNotificationsOpen(false);
     const shouldOpen = !serviceMenu.classList.contains("is-open");
@@ -343,7 +348,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
   });
 
   for (const option of serviceOptions) {
-    option.addEventListener("click", (event) => {
+    listen(option, "click", (event) => {
       event.stopPropagation();
       selectedServiceValue = option.dataset.serviceOption || option.textContent || "";
 
@@ -362,7 +367,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
     });
   }
 
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     if (!serviceMenu.contains(event.target)) {
       serviceMenu.classList.remove("is-open");
     }
@@ -376,11 +381,13 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
 }
 
 if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && areaUnit) {
+  areaOptionsRoot.replaceChildren();
   const values = [];
   const squareMeters = "m\u00B2";
   let selectedAreaValue = null;
 
   const syncAreaInputWidth = () => {
+    if (!root.isConnected || controller.signal.aborted) return;
     const sample = areaInput.value || areaInput.placeholder || "0";
     areaSizer.textContent = sample;
     const measuredWidth = Math.ceil(areaSizer.getBoundingClientRect().width);
@@ -449,7 +456,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     option.dataset.value = String(value);
     option.textContent = `${value} ${squareMeters}`;
 
-    option.addEventListener("click", () => {
+    listen(option, "click", () => {
       selectAreaValue(value);
       areaMenu.classList.remove("is-open");
       renderAreaField();
@@ -481,7 +488,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     });
   };
 
-  areaTrigger.addEventListener("click", (event) => {
+  listen(areaTrigger, "click", (event) => {
     if (event.target === areaInput) {
       return;
     }
@@ -490,16 +497,16 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     areaInput.focus();
   });
 
-  areaInput.addEventListener("focus", () => {
+  listen(areaInput, "focus", () => {
     openAreaMenu();
     selectAreaInputValue();
   });
 
-  areaInput.addEventListener("click", () => {
+  listen(areaInput, "click", () => {
     selectAreaInputValue();
   });
 
-  areaInput.addEventListener("input", () => {
+  listen(areaInput, "input", () => {
     const digitsOnly = areaInput.value.replace(/\D/g, "");
     areaInput.value = digitsOnly;
     selectedAreaValue = digitsOnly === "" ? null : Number.parseInt(digitsOnly, 10);
@@ -510,7 +517,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     }
   });
 
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     if (!areaMenu.contains(event.target)) {
       areaMenu.classList.remove("is-open");
       renderAreaField();
@@ -527,7 +534,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     });
   });
 
-  window.addEventListener("load", syncAreaInputWidth, { once: true });
+  listen(window, "load", syncAreaInputWidth, { once: true });
 
   if (document.fonts && typeof document.fonts.ready?.then === "function") {
     document.fonts.ready.then(() => {
@@ -591,7 +598,7 @@ if (
     closeLocationMenu();
   };
 
-  locationTrigger.addEventListener("click", (event) => {
+  listen(locationTrigger, "click", (event) => {
     if (event.target === locationClear || locationClear.contains(event.target)) {
       return;
     }
@@ -600,16 +607,16 @@ if (
     locationInput.focus();
   });
 
-  locationInput.addEventListener("focus", () => {
+  listen(locationInput, "focus", () => {
     openLocationMenu();
   });
 
-  locationInput.addEventListener("input", () => {
+  listen(locationInput, "input", () => {
     selectedLocationValue = "";
     renderLocationField();
   });
 
-  locationClear.addEventListener("click", (event) => {
+  listen(locationClear, "click", (event) => {
     event.stopPropagation();
     selectedLocationValue = "";
     locationInput.value = "";
@@ -621,17 +628,27 @@ if (
   });
 
   for (const option of locationOptions) {
-    option.addEventListener("click", (event) => {
+    listen(option, "click", (event) => {
       event.stopPropagation();
       commitLocationSelection();
     });
   }
 
-  document.addEventListener("click", (event) => {
+  listen(document, "click", (event) => {
     if (!locationMenu.contains(event.target)) {
       closeLocationMenu();
     }
   });
 
   renderLocationField();
+}
+
+  return () => {
+    controller.abort();
+    document.body.classList.remove("addons-open", "notifications-open");
+  };
+};
+
+if (!document.querySelector("[data-clingo-homepage]")) {
+  window.initializeClingoHomepage(document, href => { window.location.href = href; });
 }

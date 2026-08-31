@@ -1,4 +1,7 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Headers, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { AuthService } from "../auth/auth.service";
+import { BookingService } from "./booking.service";
+import { BookingInput, BookingSelection, warsawDate } from "./booking";
 import { DashboardService } from "./dashboard.service";
 import {
   ChatContact,
@@ -15,31 +18,30 @@ import {
 
 @Controller("dashboard")
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService, private readonly booking: BookingService, private readonly auth: AuthService) {}
+
+  @Post("booking/quote")
+  quote(@Body() body: BookingSelection) { return this.booking.quote(body); }
+
+  @Post("booking/availability")
+  availability(@Body() body: BookingSelection & { month?: string }) { return this.booking.availability(body, body.month); }
 
   @Get("orders")
-  getOrders(@Query("email") email?: string): Promise<DashboardPayload> {
-    return this.dashboardService.getDashboard(email);
+  async getOrders(@Headers("authorization") authorization?: string): Promise<DashboardPayload> {
+    return this.dashboardService.getDashboard(await this.auth.sessionEmail(authorization));
   }
 
   @Post("orders")
-  createOrder(
-    @Body()
-    body: {
-      addOns?: Array<{ id?: string; quantity?: number }>;
-      address?: string;
-      email?: string;
-      frequencyId?: string;
-      pricingId?: string;
-      providerId?: string;
-      startsAt?: string;
-    }
-  ): Promise<DashboardOrder> {
-    return this.dashboardService.createOrder(body);
+  async createOrder(@Body() body: BookingInput, @Headers("authorization") authorization?: string): Promise<DashboardOrder> {
+    const email = await this.auth.sessionEmail(authorization);
+    const id = await this.booking.create(body, email);
+    await this.dashboardService.clearDashboardCache(email);
+    return (await this.dashboardService.getOrder(id, email))!;
   }
 
   @Get("orders/:id")
-  async getOrder(@Param("id") id: string, @Query("email") email?: string): Promise<DashboardOrder> {
+  async getOrder(@Param("id", new ParseUUIDPipe()) id: string, @Headers("authorization") authorization?: string): Promise<DashboardOrder> {
+    const email = await this.auth.sessionEmail(authorization);
     const order = await this.dashboardService.getOrder(id, email);
 
     if (!order) {
@@ -50,7 +52,8 @@ export class DashboardController {
   }
 
   @Patch("orders/:id/cancel")
-  async cancelOrder(@Param("id") id: string, @Query("email") email?: string): Promise<DashboardOrder> {
+  async cancelOrder(@Param("id", new ParseUUIDPipe()) id: string, @Headers("authorization") authorization?: string): Promise<DashboardOrder> {
+    const email = await this.auth.sessionEmail(authorization);
     const order = await this.dashboardService.cancelOrder(id, email);
 
     if (!order) {
@@ -62,12 +65,14 @@ export class DashboardController {
 
   @Patch("orders/:id/reschedule")
   async rescheduleOrder(
-    @Param("id") id: string,
-    @Query("email") email: string | undefined,
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Headers("authorization") authorization: string | undefined,
     @Body() body: { endsAt?: string; startsAt?: string }
   ): Promise<DashboardOrder> {
-    const startsAt = body.startsAt ? new Date(body.startsAt) : null;
-    const endsAt = body.endsAt ? new Date(body.endsAt) : null;
+    const parseTerm = (value?: string) => value && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)
+      ? warsawDate(value.slice(0, 10), value.slice(11)) : value ? new Date(value) : null;
+    const startsAt = parseTerm(body.startsAt);
+    const endsAt = parseTerm(body.endsAt);
 
     if (!startsAt || !endsAt || Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
       throw new BadRequestException("Valid startsAt and endsAt values are required.");
@@ -77,7 +82,10 @@ export class DashboardController {
       throw new BadRequestException("endsAt must be later than startsAt.");
     }
 
-    const order = await this.dashboardService.rescheduleOrder(id, email, startsAt, endsAt);
+    const email = await this.auth.sessionEmail(authorization);
+    await this.booking.reschedule(id, email, startsAt, endsAt);
+    await this.dashboardService.clearDashboardCache(email);
+    const order = await this.dashboardService.getOrder(id, email);
 
     if (!order) {
       throw new NotFoundException("Order not found.");

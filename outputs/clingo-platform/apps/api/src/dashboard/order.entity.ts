@@ -58,5 +58,13 @@ export class OrderEntity {
     addOns: Array<{ id: string; label: string; quantity: number }>;
     frequencyId: string;
     pricingId: string;
+    frequencyLabel?: string;
+    contactName?: string;
+    contactPhone?: string;
+    apartment?: string;
+    notes?: string;
+    invoice?: { companyName: string; taxId: string; address: string } | null;
+    requestId?: string;
+    requestHash?: string;
   } | null;
 }

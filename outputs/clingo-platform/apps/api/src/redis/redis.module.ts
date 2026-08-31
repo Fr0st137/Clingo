@@ -10,13 +10,21 @@ export const REDIS_CLIENT = Symbol("REDIS_CLIENT");
     {
       provide: REDIS_CLIENT,
       inject: [ConfigService],
-      useFactory: (config: ConfigService) =>
-        new Redis({
+      useFactory: (config: ConfigService) => {
+        const redis = new Redis({
           host: config.get<string>("REDIS_HOST", "localhost"),
           port: config.get<number>("REDIS_PORT", 6379),
           lazyConnect: true,
-          maxRetriesPerRequest: 1
-        })
+          connectTimeout: 500,
+          commandTimeout: 200,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 0
+        });
+        // Connect in the background: an optional cache must never delay a page.
+        redis.on("error", () => {});
+        void redis.connect().catch(() => {});
+        return redis;
+      }
     }
   ],
   exports: [REDIS_CLIENT]

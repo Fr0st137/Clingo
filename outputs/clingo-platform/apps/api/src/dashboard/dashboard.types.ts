@@ -12,6 +12,7 @@ export type DashboardOrder = {
   dateLines: string[];
   range?: boolean;
   actions: string[];
+  bookingDetails?: { contactName?: string; contactPhone?: string; frequencyLabel?: string; notes?: string; invoice?: { companyName: string; taxId: string; address: string } | null };
   summary?: {
     duration: string;
     lines: Array<{ id: string; label: string; value: string }>;

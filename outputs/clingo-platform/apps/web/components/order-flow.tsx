@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
 import { OrderCardData } from "./order-card";
 import { OrderSummaryCard } from "./order-summary-card";
@@ -59,12 +60,12 @@ export function OrderConfirmationPage({ order }: { order: OrderCardData | null }
             <p className="mt-[15px] w-[420px] text-center text-[14px] leading-[22px] text-[#2e3b4c]">
               {order.provider} · {orderTerm(order)}
             </p>
-            <a
+            <Link
               className="mt-[25px] flex h-[46px] w-[260px] items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white"
               href={`/zamowienia/szczegoly?id=${encodeURIComponent(order.id ?? "")}`}
             >
               Szczegóły zlecenia
-            </a>
+            </Link>
           </div>
         </section>
       </section>
@@ -88,6 +89,11 @@ export function OrderDetailsPage({ order }: { order: OrderCardData | null }) {
             <OrderField label="Usługa" value={order.details} />
             <OrderField label="Adres" value={order.address} icon="map" />
             <OrderField label="Termin" value={orderTerm(order)} icon="calendar" />
+            {order.bookingDetails?.frequencyLabel ? <OrderField label="Częstotliwość" value={order.bookingDetails.frequencyLabel} /> : null}
+            {order.bookingDetails?.contactName ? <OrderField label="Osoba kontaktowa" value={order.bookingDetails.contactName} /> : null}
+            {order.bookingDetails?.contactPhone ? <OrderField label="Telefon kontaktowy" value={order.bookingDetails.contactPhone} /> : null}
+            {order.bookingDetails?.notes ? <section className="rounded-[15px] border border-[#dce6f2] p-[20px] text-[14px]"><p className="mb-2 text-[#7c8691]">Uwagi do zamówienia</p><p className="whitespace-pre-wrap break-words">{order.bookingDetails.notes}</p></section> : null}
+            {order.bookingDetails?.invoice ? <section className="rounded-[15px] border border-[#dce6f2] p-[20px] text-[14px]"><p className="mb-2 text-[#7c8691]">Dane do faktury</p><p>{order.bookingDetails.invoice.companyName}</p><p>NIP: {order.bookingDetails.invoice.taxId}</p><p>{order.bookingDetails.invoice.address}</p></section> : null}
           </div>
         </main>
         <OrderSummaryCard actionHref="/zamowienia" actionLabel="Wróć do rezerwacji" summary={order.summary ?? undefined} />
@@ -184,9 +190,9 @@ export function AddReviewPage() {
           <div className="mt-[20px] h-[120px] w-[740px] rounded-[15px] border border-[#dce6f2] bg-white p-[15px] text-[14px] leading-5 text-[#7c8691]">
             Treść opinii
           </div>
-          <a className="mt-[20px] flex h-[46px] w-[220px] items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white" href="/opinie">
+          <Link className="mt-[20px] flex h-[46px] w-[220px] items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white" href="/opinie">
             Dodaj opinię
-          </a>
+          </Link>
         </section>
       </section>
     </PublicShell>

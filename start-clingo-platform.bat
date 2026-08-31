@@ -3,6 +3,9 @@ setlocal
 
 cd /d "%~dp0outputs\clingo-platform"
 
+set "CLINGO_MODE=preview"
+if /i "%~1"=="dev" set "CLINGO_MODE=dev"
+
 echo.
 echo === Clingo Platform ===
 echo.
@@ -67,11 +70,30 @@ if not errorlevel 1 (
   set WEB_PORT=3002
 )
 
-echo Startuje backend NestJS na http://localhost:4000
-start "Clingo API" cmd /k "cd /d %cd% && call npm.cmd run dev:api"
+if /i "%CLINGO_MODE%"=="preview" (
+  echo Przygotowuje szybka wersje strony. Kompilacja odbywa sie raz, przed otwarciem.
+  call npm.cmd run build:web
+  if errorlevel 1 (
+    echo Nie udalo sie przygotowac strony. Sprawdz blad powyzej.
+    pause
+    exit /b 1
+  )
+)
+
+netstat -ano | findstr /R /C:":4000 .*LISTENING" >nul
+if errorlevel 1 (
+  echo Startuje backend NestJS na http://localhost:4000
+  start "Clingo API" cmd /k "cd /d %cd% && call npm.cmd run dev:api"
+) else (
+  echo Backend na porcie 4000 jest juz uruchomiony.
+)
 
 echo Startuje frontend Next.js na http://localhost:%WEB_PORT%
-start "Clingo Web" cmd /k "cd /d %cd% && call npm.cmd --workspace apps/web run dev -- -p %WEB_PORT%"
+if /i "%CLINGO_MODE%"=="dev" (
+  start "Clingo Web" cmd /k "cd /d %cd% && call npm.cmd --workspace apps/web run dev -- -p %WEB_PORT%"
+) else (
+  start "Clingo Web" cmd /k "cd /d %cd% && call npm.cmd --workspace apps/web run start -- -p %WEB_PORT%"
+)
 
 echo.
 echo Gotowe. Za chwile otworz:

@@ -1,3 +1,4 @@
+import Link from "next/link";
 export type OrderSummaryData = {
   duration: string;
   lines: Array<{ id: string; label: string; value: string }>;
@@ -64,12 +65,12 @@ export function OrderSummaryCard({
             {actionLabel}
           </button>
         ) : (
-          <a
+          <Link
             className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white xl:w-[320px]"
             href={actionHref}
           >
             {actionLabel}
-          </a>
+          </Link>
         )}
       </section>
 

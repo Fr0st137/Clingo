@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 export function OrderHeader() {
@@ -7,13 +8,13 @@ export function OrderHeader() {
       data-node-id="5001:8121"
     >
       <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between overflow-hidden">
-        <a aria-label="Clingo" className="relative block h-[36px] w-[117px] shrink-0" href="/home">
+        <Link aria-label="Clingo" className="relative block h-[36px] w-[117px] shrink-0" href="/home">
           <img
             alt="Clingo"
             className="h-full w-full object-contain"
             src="/clingo-homepage/assets/images/logo-clingo-color-new.png"
           />
-        </a>
+        </Link>
 
         <div className="flex items-center justify-center gap-[10px] text-[14px] font-medium text-[#2e3b4c]">
           <span className="whitespace-nowrap">Bezpieczne zamówienie</span>

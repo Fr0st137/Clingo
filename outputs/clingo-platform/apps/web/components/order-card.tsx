@@ -1,3 +1,5 @@
+import Link from "next/link";
+import Image from "next/image";
 export type OrderCardData = {
   actions: string[];
   address: string;
@@ -12,6 +14,7 @@ export type OrderCardData = {
   providerId?: string | null;
   range?: boolean;
   status: string;
+  bookingDetails?: { contactName?: string; contactPhone?: string; frequencyLabel?: string; notes?: string; invoice?: { companyName: string; taxId: string; address: string } | null };
   summary?: {
     duration: string;
     lines: Array<{ id: string; label: string; value: string }>;
@@ -106,7 +109,7 @@ function ProviderAvatar({ order, size = 66 }: { order: OrderCardData; size?: 64 
       className="relative shrink-0 overflow-hidden rounded-[99px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.16)]"
       style={{ height: size, width: size }}
     >
-      <img alt="" className="absolute inset-0 h-full w-full max-w-none rounded-[99px] object-contain" src={orderAssets.paulina} />
+      <Image width={size} height={size} sizes={`${size}px`} alt="" className="absolute inset-0 h-full w-full max-w-none rounded-[99px] object-contain" src={orderAssets.paulina} />
       <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]" />
     </div>
   );
@@ -140,13 +143,13 @@ function ButtonLink({
       : "border border-[#d9dfe7] bg-[#f8fafc] text-[#2e3b4c]";
 
   return (
-    <a
+    <Link
       className={`flex h-[41px] items-center justify-center rounded-[30px] text-[14px] font-normal leading-[17px] ${classes}`}
       href={actionHref(children, orderId, providerId)}
       style={{ width }}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 

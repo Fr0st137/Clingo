@@ -41,13 +41,30 @@ export function accountProfileToSidebarUser(profile: AccountProfile | null): Sid
   };
 }
 
+let browserProfile: { email: string; expiresAt: number; request: Promise<AccountProfile | null> } | undefined;
+
+export function clearAccountProfileCache() {
+  browserProfile = undefined;
+}
+
 export async function getAccountProfile(email?: string): Promise<AccountProfile | null> {
   if (!email) {
     return null;
   }
 
+  // Memory only, scoped to the current browser account; never cache on the server.
+  if (typeof window === "undefined") return fetchAccountProfile(email);
+  if (browserProfile?.email === email && browserProfile.expiresAt > Date.now()) return browserProfile.request;
+  const request = fetchAccountProfile(email);
+  browserProfile = { email, expiresAt: Date.now() + 30_000, request };
+  request.catch(() => { if (browserProfile?.request === request) clearAccountProfileCache(); });
+  return request;
+}
+
+async function fetchAccountProfile(email: string): Promise<AccountProfile | null> {
   const response = await fetch(`${accountApiBaseUrl}/auth/profile?email=${encodeURIComponent(email)}`, {
-    cache: "no-store"
+    cache: "no-store",
+    signal: AbortSignal.timeout(3000)
   });
 
   if (!response.ok) {
@@ -73,6 +90,7 @@ export async function updateAccountProfile(email: string, values: AccountProfile
   }
 
   const payload = (await response.json()) as { user: AccountProfile };
+  clearAccountProfileCache();
   return payload.user;
 }
 

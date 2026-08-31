@@ -20,6 +20,8 @@ export function DashboardShell({ active, children, user }: DashboardShellProps) 
   }, [user]);
 
   useEffect(() => {
+    if (user) return;
+
     const email = document.cookie
       .split("; ")
       .find((cookie) => cookie.startsWith("clingo-user-email="))

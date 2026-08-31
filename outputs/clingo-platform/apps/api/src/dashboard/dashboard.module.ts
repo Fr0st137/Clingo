@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserEntity } from "../auth/user.entity";
+import { AuthModule } from "../auth/auth.module";
+import { BookingService } from "./booking.service";
 import { BoardFilterEntity } from "./board-filter.entity";
 import { BoardListingEntity } from "./board-listing.entity";
 import { BoardSearchFieldEntity } from "./board-search-field.entity";
@@ -18,6 +20,7 @@ import { SettingsSectionEntity } from "./settings-section.entity";
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([
       BoardFilterEntity,
       BoardListingEntity,
@@ -35,6 +38,6 @@ import { SettingsSectionEntity } from "./settings-section.entity";
     ])
   ],
   controllers: [DashboardController],
-  providers: [DashboardService]
+  providers: [DashboardService, BookingService]
 })
 export class DashboardModule {}

@@ -1,5 +1,6 @@
-import { StaticOrderDateScreen } from "../../components/order-static-screens";
+import { OrderDateScreen } from "../../components/order-booking-screens";
+import { loadBookingPage } from "../../lib/booking-page";
 
-export default function OrderPage() {
-  return <StaticOrderDateScreen />;
+export default async function OrderPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <OrderDateScreen {...await loadBookingPage(await searchParams, "/zamowienie")} />;
 }
