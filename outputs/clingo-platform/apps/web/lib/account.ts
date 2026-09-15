@@ -1,7 +1,9 @@
 import type { SidebarUser } from "../components/sidebar";
 import type { SettingsPayload } from "./api";
+import { accountRequest } from "./account-client";
 
 export type AccountProfile = {
+  notifications: { email: boolean; sms: boolean };
   apartment: string | null;
   city: string | null;
   companyName: string | null;
@@ -62,34 +64,12 @@ export async function getAccountProfile(email?: string): Promise<AccountProfile 
 }
 
 async function fetchAccountProfile(email: string): Promise<AccountProfile | null> {
-  const response = await fetch(`${accountApiBaseUrl}/auth/profile?email=${encodeURIComponent(email)}`, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(3000)
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const payload = (await response.json()) as { user?: AccountProfile };
-  return payload.user ?? null;
+  const payload = await accountRequest<{ user: AccountProfile }>("profile");
+  return payload.user;
 }
 
 export async function updateAccountProfile(email: string, values: AccountProfileUpdate): Promise<AccountProfile> {
-  const response = await fetch(`${accountApiBaseUrl}/auth/profile?email=${encodeURIComponent(email)}`, {
-    body: JSON.stringify(values),
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    method: "PATCH"
-  });
-
-  if (!response.ok) {
-    throw new Error(`Profile update failed with status ${response.status}.`);
-  }
-
-  const payload = (await response.json()) as { user: AccountProfile };
+  const payload = await accountRequest<{ user: AccountProfile }>("profile", "PATCH", values);
   clearAccountProfileCache();
   return payload.user;
 }

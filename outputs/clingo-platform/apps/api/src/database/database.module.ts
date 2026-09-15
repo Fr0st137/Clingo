@@ -3,6 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UserEntity } from "../auth/user.entity";
 import { AuthSessionEntity } from "../auth/auth-session.entity";
+import { AuthRateLimitEntity } from "../auth/auth-rate-limit.entity";
+import { CustomerFavoriteEntity } from "../dashboard/customer-favorite.entity";
+import { CustomerReviewEntity, CustomerReviewImageEntity } from "../dashboard/customer-review.entity";
 import { BoardFilterEntity } from "../dashboard/board-filter.entity";
 import { BoardListingEntity } from "../dashboard/board-listing.entity";
 import { BoardSearchFieldEntity } from "../dashboard/board-search-field.entity";
@@ -29,6 +32,8 @@ import { SettingsSectionEntity } from "../dashboard/settings-section.entity";
         database: config.get<string>("POSTGRES_DB", "clingo"),
         entities: [
           AuthSessionEntity,
+          AuthRateLimitEntity,
+          CustomerFavoriteEntity, CustomerReviewEntity, CustomerReviewImageEntity,
           BoardFilterEntity,
           BoardListingEntity,
           BoardSearchFieldEntity,

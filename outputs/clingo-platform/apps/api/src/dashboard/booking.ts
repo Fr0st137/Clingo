@@ -9,6 +9,7 @@ export type BookingSelection = {
 
 export type BookingInput = BookingSelection & {
   startsAt?: string;
+  sessions?: Array<{ startsAt?: string; endsAt?: string; workers?: number }>;
   address?: string;
   apartment?: string;
   notes?: string;
@@ -17,6 +18,17 @@ export type BookingInput = BookingSelection & {
   invoice?: { companyName?: string; taxId?: string; address?: string } | null;
   requestId?: string;
   expectedTotal?: number;
+};
+
+export type CustomerAvailability = {
+  days?: number[];
+  start?: string;
+  end?: string;
+};
+
+export type MultiScheduleInput = BookingSelection & {
+  startsAt?: string;
+  availability?: CustomerAvailability;
 };
 
 type Offer = {
@@ -51,7 +63,7 @@ export function quoteBooking(offer: Offer, selection: BookingSelection) {
   const durationMinutes = hours * 60 + minutes + addOns.reduce((s, a) => s + a.durationMinutes * a.quantity, 0);
   if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) throw new BadRequestException("Brak czasu realizacji dla wybranej usługi.");
   const discount = Math.abs(Number(frequency.discount.replace(",", ".").replace(/[^\d.]/g, "")));
-  const base = Math.round(pricing.priceValue * (1 - discount / 100));
+  const base = Math.round(pricing.priceValue * (1 - discount / 100) * 100) / 100;
   const totalValue = Math.round((base + addOns.reduce((s, a) => s + a.priceValue * a.quantity, 0)) * 100) / 100;
   if (!Number.isFinite(totalValue) || totalValue < 0) throw new BadRequestException("Nieprawidłowa konfiguracja ceny usługi.");
   return {
@@ -89,6 +101,28 @@ export function bookingLimit(now: Date) {
   const [year, month, day] = localDate(now).split("-").map(Number);
   const monthEnd = new Date(Date.UTC(year, month + 6, 0)).getUTCDate();
   return new Date(Date.UTC(year, month - 1 + 6, Math.min(day, monthEnd))).toISOString().slice(0, 10);
+}
+
+export function addLocalDays(date: string, days: number) {
+  const value = new Date(`${date}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+export function multiSessionDurations(totalMinutes: number, maximumMinutes = 8 * 60) {
+  if (!Number.isInteger(totalMinutes) || totalMinutes < 30 || totalMinutes > 7 * 24 * 60 || !Number.isInteger(maximumMinutes) || maximumMinutes < 15) {
+    throw new BadRequestException("Nieprawidłowy czas realizacji zamówienia.");
+  }
+  const sessionCount = Math.max(2, Math.ceil(totalMinutes / maximumMinutes));
+  const base = Math.floor(totalMinutes / sessionCount / 15) * 15;
+  const durations = Array.from({ length: sessionCount }, () => base);
+  let remainder = totalMinutes - base * sessionCount;
+  for (let index = 0; remainder > 0; index = (index + 1) % sessionCount) {
+    const step = Math.min(15, remainder);
+    durations[index] += step;
+    remainder -= step;
+  }
+  return durations;
 }
 
 export type WorkingHours = { days: number[]; startHour: number; endHour: number; bufferMinutes: number; leadHours: number };

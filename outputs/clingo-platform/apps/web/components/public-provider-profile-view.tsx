@@ -1,4 +1,7 @@
 "use client";
+import { ReviewPhotos } from "./review-photos";
+
+import { FavoriteButton } from "./favorite-button";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -8,6 +11,16 @@ import { useState } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
 
 const availability = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb"];
+
+type ProviderRequest = { area?: string; address?: string; addons?: string };
+
+function serviceOfferHref(providerId: string, serviceId: string, request: ProviderRequest) {
+  const params = new URLSearchParams({ service: serviceId });
+  if (request.area) params.set("area", request.area);
+  if (request.address) params.set("address", request.address);
+  if (request.addons) params.set("addons", request.addons);
+  return `/profil-ogloszeniowy/${providerId}?${params.toString()}`;
+}
 
 const paulinaServices = [
   {
@@ -59,7 +72,6 @@ function StarRow({ rating, size = "small" }: { rating: number; size?: "small" | 
 }
 
 function ProfileSummary({ profile }: { profile: ProviderProfileData }) {
-  const [favorite, setFavorite] = useState(false);
   const [shared, setShared] = useState(false);
   const image = providerImage(profile.id);
 
@@ -124,15 +136,7 @@ function ProfileSummary({ profile }: { profile: ProviderProfileData }) {
         >
           <Share2 className="h-4 w-4" strokeWidth={1.7} />
         </button>
-        <button
-          aria-label="Dodaj do ulubionych"
-          aria-pressed={favorite}
-          className="grid h-[38px] w-[38px] place-items-center rounded-full border border-[#e6edf3] bg-[#f9fafb]"
-          onClick={() => setFavorite((current) => !current)}
-          type="button"
-        >
-          <Heart className={`h-4 w-4 ${favorite ? "fill-[#0079de] text-[#0079de]" : "text-[#2e3b4c]"}`} strokeWidth={1.7} />
-        </button>
+        <FavoriteButton providerId={profile.id} />
       </div>
     </article>
   );
@@ -242,6 +246,7 @@ function ReviewItem({ review, expandable = false }: { expandable?: boolean; revi
           <p className="m-0 mt-2 text-[14px] leading-[26px] text-[#334155]">
             {expandable && !expanded && review.content.length > 142 ? `${review.content.slice(0, 142).trim()}...` : review.content}
           </p>
+          <ReviewPhotos images={review.images} />
         </div>
       </div>
       {expandable && review.content.length > 142 ? (
@@ -254,7 +259,7 @@ function ReviewItem({ review, expandable = false }: { expandable?: boolean; revi
   );
 }
 
-export function PublicProviderProfileView({ profile }: { profile: ProviderProfileData }) {
+export function PublicProviderProfileView({ profile, request = {} }: { profile: ProviderProfileData; request?: ProviderRequest }) {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const services = profile.id === "paulina-jagielska" ? paulinaServices : paulinaServices.map((service, index) => ({
     ...service,
@@ -271,12 +276,12 @@ export function PublicProviderProfileView({ profile }: { profile: ProviderProfil
         <h2 className="m-0 text-[20px] font-bold leading-6 text-[#2e3b4c]">Wykonywane usługi</h2>
         <div className="grid gap-[20px]">
           {services.map((service) => (
-            <ServiceCard {...service} href={`/profil-ogloszeniowy/${profile.id}?service=${service.id}`} key={service.id} />
+            <ServiceCard {...service} href={serviceOfferHref(profile.id, service.id, request)} key={service.id} />
           ))}
         </div>
       </div>
 
-      <aside className="grid min-w-0 gap-[20px]">
+      <aside id="opinie" className="grid min-w-0 scroll-mt-24 gap-[20px]">
         <RatingsCard profile={profile} />
         {visibleReviews.map((review, index) => (
           <ReviewItem expandable={index === 0} key={review.id} review={review} />

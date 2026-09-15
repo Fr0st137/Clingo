@@ -4,6 +4,7 @@ import { Edit2, Plus, Star } from "lucide-react";
 export interface ReviewImage {
   id: string;
   label: string;
+  url?: string;
 }
 
 export interface ReviewCardData {
@@ -109,7 +110,7 @@ export function ReviewCard({ review, showAuthor = false }: { review: ReviewCardD
       {review.images?.length ? (
         <div className="mt-4 flex flex-wrap gap-3">
           {review.images.map((image, index) => (
-            <div
+            image.url ? <a href={image.url} target="_blank" rel="noreferrer" key={image.id}><img alt={image.label} src={image.url} className="h-[80px] w-[110px] rounded-xl border border-[#d9e4f0] object-cover" /></a> : <div
               aria-label={image.label}
               className={[
                 "h-[62px] w-[82px] rounded-xl border border-[#d9e4f0] bg-cover bg-center",

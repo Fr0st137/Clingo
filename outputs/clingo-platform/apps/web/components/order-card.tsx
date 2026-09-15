@@ -14,7 +14,15 @@ export type OrderCardData = {
   providerId?: string | null;
   range?: boolean;
   status: string;
-  bookingDetails?: { contactName?: string; contactPhone?: string; frequencyLabel?: string; notes?: string; invoice?: { companyName: string; taxId: string; address: string } | null };
+  bookingDetails?: {
+    addOns?: Array<{ id: string; label: string; quantity: number }>;
+    contactName?: string;
+    contactPhone?: string;
+    frequencyLabel?: string;
+    notes?: string;
+    invoice?: { companyName: string; taxId: string; address: string } | null;
+    sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
+  };
   summary?: {
     duration: string;
     lines: Array<{ id: string; label: string; value: string }>;
@@ -51,7 +59,7 @@ function actionHref(action: string, orderId?: string, providerId?: string | null
   }
 
   if (action.includes("Dodaj")) {
-    return "/opinie/dodaj";
+    return `/opinie/dodaj${suffix}`;
   }
 
   if (action.includes("ponownie")) {

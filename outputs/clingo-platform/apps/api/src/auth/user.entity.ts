@@ -2,6 +2,9 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, Update
 
 @Entity({ name: "users" })
 export class UserEntity {
+  @Column({ name: "notification_preferences", type: "jsonb", default: () => "'{\"email\":true,\"sms\":false}'::jsonb" })
+  notificationPreferences!: { email: boolean; sms: boolean };
+
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 

@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ action: string }> }) {
   const { action } = await params;
-  const paths: Record<string, string> = { quote: "booking/quote", availability: "booking/availability", confirm: "orders" };
+  const paths: Record<string, string> = {
+    quote: "booking/quote",
+    availability: "booking/availability",
+    "multi-availability": "booking/multi-availability",
+    "multi-schedule": "booking/multi-schedule",
+    confirm: "orders"
+  };
   if (!paths[action]) return new NextResponse(null, { status: 404 });
   const token = request.cookies.get("clingo-session")?.value;
   if (!token || request.cookies.get("clingo-auth")?.value !== "1") return NextResponse.json({ message: "Zaloguj się ponownie, aby kontynuować zamówienie." }, { status: 401 });

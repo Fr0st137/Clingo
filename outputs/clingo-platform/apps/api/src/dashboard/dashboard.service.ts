@@ -29,6 +29,7 @@ import { FavoriteProviderEntity } from "./favorite-provider.entity";
 import { NotificationSettingEntity } from "./notification-setting.entity";
 import { OrderEntity } from "./order.entity";
 import { PanelReviewEntity } from "./panel-review.entity";
+import { CustomerService } from "./customer.service";
 import { ProviderProfileEntity } from "./provider-profile.entity";
 import { SettingsSectionEntity } from "./settings-section.entity";
 
@@ -128,8 +129,9 @@ function toDashboardOrder(order: OrderEntity): DashboardOrder {
     range: lines.length === 2,
     actions: orderActions(order),
     summary: order.summary,
-    bookingDetails: order.selectedOptions ? { contactName: order.selectedOptions.contactName, contactPhone: order.selectedOptions.contactPhone,
-      frequencyLabel: order.selectedOptions.frequencyLabel, notes: order.selectedOptions.notes, invoice: order.selectedOptions.invoice } : undefined,
+    bookingDetails: order.selectedOptions ? { addOns: order.selectedOptions.addOns, contactName: order.selectedOptions.contactName, contactPhone: order.selectedOptions.contactPhone,
+      frequencyLabel: order.selectedOptions.frequencyLabel, notes: order.selectedOptions.notes, invoice: order.selectedOptions.invoice,
+      sessions: order.selectedOptions.sessions } : undefined,
     ...providerVisual(order)
   };
 }
@@ -248,6 +250,7 @@ function createSeedProviderProfile(config: SeedProviderProfileConfig): ProviderP
 @Injectable()
 export class DashboardService implements OnModuleInit {
   constructor(
+    private readonly customer: CustomerService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     @InjectRepository(BoardFilterEntity) private readonly boardFiltersRepository: Repository<BoardFilterEntity>,
     @InjectRepository(BoardListingEntity) private readonly boardListingsRepository: Repository<BoardListingEntity>,
@@ -455,18 +458,20 @@ export class DashboardService implements OnModuleInit {
       this.boardSearchFieldsRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardFiltersRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardListingsRepository.find({ order: { orderIndex: "ASC" } }),
-      this.providerProfilesRepository.find({ select: ["id"] })
+      this.providerProfilesRepository.find({ select: ["id", "addOns"] })
     ]);
-    const profileIds = new Set(providerProfiles.map((profile) => profile.id));
+    const profilesById = new Map(providerProfiles.map((profile) => [profile.id, profile]));
+
+    const ratings = await this.customer.ratingTotals(listings.map(listing => listing.id));
 
     return {
       searchFields: searchFields.map(({ id, label, value }) => ({ id, label, value })),
       filters: filters.map(({ id, title, options }) => ({ id, title, options })),
-      listings: listings.filter((listing) => profileIds.has(listing.id)).map((listing) => ({
+      listings: listings.filter((listing) => profilesById.has(listing.id)).map((listing) => ({
+        addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label }) => ({ id, label })) ?? [],
         id: listing.id,
         provider: listing.provider,
-        rating: Number(listing.rating),
-        reviews: listing.reviews,
+        ...this.customer.rating({ rating: Number(listing.rating), reviewsCount: listing.reviews }, ratings.get(listing.id)),
         experience: listing.experience,
         price: listing.price,
         completedOrders: listing.completedOrders,
@@ -486,10 +491,7 @@ export class DashboardService implements OnModuleInit {
       return null;
     }
 
-    return {
-      ...profile,
-      rating: Number(profile.rating)
-    };
+    return this.customer.publicProfile(profile);
   }
 
   async clearDashboardCache(email: string) {

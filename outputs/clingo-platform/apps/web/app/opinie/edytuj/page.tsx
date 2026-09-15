@@ -1,3 +1,4 @@
+import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "../../../components/dashboard-shell";
 import { PageHeading } from "../../../components/page-heading";
 import { ReviewEditorModal } from "../../../components/review-editor-modal";
@@ -16,19 +17,12 @@ export default async function EditReviewRoute({ searchParams }: EditReviewPagePr
   const params = await searchParams;
   const reviewId = getParam(params, "id");
   const opinions = await getOpinions();
-  const editedReview = opinions.userReviews.find((review) => review.id === reviewId) ?? opinions.userReviews[0];
-  const review = editedReview ?? {
-    avatarTone: "person" as const,
-    content: "",
-    id: "missing-review",
-    person: "Wykonawca",
-    rating: 4,
-    service: "Usługa do oceny"
-  };
+  const review = opinions.userReviews.find(item => item.id === reviewId);
+  if (!review) notFound();
 
   return (
     <DashboardShell active="Twoje opinie">
-      <section className="w-full md:w-[1090px]">
+      <section className="min-w-0 w-full">
         <PageHeading
           description="Edytuj opinię wystawioną po usłudze."
           title="Edytuj opinię"

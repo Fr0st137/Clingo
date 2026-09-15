@@ -37,9 +37,6 @@ export function ClingoHomepageView() {
         type="image/svg+xml"
         fetchPriority="high"
       />
-      <link rel="stylesheet" href="/clingo-homepage/styles/base.css" />
-      <link rel="stylesheet" href="/clingo-homepage/styles/header-not-login.css" />
-      <link rel="stylesheet" href="/clingo-homepage/styles/home.css" />
       <HomepageClient markup={getHomepageMarkup()} images={addonImages} />
     </>
   );

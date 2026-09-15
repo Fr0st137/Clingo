@@ -1,4 +1,6 @@
 "use client";
+import { ReviewPhotos } from "./review-photos";
+
 
 import Link from "next/link";
 import Image from "next/image";
@@ -7,11 +9,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
 import { OfferSummaryUnavailable } from "./offer-summary-unavailable";
-import { offerAddOnQuantities, offerRequestState, pricingArea, requestPricing } from "../lib/offer-request";
+import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, requestPricing } from "../lib/offer-request";
 import type { OfferRequest } from "../lib/offer-request";
 import { declaredServiceAreas } from "../../api/src/dashboard/service-area";
 
 type AddOn = NonNullable<ProviderProfileData["addOns"]>[number];
+type Frequency = NonNullable<ProviderProfileData["frequencies"]>[number];
 
 const fallbackOverview = [
   { id: "rating", label: "Ocena", value: "5.0" },
@@ -43,6 +46,83 @@ function priceFromText(value: string) {
 
 function formatPrice(value: number) {
   return `${value.toLocaleString("pl-PL", { maximumFractionDigits: 2 })} zł`;
+}
+
+function frequencyDiscount(value: string) {
+  return Math.abs(Number(value.replace(",", ".").replace(/[^\d.]/g, "") || 0));
+}
+
+function frequencyPrice(value: number) {
+  return `${value.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} zł`;
+}
+
+function frequencyLabel(value: string) {
+  const normalized = value.toLocaleLowerCase("pl-PL");
+  if (normalized === "co tydzień") return "Raz w tygodniu";
+  if (normalized === "co 2 tygodnie") return "Raz na 2 tygodnie";
+  if (normalized === "co miesiąc") return "Raz w miesiącu";
+  if (normalized === "jednorazowo") return "Jednorazowe";
+  return value;
+}
+
+function pricingLabelForArea(label: string, area: number) {
+  if (!Number.isFinite(area) || area <= 0) return label;
+  return label.replace(/\d+(?:[.,]\d+)?\s*m(?:²|2)/i, `${area}m²`);
+}
+
+function FrequencyPricingTable({
+  basePrice,
+  frequencies,
+  onSelect,
+  selectedId
+}: {
+  basePrice: number;
+  frequencies: Frequency[];
+  onSelect: (id: string) => void;
+  selectedId?: string;
+}) {
+  const ordered = [...frequencies].sort((first, second) => {
+    const discountDifference = frequencyDiscount(second.discount) - frequencyDiscount(first.discount);
+    return discountDifference || first.label.localeCompare(second.label, "pl-PL");
+  });
+
+  return (
+    <section className="rounded-[30px] border border-[#e6edf3] bg-white p-[30px] shadow-[0px_2px_7px_rgba(0,0,0,0.04)]" data-node-id="831:775">
+      <h2 className="m-0 text-[20px] font-bold leading-[28px] text-[#2e3b4c]">Częstotliwość sprzątania</h2>
+      <div className="mt-[20px] grid auto-cols-[166px] grid-flow-col gap-[15px] overflow-x-auto rounded-[20px] bg-[#f9fafb] p-[15px] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]" data-node-id="858:808">
+        {ordered.map((frequency) => {
+          const discount = frequencyDiscount(frequency.discount);
+          const selected = frequency.id === selectedId;
+          const price = Math.round(basePrice * (1 - discount / 100) * 100) / 100;
+
+          return (
+            <button
+              aria-pressed={selected}
+              className={[
+                "relative flex min-h-[164px] min-w-0 flex-col items-center justify-center overflow-hidden rounded-[20px] border p-[30px] text-center transition-colors",
+                selected ? "border-[#d9d9d9] bg-[#dee4ea]" : "border-[#e6edf3] bg-white hover:border-[#b8d9f5]"
+              ].join(" ")}
+              data-node-id={selected ? "844:894" : "722:512"}
+              key={frequency.id}
+              onClick={() => onSelect(frequency.id)}
+              type="button"
+            >
+              <span className="flex min-w-[84px] items-center justify-center rounded-[20px] bg-[#0079de] px-[10px] py-[6px] text-[16px] font-medium leading-normal text-white">
+                {discount ? `-${discount}%` : "0%"}
+              </span>
+              <span className="flex h-[50px] w-[124px] max-w-full items-center justify-center py-[2px] text-[14px] font-medium leading-normal text-[#2e3b4c]">
+                {frequencyLabel(frequency.label)}
+              </span>
+              <strong className="w-[124px] max-w-full py-[2px] text-[16px] font-bold leading-normal text-[#2e3b4c]">
+                {frequencyPrice(price)}
+              </strong>
+              {selected ? <span className="absolute right-[15px] top-[15px] h-[14px] w-[14px] overflow-hidden"><img alt="" className="h-full w-full object-contain" src="/clingo-homepage/assets/icons/addon-check.svg" /></span> : null}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function SectionCard({ children, title }: { children: ReactNode; title?: string }) {
@@ -232,7 +312,8 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const pricing = profile.pricing?.length ? profile.pricing : fallbackPricing;
   const frequencies = profile.frequencies?.length ? profile.frequencies : fallbackFrequencies;
   const addOns = profile.addOns ?? [];
-  const [area, setArea] = useState(initialRequest.area ?? "");
+  const initialArea = numericArea(initialRequest.area ?? "");
+  const [area, setArea] = useState(Number.isFinite(initialArea) && initialArea > 0 ? String(initialArea) : "");
   const [address, setAddress] = useState(initialRequest.address ?? "");
   const [selectedPricingId, setSelectedPricingId] = useState(() =>
     requestPricing(pricing, initialRequest.area ?? "", initialRequest.pricing)?.id ?? "");
@@ -240,7 +321,14 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => offerAddOnQuantities(profile, initialRequest.addons));
   const requestState = offerRequestState(profile, area, address);
   const coveredAreas = declaredServiceAreas(profile.metrics);
-  const areaOptions = [...new Set(pricing.map(pricingArea).filter((value): value is number => value !== null))];
+  const pricingAreas = pricing.map(pricingArea).filter((value): value is number => value !== null);
+  const maximumArea = Math.max(0, ...pricingAreas);
+  const requestedArea = numericArea(area);
+  const areaOptions = [...new Set([
+    ...Array.from({ length: Math.floor(maximumArea / 5) }, (_, index) => (index + 1) * 5),
+    ...pricingAreas,
+    ...(Number.isFinite(requestedArea) && requestedArea > 0 ? [requestedArea] : [])
+  ])].sort((first, second) => first - second);
 
   const selectedAddOnItems = useMemo(
     () => selectedQuantityEntries(addOns, addOnQuantities),
@@ -249,9 +337,9 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
 
   const selectedPricing = pricing.find((item) => item.id === selectedPricingId) ?? pricing[0];
   const selectedFrequency = frequencies.find((item) => item.id === selectedFrequencyId) ?? frequencies[0];
-  const discount = Math.abs(Number(selectedFrequency?.discount.replace(/[^\d]/g, "") ?? 0));
+  const discount = frequencyDiscount(selectedFrequency?.discount ?? "0%");
   const baseTotal = selectedPricing?.priceValue ?? priceFromText(profile.summary.total);
-  const discountedBase = Math.round(baseTotal * (1 - discount / 100));
+  const discountedBase = Math.round(baseTotal * (1 - discount / 100) * 100) / 100;
   const liveTotal = discountedBase + selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
   const addOnDuration = selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.durationMinutes * quantity, 0);
   const checkoutHref = useMemo(() => {
@@ -305,16 +393,16 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
       <section aria-label="Dane do wyceny" className="grid gap-[15px] rounded-[20px] border border-[#e5e7eb] bg-white p-[20px] shadow-[0_4px_18px_0_rgba(15,23,42,0.08)] sm:grid-cols-[200px_minmax(0,1fr)] xl:col-span-2">
         <label className="min-w-0 text-[12px] text-[#7c8691]">
           Metraż
-          <select aria-label="Metraż" className="mt-2 h-[44px] w-full rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] text-[14px] text-[#2e3b4c] outline-none focus:border-[#0079de]" value={areaOptions.includes(Number(area)) ? area : ""} onChange={event => {
+          <select aria-label="Metraż" className="mt-2 h-[44px] w-full rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] text-[14px] text-[#2e3b4c] outline-none focus:border-[#0079de]" value={Number.isFinite(requestedArea) && areaOptions.includes(requestedArea) ? String(requestedArea) : ""} onChange={event => {
             const value = event.target.value;
             setArea(value);
-            const option = pricing.find(item => pricingArea(item) === Number(value));
+            const option = requestPricing(pricing, value);
             if (option) setSelectedPricingId(option.id);
           }}>
             <option value="">Wybierz metraż</option>
             {areaOptions.map(value => <option key={value} value={String(value)}>{value} m²</option>)}
           </select>
-          <span className="mt-2 block">Warianty dostępne w cenniku wykonawcy.</span>
+          <span className="mt-2 block">Cena automatycznie dopasuje się do wybranego metrażu.</span>
         </label>
         <label className="min-w-0 text-[12px] text-[#7c8691]">
           Lokalizacja usługi
@@ -380,7 +468,9 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
         </SectionCard>
 
         <SectionCard title="Opis">
-          <p className="m-0 mt-[20px] text-[14px] font-normal leading-[24px] text-[#2e3b4c]">{profile.description}</p>
+          <div className="mt-[20px] rounded-[20px] bg-[#f9fafb] p-[15px]" data-node-id="6195:11147">
+            <p className="m-0 whitespace-pre-line text-[14px] font-normal leading-[22px] text-[#2e3b4c]">{profile.description}</p>
+          </div>
           <div className="mt-[20px] flex flex-wrap gap-[10px]">
             {profile.tags.map((tag) => (
               <span className="rounded-[30px] bg-[#e9f5ff] px-[12px] py-[5px] text-[13px] font-normal leading-[17px] text-[#0079de]" key={tag}>
@@ -409,54 +499,18 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
                   <RatingStars rating={review.rating} />
                 </div>
                 <p className="m-0 mt-[12px] text-[13px] font-normal leading-[21px] text-[#2e3b4c]">{review.content}</p>
+                <ReviewPhotos images={review.images} />
               </article>
             ))}
           </div>
         </SectionCard>
 
-        <SectionCard title="Cennik i częstotliwość sprzątania">
-          <div className="mt-[20px] grid gap-[15px]">
-            {pricing.map((item) => (
-              <button
-                className={[
-                  "flex min-h-[82px] w-full items-center justify-between gap-[20px] rounded-[15px] border px-[15px] py-[14px] text-left transition-colors",
-                  item.id === selectedPricing?.id ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-[#f9fafb]"
-                ].join(" ")}
-                key={item.id}
-                onClick={() => { setSelectedPricingId(item.id); const itemArea = pricingArea(item); if (itemArea !== null) setArea(String(itemArea)); }}
-                type="button"
-              >
-                <div>
-                  <h3 className="m-0 text-[15px] font-semibold leading-5 text-[#2e3b4c]">{item.label}</h3>
-                  <p className="m-0 mt-[4px] text-[13px] font-normal leading-[18px] text-[#7c8691]">{item.description}</p>
-                  <p className="m-0 mt-[6px] text-[12px] font-normal leading-4 text-[#9ca3af]">{item.duration}</p>
-                </div>
-                <p className="m-0 shrink-0 text-[18px] font-bold leading-6 text-[#2e3b4c]">{item.price}</p>
-              </button>
-            ))}
-          </div>
-          <div className="mt-[15px] grid grid-cols-1 gap-[15px] md:grid-cols-3">
-            {frequencies.map((frequency) => (
-              <button
-                className={[
-                  "min-h-[92px] rounded-[15px] border p-[15px] text-left transition-colors",
-                  frequency.id === selectedFrequency?.id ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-white"
-                ].join(" ")}
-                key={frequency.id}
-                onClick={() => setSelectedFrequencyId(frequency.id)}
-                type="button"
-              >
-                <div className="flex items-start justify-between gap-[10px]">
-                  <h3 className="m-0 text-[14px] font-semibold leading-5 text-[#2e3b4c]">{frequency.label}</h3>
-                  <span className="rounded-[30px] bg-[#e9f5ff] px-[10px] py-[4px] text-[12px] font-normal leading-[15px] text-[#0079de]">
-                    {frequency.discount}
-                  </span>
-                </div>
-                <p className="m-0 mt-[8px] text-[12px] font-normal leading-[18px] text-[#7c8691]">{frequency.description}</p>
-              </button>
-            ))}
-          </div>
-        </SectionCard>
+        <FrequencyPricingTable
+          basePrice={baseTotal}
+          frequencies={frequencies}
+          onSelect={setSelectedFrequencyId}
+          selectedId={selectedFrequency?.id}
+        />
 
         <SectionCard title="Usługi dodatkowe">
           <div className="mt-[20px] grid gap-x-[17px] gap-y-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}>
@@ -485,6 +539,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
                   <RatingStars rating={review.rating} />
                 </div>
                 <p className="m-0 mt-[12px] text-[13px] font-normal leading-[21px] text-[#2e3b4c]">{review.content}</p>
+                <ReviewPhotos images={review.images} />
               </article>
             ))}
           </div>
@@ -495,7 +550,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
         {requestState !== "ready" ? (
           <OfferSummaryUnavailable
             state={requestState}
-            area={areaOptions.includes(Number(area)) ? area : ""}
+            area={Number.isFinite(requestedArea) ? String(requestedArea) : ""}
             duration={`${selectedPricing?.duration ?? profile.summary.duration}${addOnDuration ? ` + ${addOnDuration} min` : ""}`}
             basePrice={formatPrice(discountedBase - priceFromText(profile.summary.lines.find(line => line.id === "travel")?.value ?? "0"))}
             travelPrice={profile.summary.lines.find(line => line.id === "travel")?.value ?? "W cenie usługi"}
@@ -516,7 +571,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <dl className="mt-[20px] grid gap-[8px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
             {selectedPricing ? (
               <div className="flex min-h-[20px] justify-between gap-[14px]">
-                <dt>{selectedPricing.label}</dt>
+                <dt>{pricingLabelForArea(selectedPricing.label, requestedArea)}</dt>
                 <dd className="m-0 shrink-0">{formatPrice(discountedBase)}</dd>
               </div>
             ) : null}

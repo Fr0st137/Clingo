@@ -102,7 +102,7 @@ export function OrderCheckoutForm({
 
   const summary = useMemo(() => {
     const discount = discountPercent(frequency?.discount ?? "0%");
-    const base = Math.round((pricing?.priceValue ?? 0) * (1 - discount / 100));
+    const base = Math.round((pricing?.priceValue ?? 0) * (1 - discount / 100) * 100) / 100;
     const addOnsTotal = selectedAddOns.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
     const duration =
       parseDurationMinutes(pricing?.duration ?? profile.summary.duration) +

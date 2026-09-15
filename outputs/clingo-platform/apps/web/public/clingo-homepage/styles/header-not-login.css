@@ -1,7 +1,7 @@
 .header-not-login {
   width: 100%;
   padding: 10.5px 0;
-  background: var(--color-white);
+  background: var(--color-white, #ffffff);
   box-shadow: -2px 2px 10.5px 0 rgba(0, 0, 0, 0.08);
 }
 
@@ -753,5 +753,21 @@
 
   .header-not-login__mobile-menu {
     width: 100vw;
+  }
+}
+
+/* Keep the account navigation in two rows even with a visible mobile scrollbar. */
+@media (max-width: 576px) {
+  .clingo-app-header .header-not-login__actions {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .clingo-app-header .header-not-login__account-button {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .clingo-app-header .header-not-login__contractor-button {
+    padding-right: 8px;
+    padding-left: 8px;
   }
 }

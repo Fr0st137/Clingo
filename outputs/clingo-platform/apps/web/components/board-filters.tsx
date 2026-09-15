@@ -7,6 +7,7 @@ export interface FilterGroupData {
 }
 
 export type BoardFilterState = {
+  addOns: Record<string, boolean>;
   facilities: Record<string, boolean>;
   maxPrice: string;
   minOrders: number;
@@ -15,11 +16,15 @@ export type BoardFilterState = {
   modes: Record<"Jednosesyjne" | "Wielosesyjne", boolean>;
 };
 
+export type BoardAddOnFilter = { id: string; label: string };
+
 type BoardFiltersProps = {
+  addOnsOpen: boolean;
   filteredCount: number;
   filters: BoardFilterState;
   groups: FilterGroupData[];
   onFiltersChange: (filters: BoardFilterState) => void;
+  onToggleAddOns: () => void;
   totalCount: number;
 };
 
@@ -69,13 +74,14 @@ function numberValue(value: string) {
   return value.replace(/[^\d]/g, "");
 }
 
-export function BoardFilters({ filteredCount, filters, groups, onFiltersChange, totalCount }: BoardFiltersProps) {
+export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFiltersChange, onToggleAddOns, totalCount }: BoardFiltersProps) {
   const rating = groups[0] ?? { id: "rating", options: ["5", "4", "3", "2", "1"], title: "Ocena" };
   const price = groups[1] ?? { id: "price", options: ["od", "do"], title: "Cena" };
   const type = groups[2] ?? { id: "type", options: ["Jednosesyjne", "Wielosesyjne"], title: "Typ zlecenia" };
   const facilities = groups[3] ?? { id: "facilities", options: [], title: "Ułatwienia przy zamówieniu" };
   const orders = groups[4] ?? { id: "orders", options: [], title: "Min. ilość wykonanych zleceń" };
-  const selectedFacilitiesCount = Object.values(filters.facilities).filter(Boolean).length;
+  const maxOrders = Number(orders.options.at(-1)) || 166;
+  const selectedAddOnsCount = Object.values(filters.addOns).filter(Boolean).length;
 
   function update(next: Partial<BoardFilterState>) {
     onFiltersChange({ ...filters, ...next });
@@ -89,6 +95,7 @@ export function BoardFilters({ filteredCount, filters, groups, onFiltersChange, 
 
   function resetFilters() {
     onFiltersChange({
+      addOns: {},
       facilities: {},
       maxPrice: "",
       minOrders: 0,
@@ -103,7 +110,7 @@ export function BoardFilters({ filteredCount, filters, groups, onFiltersChange, 
 
   return (
     <aside
-      className="h-auto min-h-[916px] w-[345px] rounded-[20px] border border-[#e6edf3] bg-white pb-[20px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+      className="h-auto w-[345px] self-start rounded-[20px] border border-[#e6edf3] bg-white pb-[20px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
       data-node-id="1141:1456"
     >
       <div className="mx-[15px] mt-[15px] w-[315px]">
@@ -131,14 +138,20 @@ export function BoardFilters({ filteredCount, filters, groups, onFiltersChange, 
         </div>
       </div>
 
-      <button className="mx-[15px] mt-[30px] flex h-[45px] w-[315px] items-center rounded-[50px] bg-[#f4f6f9] px-[20px]" type="button">
+      <button
+        aria-controls="board-add-ons-overlay"
+        aria-expanded={addOnsOpen}
+        className="mx-[15px] mt-[30px] flex h-[45px] w-[315px] items-center rounded-[50px] bg-[#f4f6f9] px-[20px]"
+        onClick={onToggleAddOns}
+        type="button"
+      >
         <img alt="" className="h-[16px] w-[16px]" src="/figma-assets/board-shield.svg" />
         <span className="ml-[20px] text-[14px] font-medium leading-normal text-[#2e3b4c]">Usługi dodatkowe</span>
         <span className="ml-[20px] flex h-[20px] w-[40px] items-center justify-center rounded-[20px] bg-[#0079de] text-center text-[14px] font-medium leading-normal text-white">
-          {selectedFacilitiesCount}
+          {selectedAddOnsCount}
         </span>
         <span className="flex-1" />
-        <img alt="" className="h-[16px] w-[15px] -rotate-90" src="/figma-assets/board-chevron.svg" />
+        <img alt="" className={`h-[16px] w-[15px] transition-transform ${addOnsOpen ? "rotate-0" : "-rotate-90"}`} src="/figma-assets/board-chevron.svg" />
       </button>
 
       <div className="mx-[15px] mt-[30px] w-[315px]">
@@ -209,20 +222,23 @@ export function BoardFilters({ filteredCount, filters, groups, onFiltersChange, 
 
       <div className="mx-[15px] mt-[30px] w-[315px]">
         <SectionHeader icon="/figma-assets/board-shield.svg" title={orders.title} />
-        <div className="mt-[10px] flex h-[40px] w-[315px] items-center px-[15px]">
-          <span className="flex h-[30px] w-[46px] items-center justify-center rounded-[10px] border border-[#e5e7eb] text-[12px] leading-5 text-[#2e3b4c]">
+        <div className="mt-[10px] flex h-[40px] w-[315px] items-end px-[15px] py-[5px]" data-node-id="6118:10926">
+          <span className="flex h-[30px] min-w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white px-[15px] py-[5px] text-[13px] font-medium leading-5 text-[#334155]" data-node-id="6121:10988">
             {filters.minOrders}
           </span>
-          <input
-            aria-label="Minimalna ilość wykonanych usług"
-            className="ml-[8px] h-[6px] w-[206px] accent-[#0079de]"
-            max="166"
-            min="0"
-            onChange={(event) => update({ minOrders: Number(event.target.value) })}
-            type="range"
-            value={filters.minOrders}
-          />
-          <span className="ml-[8px] text-[12px] leading-5 text-[#9ca3af]">166</span>
+          <span className="relative ml-[5px] h-[6px] min-w-0 flex-1 rounded-[99px] bg-[#e5e7eb]" data-node-id="6118:10930">
+            <span className="absolute inset-y-0 left-0 rounded-[9999px] bg-[#0079de]" style={{ width: `${Math.min(100, Math.max(0, filters.minOrders / maxOrders * 100))}%` }} />
+            <input
+              aria-label="Minimalna ilość wykonanych usług"
+              className="board-orders-range absolute left-0 top-1/2 h-[16px] w-full -translate-y-1/2 cursor-pointer"
+              max={maxOrders}
+              min="0"
+              onChange={(event) => update({ minOrders: Number(event.target.value) })}
+              type="range"
+              value={filters.minOrders}
+            />
+          </span>
+          <span className="ml-[5px] self-stretch text-[13px] font-medium leading-5 text-[#7c8691]">{maxOrders}</span>
         </div>
       </div>
 

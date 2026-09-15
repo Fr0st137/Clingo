@@ -29,13 +29,15 @@ With the API already running, use `npm run preview:web`, or `npm run build:web` 
 
 Internal navigation uses Next links and streaming loading states. The legacy homepage initializes and cleans up its controls on every client-side return. Provider images, add-on icons and homepage illustrations use responsive Next image optimization. Only the public catalogue is cached for 30 seconds; orders, availability and confirmation remain uncached and session-checked. Quote/confirmation still verify current prices. Account lookups are deduplicated for 30 seconds in browser memory only and cleared after edits/logout. Settings and checkout fetch independent data concurrently. Optional Redis commands have a 200 ms deadline and skip disconnected cache clients; database fallback connections use a bounded reusable pool.
 
+The provider search in the public header suggests matching profiles by person or company name and opens the selected public provider profile. Matching is case-insensitive, accepts Polish names typed without diacritics, and supports multiple name fragments in any order.
+
 ## Customer reservations
 
 The current single-visit checkout is connected to PostgreSQL: offer selection, available date/time, address/contact/invoice details, notes, server-calculated summary, confirmation, and the customer's reservations list. Drafts survive refresh/back navigation in the same browser tab. A server-issued session is required; users of the old preview must sign in again. Registration currently creates a local account directly; email verification is not implemented and no activation message is claimed.
 
 Availability uses the provider's existing reservations and optional `provider_profiles.booking_settings` JSON (`days`: Sunday=0, `startHour`, `endHour`, `bufferMinutes`, `leadHours`). Without configuration the development default is Monday–Saturday, 08:00–20:00, one simultaneous reservation per provider. Times are interpreted in Europe/Warsaw, in 15-minute start intervals, up to six months ahead. The complete service must fit within working hours. Employee schedules and multi-session planning are not implemented yet. Frequency selection stores the chosen preference/discount for this visit; it does not automatically book subsequent visits.
 
-The confirmation endpoint rechecks availability inside a transaction that locks the provider, rejects changed prices, stores an immutable quote/contact snapshot, and deduplicates retries using the draft request ID. Reading, creating, cancelling and rescheduling orders derives account ownership from the session, not a supplied email. This does not complete authentication/security work for unrelated legacy profile and dashboard endpoints.
+The confirmation endpoint rechecks availability inside a transaction that locks the provider, rejects changed prices, stores an immutable quote/contact snapshot, and deduplicates retries using the draft request ID. Reading, creating, cancelling and rescheduling orders derives account ownership from the session, not a supplied email. Profile, settings, favorites and customer-review endpoints now also enforce session ownership. The legacy chat remains demo functionality and is not a private messaging implementation.
 
 No real SMS/email dispatch or online customer payment is performed. Confirmation only claims a successful database reservation. Existing standards/regulations pages still need their actual content before launch.
 
@@ -56,3 +58,37 @@ npm run verify:navigation
 The integration check uses isolated temporary accounts and a cloned test provider, and removes only its own fixtures. It covers persistence, ownership, invalid input, competing reservations, retries and freeing a cancelled slot.
 
 `verify:navigation` checks thirteen public/account/checkout pages and reports complete HTML response times (not browser rendering times). It uses and removes its own local account. Set `CLINGO_TEST_WEB` to measure a preview on a different port. Compare cold and warm visits separately, and compare the same server mode when isolating code changes from development compilation overhead.
+
+## Account settings, favorites and reviews
+
+The customer account now persists personal/contact details, address and email/SMS preferences in PostgreSQL. The email address is read-only until verified email changes are implemented. Saving notification preferences does not send messages: SMTP/SMS integrations and OAuth account connections remain unavailable, explicitly labeled in settings. Forgotten-password recovery and account activation are separate, unfinished email/SMS flows.
+
+Password changes require the current password and matching new passwords (15–128 characters). New passwords are not trimmed. Only salted, versioned scrypt hashes are stored (`N=131072, r=8, p=1`, 32-byte derived key, independent 16-byte random salt); raw passwords and session tokens are not stored in the database. Legacy scrypt hashes are upgraded on successful login. Password rotation locks the account, updates the hash and invalidates all previous sessions in one transaction; the current browser receives a new HttpOnly cookie. Logout revokes its server session. Authentication and review-write rate limits are atomic PostgreSQL counters, shared across server instances, with expired buckets cleaned periodically. Password derivations are asynchronous with a bounded concurrency of two per process.
+
+These choices follow [OWASP password storage guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) and [authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html). They are not a substitute for a production security review. Before deployment, configure HTTPS, restricted API/database access, secrets, backups, monitoring and edge rate limits. The API's IP limits intentionally do not trust arbitrary forwarded headers; requests from the Next proxy share a source-IP bucket, in addition to independent account buckets. Configure a trusted deployment proxy/edge limiter for production traffic volumes. Local Compose database/cache ports are bound to 127.0.0.1.
+
+Favorites have a composite account/provider key, persist across devices and synchronize the list and profile buttons. Legacy seeded favorites are not assigned to any customer. Private account pages never fall back to unscoped demo data when the API fails.
+
+Reviews belong to a specific account and completed reservation, with one review per reservation enforced by the database. Merely reaching the reservation's end time is insufficient; the service must have an explicit completed status. Existing provider/admin completion workflow remains outside this change. Customers can add/edit/delete their own rating, text and up to three photos; other accounts cannot mutate or attach their photos. Reviews appear publicly on provider/offer pages with first name and last initial. Public aggregate ratings include existing catalogue ratings plus real customer reviews. Demo reviews are not assigned to customers.
+
+Photos accept JPG, PNG and WebP up to 2 MB / 16 megapixels each, are decoded and re-encoded using sharp as WebP up to 1600px, and are stored in PostgreSQL with the review. The conversion strips metadata, including EXIF location. File names and client-supplied URLs are not trusted. Removing a photo/review removes its stored image data; image responses use `nosniff` and `no-store`. Authors are told before saving that reviews and photos will be public.
+
+### Schema and validation
+
+Development `TYPEORM_SYNC=true` adds `users.notification_preferences`, `auth_rate_limits`, `customer_favorites`, `customer_reviews` and `customer_review_images`. For environments without synchronization, apply `apps/api/src/database/migrations/20260831-customer-account.sql` before starting the new API. It is additive and does not rewrite existing user passwords, orders or demo data. Back up the database first; keep synchronization disabled in production.
+
+The security dependency update uses Next 15.5.24, Nest 11.2.3, TypeORM 0.3.31 and sharp 0.35.4. Root dependency overrides keep PostCSS, lodash and multer on patched versions. Use Node 22 or newer and install from the committed lockfile. The final dependency resolution reported zero known vulnerabilities on 2026-08-31; rerun the audit regularly as advisories change.
+
+With the local API/database running:
+
+```bash
+npm run verify:account
+node scripts/verify-account-web.cjs
+node scripts/verify-account-migration.cjs
+npm run verify:booking
+npm run test:booking
+npm run test:offer-request
+npm run test:order-api
+```
+
+The web check additionally requires the frontend on port 3000 (`CLINGO_TEST_WEB` can override it). Checks create isolated disposable accounts/provider/orders and remove only their fixtures. They verify persistence, ownership, malformed input, password migration/rotation, revoked sessions, durable limits, concurrent uniqueness, photo validation/metadata removal, public review rendering and cookie/CSRF behavior. `browser-account-fixture.cjs setup/check/cleanup` supports an optional local browser smoke check.

@@ -11,6 +11,8 @@ export function OrderHeader() {
         <Link aria-label="Clingo" className="relative block h-[36px] w-[117px] shrink-0" href="/home">
           <img
             alt="Clingo"
+            width={117}
+            height={36}
             className="h-full w-full object-contain"
             src="/clingo-homepage/assets/images/logo-clingo-color-new.png"
           />

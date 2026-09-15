@@ -17,11 +17,15 @@ import { OrderEntity } from "./order.entity";
 import { PanelReviewEntity } from "./panel-review.entity";
 import { ProviderProfileEntity } from "./provider-profile.entity";
 import { SettingsSectionEntity } from "./settings-section.entity";
+import { CustomerFavoriteEntity } from "./customer-favorite.entity";
+import { CustomerReviewEntity, CustomerReviewImageEntity } from "./customer-review.entity";
+import { CustomerService } from "./customer.service";
 
 @Module({
   imports: [
     AuthModule,
     TypeOrmModule.forFeature([
+      CustomerFavoriteEntity, CustomerReviewEntity, CustomerReviewImageEntity,
       BoardFilterEntity,
       BoardListingEntity,
       BoardSearchFieldEntity,
@@ -38,6 +42,6 @@ import { SettingsSectionEntity } from "./settings-section.entity";
     ])
   ],
   controllers: [DashboardController],
-  providers: [DashboardService, BookingService]
+  providers: [DashboardService, BookingService, CustomerService]
 })
 export class DashboardModule {}
