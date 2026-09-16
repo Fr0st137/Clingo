@@ -5,6 +5,7 @@ Figma import implemented as a Next.js + Tailwind CSS frontend with a NestJS back
 ## Apps
 
 - `apps/web`: Next.js React UI matching the inspected Figma orders dashboard.
+- `apps/provider`: Next.js provider panel, imported screen-by-screen from the provider Figma project.
 - `apps/api`: NestJS API with dashboard data, TypeORM/PostGIS configuration, and Redis cache wiring.
 
 ## Run
@@ -12,6 +13,7 @@ Figma import implemented as a Next.js + Tailwind CSS frontend with a NestJS back
 ```bash
 npm install
 npm run dev:web
+npm run dev:provider
 npm run dev:api
 ```
 
