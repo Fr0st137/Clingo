@@ -1,12 +1,10 @@
-import type { ReactNode } from "react";
 import { ProviderShell } from "./provider-shell";
+import Link from "next/link";
 import { ProviderPageSize } from "./provider-list-controls";
+import { ProviderPaymentButton as PaymentButton } from "./provider-payment-button";
+import { ProviderChangeCardDialog } from "./provider-change-card-dialog";
 
 const paymentAsset = (name: string) => `/figma-assets/payment-methods/${name}`;
-
-function PaymentButton({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <button type="button" className={`payment-button ${className}`}>{children}</button>;
-}
 
 function CurrentPlan() {
   const features = [
@@ -48,7 +46,7 @@ function PaymentCard() {
         <div className="payment-card-logo"><img src={paymentAsset("mastercard.png")} alt="Mastercard" /></div>
         <div><strong>Mastercard •••• 9451</strong><span>Data ważności: maj 2027</span></div>
       </div>
-      <PaymentButton>Zmień kartę na inną</PaymentButton>
+      <ProviderChangeCardDialog />
     </section>
   );
 }
@@ -62,7 +60,7 @@ function BillingDetails() {
         <div><dt>Adres e-mail:</dt><dd>paulina.jagielska@gmail.com</dd></div>
         <div><dt>NIP:</dt><dd>----------</dd></div>
       </dl>
-      <PaymentButton>Zarządzaj danymi</PaymentButton>
+      <Link href="/payment-methods/billing" className="payment-button">Zarządzaj danymi</Link>
     </section>
   );
 }
@@ -118,7 +116,7 @@ function InvoiceHistory() {
 
 export function ProviderPaymentMethodsPage() {
   return (
-    <ProviderShell figmaNode="2008:1824">
+    <ProviderShell figmaNode="2008:1824" paymentsActive>
       <div className="payment-content">
         <div className="payment-content-scroll">
           <div className="payment-dashboard">

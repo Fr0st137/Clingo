@@ -6,6 +6,64 @@
   --soft: #f4f6f9;
 }
 
+.provider-modal { width: 480px; max-width: calc(100vw - 100px); max-height: calc(100dvh - 48px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: var(--ink); font: inherit; }
+.provider-modal::backdrop { background: rgba(54,63,76,.6); backdrop-filter: blur(3.5px); }
+.provider-modal-body { max-height: calc(100dvh - 48px); padding: 30px; overflow-y: auto; border-radius: 25px; background: white; }
+.provider-modal-close { position: absolute; top: 0; left: calc(100% + 10px); width: 35px; height: 35px; padding: 0; border: 0; border-radius: 30px; background: transparent; cursor: pointer; }
+.provider-modal-close img { width: 35px; height: 35px; }
+.provider-modal-close:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.payment-change-card-form { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+.payment-change-card-heading { height: 84px; padding: 0 5px; }
+.payment-change-card-heading h2 { margin: 0; font-size: 30px; font-weight: 600; line-height: 48px; }
+.payment-change-card-heading p { margin: 0; font-size: 22px; line-height: 38px; }
+.payment-change-card-form .payment-change-card-field { flex: 0 0 60px; width: 100%; height: 60px; padding-top: 8px; }
+.payment-change-card-field .settings-field { gap: 10px; width: 100%; height: 52px; padding: 0 20px; border-color: #dce0e3; background: white; }
+.payment-change-card-field .settings-field-label { display: flex; align-items: center; gap: 5px; top: -13px; left: 19px; padding: 2px; background: white; font-weight: 400; line-height: 17px; }
+.payment-card-number-field .settings-field-label { gap: 15px; top: -13px; }
+.payment-card-brands { display: flex; align-items: center; gap: 15px; }
+.payment-card-brands img { width: 30px; height: 20px; }
+.payment-card-brands img:last-child { width: 27px; height: 18px; }
+.payment-card-number-icon { flex: 0 0 18px; width: 18px; height: 18px; margin-right: 9px; }
+.payment-card-cvv-info { width: 14px; height: 14px; }
+.payment-change-card-field .settings-field input { flex: 1; min-width: 0; width: 100%; padding: 0; color: var(--ink); font: inherit; }
+.payment-change-card-field .settings-field:focus-within { border-color: var(--blue); }
+.payment-change-card-field .settings-field input:focus-visible { outline: none; }
+.payment-change-card-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.payment-change-card-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.payment-change-card-actions .payment-button { width: 100%; height: 48px; padding: 0; border: 1px solid var(--line); font-weight: 600; line-height: 48px; }
+.payment-change-card-actions .payment-change-card-save { background: var(--blue); color: white; opacity: 1; cursor: default; }
+
+/* Dane do faktury — Figma 6645:11959. */
+.provider-invoice-content { display: flex; flex-direction: column; gap: 10px; width: 1120px; margin: 0 auto; }
+.provider-invoice-panel { overflow: hidden; border: 1px solid #e5e7eb; border-radius: 15px; background: white; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+.provider-invoice-heading { display: flex; align-items: center; justify-content: space-between; height: 73px; padding: 19px 23px; border-bottom: 1px solid #e5e7eb; }
+.provider-invoice-heading h2 { margin: 0; color: #111827; font-size: 16px; font-weight: 500; line-height: 19px; }
+.provider-invoice-actions { display: flex; align-items: center; gap: 10px; }
+.provider-invoice-button { display: flex; align-items: center; justify-content: center; height: 33px; padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 99px; background: white; color: #374151; font: inherit; font-weight: 500; line-height: 17px; text-decoration: none; white-space: nowrap; opacity: 1; }
+.provider-invoice-back { width: 72px; }
+.provider-invoice-save { width: 128px; border: 0; background: var(--blue); color: white; }
+.provider-invoice-body { display: flex; flex-direction: column; gap: 24px; padding: 23px; }
+.provider-invoice-field { display: flex; flex-direction: column; gap: 6px; }
+.provider-invoice-field > label { color: #374151; font-weight: 500; line-height: 17px; }
+.provider-invoice-field > p { margin: 0; color: #6b7280; font-size: 12px; line-height: 15px; }
+.provider-invoice-input { width: 100%; height: 37px; padding: 9px 11px; border: 1px solid #d1d5db; border-radius: 8px; background: white; color: #111827; font: inherit; line-height: 17px; }
+.provider-invoice-country { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 11px; }
+.provider-invoice-country > img { flex: 0 0 14px; width: 14px; height: 14px; }
+.provider-invoice-country input, .provider-invoice-contacts input { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; color: #111827; font: inherit; line-height: 17px; }
+.provider-invoice-country button { display: grid; flex: 0 0 20px; width: 20px; height: 20px; padding: 0; place-items: center; border: 0; border-radius: 10px; background: #e5e7eb; opacity: 1; }
+.provider-invoice-country button img, .provider-invoice-contact-chip button img { width: 14px; height: 14px; }
+.provider-invoice-contacts { display: flex; align-items: center; gap: 8px; height: 40px; padding: 7px 11px; }
+.provider-invoice-contact-chip { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; height: 24px; padding: 4px 8px 4px 10px; border-radius: 6px; background: var(--soft); color: #374151; font-size: 13px; line-height: 16px; }
+.provider-invoice-contact-chip button { display: grid; width: 16px; height: 16px; padding: 0; place-items: center; border: 0; border-radius: 8px; background: #9ca3af; opacity: 1; }
+.provider-invoice-tax .provider-invoice-heading { padding-right: 19px; padding-left: 19px; }
+.provider-invoice-add-tax { width: 284px; border-color: var(--blue); color: var(--blue); }
+.provider-invoice-tax .provider-invoice-body { padding: 19px; }
+.provider-invoice-tax .provider-invoice-body > p { margin: 0; color: #6b7280; line-height: 17px; }
+.provider-invoice-button:focus-visible, .provider-invoice-input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.provider-invoice-input:focus-within { border-color: var(--blue); }
+.provider-invoice-country input:focus-visible, .provider-invoice-contacts input:focus-visible { outline: none; }
+.header-icon-link[aria-label="Metody płatności"] .header-icon.is-active { background: linear-gradient(#dee4ea,#ced4da); }
+
 /* Metody płatności — Figma 2008:1824. */
 .payment-content { position: relative; height: 835px; margin-top: 10px; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 15px; background: url('/figma-assets/payment-methods/background.png') center / cover; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
 .payment-content::before { position: absolute; inset: 0; background: linear-gradient(to top, rgba(255,255,255,0) 70.659%, rgba(255,255,255,.5)); pointer-events: none; content: ''; }
@@ -28,7 +86,7 @@
 .payment-plan-feature dt { display: flex; align-items: center; gap: 10px; color: var(--muted); font-weight: 500; line-height: 17px; }
 .payment-plan-feature dt img { width: 14px; height: 14px; }
 .payment-plan-feature dd { margin: 0; font-weight: 600; line-height: 19px; }
-.payment-button { display: flex; align-items: center; justify-content: center; width: max-content; height: 36px; padding: 8px 25px; border: .5px solid #d9d9d9; border-radius: 30px; background: #fff; color: var(--ink); font: inherit; line-height: 20px; cursor: pointer; white-space: nowrap; }
+.payment-button { display: flex; align-items: center; justify-content: center; width: max-content; height: 36px; padding: 8px 25px; border: .5px solid #d9d9d9; border-radius: 30px; background: #fff; color: var(--ink); font: inherit; line-height: 20px; cursor: pointer; white-space: nowrap; text-decoration: none; }
 .payment-button:focus-visible, .header-icon-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .payment-change-plan { width: 330px; height: 55px; background: var(--soft); border: 1px solid #dce0e3; box-shadow: 0 1px 3px rgba(0,0,0,.06); font-weight: 600; }
 .payment-account-summary { display: flex; flex-direction: column; gap: 15px; min-width: 0; }
@@ -766,6 +824,31 @@ img { display: block; }
 .order-card-cancelled img { width: 14px; height: 14px; }
 .order-day-free { width: min(875px,100%); height: 82px; padding: 25px; border-radius: 15px; background: var(--soft); color: var(--muted); line-height: 17px; }
 
+/* Zlecenia wielosesyjne — Figma 3931:4993. */
+.multi-session-orders-content { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; height: 835px; margin-top: 10px; padding: 29px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 15px; background: url('/figma-assets/orders/multi-session/background.png') center / cover; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+.multi-session-orders-content::before { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(to top, rgba(255,255,255,0), #fff); pointer-events: none; content: ''; }
+.multi-session-orders-content > * { position: relative; }
+.multi-session-orders-list { display: flex; flex: 0 1 875px; min-width: 875px; flex-direction: column; gap: 20px; }
+.multi-session-orders-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.multi-session-orders-heading h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 20px; }
+.multi-session-orders-heading p { margin: 10px 0 0; line-height: 20px; white-space: nowrap; }
+.multi-session-orders-sort { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; height: 33px; padding: 8px 15px; border: 1px solid #d9d9d9; border-radius: 30px; background: #fff; color: var(--ink); font: inherit; line-height: 17px; white-space: nowrap; opacity: 1; }
+.multi-session-orders-sort strong { font-weight: 500; }
+.multi-session-orders-sort img { width: 16px; height: 15px; }
+.multi-session-orders-spacer { flex: 0 0 98px; height: 33px; }
+.order-card.is-multi-session { box-shadow: 0 4px 7px rgba(0,0,0,.04); }
+.multi-session-order-dates { display: flex; flex: 0 0 199px; align-items: center; gap: 10px; padding: 0 10px; white-space: nowrap; }
+.multi-session-order-dates > div { display: flex; flex-direction: column; gap: 10px; }
+.multi-session-order-dates span { color: var(--muted); font-size: 12px; line-height: 15px; }
+.multi-session-order-dates time { font-size: 14px; line-height: 17px; }
+.multi-session-order-dates > img { width: 14px; height: 14px; }
+.is-multi-session .order-card-details { height: 52px; gap: 0; justify-content: space-between; }
+.multi-session-order-client { display: flex; align-items: center; gap: 15px; height: 25px; white-space: nowrap; }
+.multi-session-order-client .order-card-tags { gap: 15px; }
+.is-multi-session .order-card-service { font-weight: 400; }
+.multi-session-order-count { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 75px; color: var(--muted); white-space: nowrap; }
+.multi-session-order-count img { width: 14px; height: 14px; }
+
 /* Wspólne elementy list i historia zamówień — Figma 3931:5531. */
 .provider-back-link { display: flex; align-items: center; justify-content: center; gap: 5px; flex: 0 0 98px; height: 33px; padding: 8px 15px; border: 1px solid #e5e7eb; border-radius: 30px; background: #fff; color: var(--ink); font-weight: 500; line-height: 17px; text-decoration: none; }
 .provider-back-link img { width: 16px; height: 15px; transform: rotate(90deg); }
@@ -856,6 +939,203 @@ img { display: block; }
 .calendar-appointment.is-compact-60 .calendar-appointment-service { height: 12px; margin-top: 1px; font-size: 10px; line-height: 12px; }
 .week-absence { position: absolute; top: 239.5px; right: 8px; left: 8px; display: flex; align-items: center; justify-content: center; height: 29px; padding: 5px 10px; overflow: hidden; border: 1px solid #d8e0e8; border-radius: 8px; background: #f5f7fa; color: #5d6875; font-size: 12px; font-weight: 500; line-height: 15px; white-space: nowrap; }
 .week-current-time { position: absolute; top: 240px; left: 59px; width: calc(100% - 60px); height: 12px; pointer-events: none; }
+
+/* Szablon edycji zamówienia — układ kart z Figmy 1979:2340. */
+.provider-order-edit-link { display: block; color: inherit; text-decoration: none; }
+.provider-order-edit-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 15px; }
+.calendar-order-edit-link:focus-visible .calendar-appointment { outline: 2px solid var(--blue); outline-offset: 2px; }
+.order-history-price a { display: block; width: 40px; height: 14px; }
+.order-history-price a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.multi-session-edit-row { position: relative; }
+.multi-session-edit-button { position: absolute; top: 23px; right: -46px; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #e5e7eb; border-radius: 50%; background: #fff; }
+.multi-session-edit-button img { width: 16px; height: 16px; }
+.multi-session-edit-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+a.multi-order-button { text-decoration: none; }
+.order-edit-content { height: 835px; margin-top: 10px; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 15px; background: url('/figma-assets/orders/edit/background.png') center / cover; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+.order-edit-scroll { height: 100%; padding: 29px 20px 50px; overflow: auto; scrollbar-width: none; }
+.order-edit-scroll::-webkit-scrollbar { display: none; }
+.order-edit-scroll:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.order-edit-template { display: flex; flex-direction: column; gap: 10px; width: 1088px; margin: 0 auto; }
+.order-edit-actions { display: flex; align-items: center; justify-content: space-between; height: 33px; }
+.order-edit-actions > div { display: flex; align-items: center; gap: 20px; }
+.order-edit-actions button { display: flex; align-items: center; justify-content: center; gap: 10px; height: 33px; padding: 8px 20px; border: 0; border-radius: 30px; background: var(--blue); color: #fff; font: inherit; font-weight: 500; line-height: 17px; opacity: 1; }
+.order-edit-actions button img { width: 14px; height: 14px; }
+.order-edit-header { display: flex; align-items: center; gap: 10px; min-height: 130px; padding: 19px; border: 1px solid #e5e7eb; border-radius: 15px; background: #fff; box-shadow: 0 4px 7px rgba(0,0,0,.04); }
+.order-edit-header > img { width: 90px; height: 90px; border-radius: 10px; object-fit: cover; opacity: .95; }
+.order-edit-header > div { display: flex; flex-direction: column; gap: 10px; }
+.order-edit-header h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 24px; }
+.order-edit-header h1 span { color: var(--muted); font-weight: 400; }
+.order-edit-header p { display: flex; align-items: center; gap: 15px; margin: 0; color: var(--muted); line-height: 20px; }
+.order-edit-status { padding: 3px 10px; border-radius: 30px; background: var(--soft); color: var(--ink); font-size: 12px; line-height: 15px; }
+.order-edit-two-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.order-edit-card { display: flex; flex-direction: column; gap: 10px; padding: 19px; border: 1px solid #e5e7eb; border-radius: 15px; background: #fff; box-shadow: 0 4px 7px rgba(0,0,0,.04); }
+.order-edit-card h2 { margin: 0; font-size: 14px; font-weight: 500; line-height: 17px; }
+.order-edit-description { margin: 0; color: var(--muted); font-size: 14px; line-height: 19px; }
+.order-edit-field { display: flex; align-items: center; gap: 20px; min-height: 47px; margin-top: 5px; line-height: 17px; }
+.order-edit-field > span:first-child { flex-shrink: 0; }
+.order-edit-input { display: flex; align-items: center; gap: 10px; width: 150px; height: 47px; padding: 0 15px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+.order-edit-input input { width: 100%; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; text-align: center; }
+.order-edit-input input::placeholder { color: #9ca3af; opacity: 1; }
+.order-edit-input small { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.order-edit-input img { width: 14px; height: 14px; }
+.order-edit-two-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 30px; }
+.order-edit-field.is-wide .order-edit-input { flex: 1; width: auto; }
+.order-edit-field.is-wide input { text-align: left; }
+.order-edit-client-fields { display: flex; flex-direction: column; gap: 10px; }
+.order-edit-client-fields .order-edit-field > span:first-child { width: 60px; }
+.order-edit-people { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+.order-edit-people > div { display: flex; align-items: center; gap: 15px; min-width: 240px; padding-right: 20px; border-radius: 30px; background: var(--soft); }
+.order-edit-people img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.order-edit-people p { margin: 0; color: var(--muted); }
+.order-edit-card textarea { min-height: 180px; margin-top: 5px; padding: 20px; resize: vertical; border: 1px solid #d9d9d9; border-radius: 15px; background: #fff; color: var(--ink); font: inherit; line-height: 20px; }
+.order-edit-card textarea::placeholder { color: #9ca3af; }
+.order-edit-input:focus-within, .order-edit-card textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.order-edit-input input:focus { outline: none; }
+
+/* Kalendarz dzienny — Figma 2878:4207. */
+.calendar-day-content { width: 100%; height: 835px; margin-top: 10px; }
+.calendar-toolbar.is-day { height: 60px; padding: 11px 15px; }
+.day-time-grid { position: relative; height: 775px; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 0 0 15px 15px; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.04); }
+.day-time-lines { position: absolute; inset: 0; pointer-events: none; }
+.day-time-lines i { position: absolute; left: 72px; right: 0; height: .5px; background: #f0f3f6; }
+.day-time-lines i.is-hour { left: 0; height: 1px; background: #dce5ee; }
+.day-time-axis { position: absolute; inset: 0 auto 0 0; width: 72px; border-right: 1px solid #dce5ee; }
+.day-time-axis span { position: absolute; left: 0; display: flex; align-items: center; justify-content: center; width: 71px; height: 15px; color: #64748b; font-size: 12px; line-height: 15px; }
+.day-appointment-columns { position: absolute; inset: 0 0 0 72px; display: flex; gap: 12px; padding-left: 10px; }
+.day-appointment-column { position: relative; flex: 0 0 310px; height: 775px; }
+.calendar-appointment.is-day { left: 0; right: 0; display: flex; flex-direction: column; gap: 5px; padding: 14px; box-shadow: 0 2px 6px rgba(15,23,42,.06); }
+.calendar-appointment.is-day-muted { border-color: rgba(129,196,251,.55); background: #eef5fe; opacity: .72; }
+.day-appointment-header { display: flex; align-items: center; justify-content: space-between; height: 17px; }
+.day-appointment-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.day-appointment-pending { width: 14px; height: 14px; }
+.day-appointment-service { color: var(--blue); line-height: 17px; white-space: nowrap; }
+.day-appointment-address { display: flex; align-items: center; gap: 5px; height: 20px; color: #5394ca; line-height: 20px; white-space: nowrap; }
+.day-appointment-address img { width: 12px; height: 12px; }
+.day-current-time { position: absolute; top: 407px; left: 67px; width: calc(100% - 67px); height: 12px; pointer-events: none; }
+
+/* Szczegóły zamówienia wielosesyjnego — Figma 4268:8326. */
+.multi-session-order-link { display: block; color: inherit; text-decoration: none; }
+.multi-session-order-link:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 15px; }
+.multi-order-content { display: flex; flex-direction: column; gap: 10px; height: 835px; margin-top: 10px; }
+.multi-order-toolbar { display: flex; flex: 0 0 33px; align-items: center; justify-content: space-between; }
+.multi-order-toolbar > div { display: flex; align-items: center; gap: 20px; }
+.multi-order-toolbar > div:first-child { gap: 15px; }
+.multi-order-toolbar > div:first-child > span { color: var(--muted); }
+.multi-order-button { display: flex; align-items: center; justify-content: center; gap: 10px; height: 33px; padding: 7px 15px; border: 1px solid #e5e7eb; border-radius: 30px; background: #fff; color: var(--ink); font: inherit; font-weight: 500; line-height: 17px; white-space: nowrap; opacity: 1; }
+.multi-order-button img { width: 14px; height: 14px; object-fit: contain; }
+.multi-order-button.is-red { border-color: #fc3b3b; color: #fc3b3b; }
+.multi-order-button.is-blue-outline { border-color: var(--blue); color: var(--blue); }
+.multi-order-button.is-blue { border-color: var(--blue); background: var(--blue); color: #fff; }
+.multi-order-columns { display: grid; grid-template-columns: 400px 1138px; gap: 10px; flex: 1; min-height: 0; align-items: start; overflow: auto; scrollbar-width: none; }
+.multi-order-columns::-webkit-scrollbar { display: none; }
+.multi-order-columns:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.multi-order-side-panel { display: flex; flex-direction: column; gap: 15px; height: 1059.364px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 15px; background: #fff; }
+.multi-order-client { display: flex; flex: 0 0 56px; align-items: flex-end; justify-content: space-between; padding: 15px 15px 0; }
+.multi-order-client h1 { margin: 0 0 5px; font-size: 16px; font-weight: 500; line-height: 19px; }
+.multi-order-client span { color: var(--muted); line-height: 17px; }
+.multi-order-client button { display: grid; place-items: center; width: 41px; height: 41px; padding: 0; border: 0; border-radius: 16px; background: linear-gradient(#f0f2f4,#e7eef4); opacity: 1; }
+.multi-order-client button img { width: 20px; height: 21px; }
+.multi-order-tabs { display: flex; flex: 0 0 39px; padding: 5px; border-radius: 30px; background: #f4f6f9; }
+.multi-order-tabs button { display: flex; flex: 1; align-items: center; justify-content: center; gap: 10px; padding: 5px; border: 0; border-radius: 30px; background: transparent; color: var(--ink); font: inherit; line-height: 17px; opacity: 1; }
+.multi-order-tabs button.is-active { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.multi-order-tabs b, .multi-order-notes b { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 12px; font-weight: 500; line-height: 15px; }
+.multi-order-detail-section { flex-shrink: 0; padding: 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+.multi-order-service { display: flex; align-items: center; justify-content: space-between; height: 69px; }
+.multi-order-service > div { display: flex; flex-direction: column; gap: 5px; line-height: 17px; }
+.multi-order-service small { color: var(--muted); font-size: 14px; line-height: 17px; }
+.multi-order-area { display: flex; align-items: center; justify-content: center; gap: 15px; width: 117px; height: 37px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+.multi-order-area img { width: 14px; height: 14px; }
+.multi-order-address { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.multi-order-address > div { display: flex; flex-direction: column; gap: 5px; line-height: 17px; }
+.multi-order-address > div > span:last-child { display: flex; align-items: center; gap: 10px; line-height: 20px; }
+.multi-order-address > div img { width: 14px; height: 14px; }
+.multi-order-address .multi-order-button { height: 37px; padding: 9px 15px; font-size: 14px; font-weight: 400; }
+.multi-order-address .multi-order-button img { width: 17px; height: 17px; }
+.multi-order-price { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+.multi-order-price > div { display: flex; align-items: center; gap: 10px; }
+.multi-order-price strong { font-size: 16px; font-weight: 600; line-height: 19px; }
+.multi-order-price small { padding: 5px 8px; border-radius: 30px; background: #f4f6f9; font-size: 12px; font-weight: 500; line-height: 15px; }
+.multi-order-price .multi-order-button { height: 36px; padding-right: 25px; padding-left: 25px; font-weight: 400; }
+.multi-order-discount { display: flex; flex: 0 0 40px; align-items: center; justify-content: space-between; }
+.multi-order-discount-percent { display: flex; align-items: center; justify-content: space-between; width: 140px; height: 40px; padding: 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
+.multi-order-discount-percent button { display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: #f4f6f9; box-shadow: 0 1px 2px rgba(0,0,0,.12); opacity: 1; }
+.multi-order-discount-percent img { width: 14px; height: 14px; }
+.multi-order-discount-percent img.is-plus { transform: rotate(45deg); }
+.multi-order-discount-value { display: flex; align-items: center; gap: 15px; width: 125px; height: 40px; border-radius: 10px; background: #f4f6f9; }
+.multi-order-discount-value > span:first-child { display: grid; place-items: center; width: 40px; height: 40px; border-right: 1px solid #e5e7eb; color: var(--muted); }
+.multi-order-work-summary { display: flex; flex-direction: column; gap: 15px; height: 126px; }
+.multi-order-section-title { display: flex; align-items: center; gap: 10px; height: 17px; line-height: 17px; }
+.multi-order-section-title img { width: 14px; height: 14px; }
+.multi-order-progress { display: flex; align-items: center; justify-content: flex-end; width: 350px; height: 12px; padding-right: 5px; border-radius: 30px; background: var(--blue); color: #fff; font-size: 10px; line-height: 12px; }
+.multi-order-work-totals { display: flex; justify-content: space-between; }
+.multi-order-work-totals > div { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 100px; }
+.multi-order-work-totals > div > span { color: var(--muted); font-size: 12px; line-height: 15px; }
+.multi-order-work-totals strong { font-weight: 500; line-height: 17px; }
+.multi-order-work-totals > div:nth-child(2) strong { color: #f59e0b; }
+.multi-order-assigned { display: flex; flex-direction: column; gap: 15px; height: 183.799px; }
+.multi-order-employee-list { display: flex; flex-direction: column; gap: 5px; }
+.multi-order-employee-list > div { display: flex; align-items: center; gap: 20px; height: 40px; padding-right: 15px; border-radius: 30px 10px 10px 30px; background: #f4f6f9; }
+.multi-order-employee-list img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.multi-order-employee-list small { margin-left: auto; color: var(--muted); font-size: 12px; line-height: 15px; white-space: nowrap; }
+.multi-order-expand { display: flex; align-items: center; align-self: flex-start; justify-content: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--blue); font: inherit; line-height: 17px; opacity: 1; }
+.multi-order-expand img { width: 14px; height: 14px; }
+.multi-order-notes { display: flex; flex: 1; align-items: flex-end; justify-content: flex-end; gap: 15px; }
+.multi-order-notes > div { position: relative; }
+.multi-order-notes b { position: absolute; top: -12px; right: 0; }
+.multi-order-notes .multi-order-button { height: 37px; background: #f4f6f9; font-weight: 400; }
+.multi-order-calendar { width: 1138px; }
+.multi-order-calendar-toolbar { display: flex; align-items: center; justify-content: space-between; height: 63px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 15px; background: #fff; }
+.multi-order-calendar-date { display: flex; align-items: center; gap: 10px; }
+.multi-order-calendar-date button { display: grid; place-items: center; width: 33px; height: 33px; padding: 0; border: 0; border-radius: 10px; background: #f4f6f9; opacity: 1; }
+.multi-order-calendar-date img { width: 18px; height: 16px; }
+.multi-order-calendar-date .is-previous img { transform: rotate(90deg); }
+.multi-order-calendar-date .is-next img { transform: rotate(-90deg); }
+.multi-order-calendar-date strong { display: grid; place-items: center; width: 179px; height: 33px; border-radius: 10px; background: #f4f6f9; text-align: center; font-size: 14px; font-weight: 500; line-height: 17px; }
+.multi-order-calendar-options { display: flex; align-items: center; gap: 20px; }
+.multi-order-legend { display: flex; align-items: center; gap: 10px; color: var(--muted); white-space: nowrap; }
+.multi-order-legend i { width: 16px; height: 16px; border-radius: 3px; background: #e5e7eb; }
+.multi-order-legend.is-project i { background: #e2edff; }
+.multi-order-history img { transform: rotate(90deg); }
+.multi-order-history { font-weight: 400; }
+.multi-order-calendar-grid { position: relative; width: 1138px; height: 986.364px; margin-top: 10px; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 15px; background: #fff; }
+.multi-order-time-axis { position: absolute; inset: 0 auto 0 0; width: 70.45px; border-right: 1px solid #e5e7eb; }
+.multi-order-time-axis > span { position: absolute; left: 0; display: flex; align-items: center; justify-content: flex-end; width: 100%; height: 70.4549px; padding-right: 20px; color: var(--muted); font-weight: 500; }
+.multi-order-calendar-days { position: absolute; inset: 0 0 0 70.45px; display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
+.multi-order-day-heading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; height: 70.45px; }
+.multi-order-day-heading span { color: var(--muted); font-size: 12px; line-height: 15px; }
+.multi-order-day-heading strong { font-weight: 500; line-height: 17px; }
+.multi-order-day-column { height: 915.914px; border-right: 1px solid #e5e7eb; }
+.multi-order-day-column.is-free { padding-top: 25px; border-right: 0; background: #f9fafb; color: var(--muted); text-align: center; }
+.multi-order-hour-line { position: absolute; right: 0; left: 70.45px; height: 1px; background: #e5e7eb; }
+.multi-order-calendar-card { position: absolute; display: flex; flex-direction: column; gap: 5px; width: 139.143px; padding: 15px; overflow: hidden; border-radius: 10px; background: #e5e7eb; }
+.multi-order-calendar-card.is-session { padding: 14px; border: 1px dashed var(--blue); background: #e2edff; }
+.multi-order-calendar-card h3 { margin: 0; font-size: 14px; font-weight: 500; line-height: 20px; }
+.multi-order-calendar-card.is-session h3 { color: var(--blue); }
+.multi-order-calendar-card p { margin: 0; line-height: 20px; }
+.multi-order-calendar-card p > span { color: var(--muted); }
+.multi-order-avatars { display: flex; padding-left: 5px; }
+.multi-order-avatars img { width: 20px; height: 20px; margin-left: -5px; border-radius: 50%; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+
+.employee-add-content > .employee-form-toolbar { width: 1005px; }
+.employee-add-columns { display: grid; flex: 1; min-height: 0; grid-template-columns: 400px 595px; gap: 10px; }
+.employee-add-details { align-items: center; gap: 30px; }
+.employee-add-details .employee-form-field { flex-basis: 52px; }
+.employee-add-details .settings-field { height: 52px; }
+.employee-add-details .employee-add-address { flex-basis: 45px; }
+.employee-add-address .settings-field { height: 45px; }
+.employee-add-address .settings-field-label { font-weight: 500; }
+.employee-add-invoice { display: flex; align-self: flex-start; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--blue); font: inherit; line-height: 17px; opacity: 1; }
+.employee-add-invoice > span { display: grid; width: 19.799px; height: 19.799px; place-items: center; }
+.employee-add-invoice img { width: 14px; height: 14px; transform: rotate(45deg); }
+.employee-add-block { display: flex; flex: 0 0 54px; align-items: center; gap: 10px; width: 100%; padding: 15px; border-radius: 15px; background: var(--soft); }
+.employee-add-block > img { width: 14px; height: 14px; }
+.employee-add-information-heading { display: flex; flex: 0 0 28px; align-items: center; justify-content: space-between; width: 100%; }
+.employee-add-information-heading h2 { margin: 0; font-size: 14px; font-weight: 500; line-height: 17px; }
+.employee-add-information-heading button { display: flex; align-items: center; justify-content: center; gap: 5px; height: 27px; padding: 5px 12px; border: 0; border-radius: 30px; background: var(--blue); color: white; font: inherit; font-weight: 500; line-height: 17px; opacity: 1; }
+.employee-add-information-heading button img { width: 17px; height: 17px; }
+.employee-add-empty { display: flex; flex: 0 0 194px; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.employee-add-empty > img { width: 188px; height: 160px; object-fit: cover; }
+.employee-add-empty p { margin: 0; color: #cfdbe8; font-size: 20px; font-weight: 500; line-height: 24px; }
 
 @media (max-width: 1600px) {
   .provider-screen { grid-template-columns: 300px minmax(1100px, 1fr); min-width: 1400px; }

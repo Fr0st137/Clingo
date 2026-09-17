@@ -95,7 +95,7 @@ function HeaderIcon({ file, label, badge, href, active = false }: { file: string
   return href ? <Link className="header-icon-link" href={href} aria-label={label} aria-current={active ? "page" : undefined}>{icon}</Link> : icon;
 }
 
-export function ProviderHeader({ settingsActive = false }: { settingsActive?: boolean }) {
+export function ProviderHeader({ settingsActive = false, paymentsActive = false }: { settingsActive?: boolean; paymentsActive?: boolean }) {
   return (
     <header className="provider-header">
       <img className="header-background" src={sharedAsset("header-background.png")} alt="" />
@@ -104,24 +104,25 @@ export function ProviderHeader({ settingsActive = false }: { settingsActive?: bo
       <div className="header-actions">
         <HeaderIcon file="header-chat.svg" label="Chat" href="/chat" />
         <HeaderIcon file="header-notifications.svg" label="Powiadomienia" badge="3" />
-        <HeaderIcon file="header-membership.svg" label="Metody płatności" href="/payment-methods" />
+        <HeaderIcon file={paymentsActive ? "../payment-methods/billing/header-membership.svg" : "header-membership.svg"} label="Metody płatności" href="/payment-methods" active={paymentsActive} />
         <HeaderIcon file={settingsActive ? "../settings/header-settings-active.svg" : "header-settings.svg"} label="Ustawienia" href="/settings" active={settingsActive} />
       </div>
     </header>
   );
 }
 
-export function ProviderShell({ active, figmaNode, children, settingsActive }: {
+export function ProviderShell({ active, figmaNode, children, settingsActive, paymentsActive }: {
   active?: ProviderNavLabel;
   figmaNode: string;
   children: ReactNode;
   settingsActive?: boolean;
+  paymentsActive?: boolean;
 }) {
   return (
     <main className="provider-screen" data-figma-node={figmaNode}>
       <div className="sidebar-column"><ProviderSidebar active={active} /></div>
       <div className="provider-workspace">
-        <ProviderHeader settingsActive={settingsActive} />
+        <ProviderHeader settingsActive={settingsActive} paymentsActive={paymentsActive} />
         {children}
       </div>
     </main>

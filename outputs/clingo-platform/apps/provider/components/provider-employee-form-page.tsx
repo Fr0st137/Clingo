@@ -1,4 +1,5 @@
 import { ProviderBackLink } from "./provider-list-controls";
+import { ProviderEmployeeAvatar } from "./provider-employee-avatar";
 import { SettingsField } from "./provider-settings-fields";
 import { ProviderShell } from "./provider-shell";
 import { ProviderToggle } from "./provider-toggle";
@@ -20,7 +21,7 @@ function EmployeeDetailsForm({ mode }: { mode: EmployeeFormMode }) {
   const dropdown = <img className="employee-select-arrow" src={asset("select.svg")} alt="" />;
   return (
     <section className="employee-form-panel employee-details-form" aria-label={editing ? "Dane pracownika" : "Dane nowego pracownika"}>
-      <div className={`employee-avatar-placeholder${editing ? " has-photo" : ""}`}><img src={editing ? editAsset("avatar.png") : asset("avatar.svg")} alt={editing ? referenceEmployee.name : ""} /><button type="button" disabled aria-label={editing ? "Zmień zdjęcie pracownika" : "Dodaj zdjęcie pracownika"}><img src={editing ? editAsset("avatar-edit.svg") : asset("avatar-plus.svg")} alt="" /></button></div>
+      <ProviderEmployeeAvatar image={editing ? editAsset("avatar.png") : asset("avatar.svg")} actionIcon={editing ? editAsset("avatar-edit.svg") : asset("avatar-plus.svg")} name={editing ? referenceEmployee.name : undefined} />
       <SettingsField className="employee-form-field" label="Imię i nazwisko" value={editing ? referenceEmployee.name : undefined} />
       <SettingsField className="employee-form-field" label="Numer telefonu" type="tel" value={editing ? referenceEmployee.phone : undefined} placeholder="Wpisz numer..." prefix={<span className="employee-phone-prefix"><img src={asset("poland.png")} alt="Polska" /><span>+48</span>{dropdown}</span>} />
       <SettingsField className="employee-form-field" label="Adres e-mail" type="email" value={editing ? referenceEmployee.email : undefined} placeholder="Wpisz adres..." prefix={<img className="employee-mail-icon" src={asset("mail.svg")} alt="" />} />

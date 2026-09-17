@@ -1,20 +1,9 @@
-import { ProviderOrderCard, type ProviderOrder } from "./provider-order-card";
+import { orderDays, type OrderDay } from "./provider-orders-data";
+import { ProviderOrderCard } from "./provider-order-card";
 import { ProviderShell } from "./provider-shell";
 import Link from "next/link";
 
 const asset = (name: string) => `/figma-assets/orders/${name}`;
-const referenceOrder: ProviderOrder = { start: "8:45", end: "10:30", client: "Anita Kowalska", service: "Sprzątnie obiektów", detail: "Mieszkań i domów", price: "165,00 zł", area: "62 m²", extras: 2, employees: ["one", "two"] };
-type OrderDay = { label: string; day: number; orders: ProviderOrder[]; free?: boolean };
-const orderDays: OrderDay[] = [
-  { label: "Poniedziałek", day: 13, orders: [referenceOrder, { ...referenceOrder, employees: ["one"] }, { ...referenceOrder, employees: ["two"] }, { ...referenceOrder, employees: ["two"] }, referenceOrder, { ...referenceOrder, employees: [], cancelled: true }] },
-  { label: "Wtorek", day: 14, orders: [{ ...referenceOrder, employees: ["two"], external: true }, { ...referenceOrder, employees: ["one"] }] },
-  { label: "Środa", day: 15, orders: [referenceOrder] },
-  { label: "Czwartek", day: 16, orders: [referenceOrder] },
-  { label: "Piątek", day: 17, orders: [{ ...referenceOrder, employees: ["one"] }] },
-  { label: "Sobota", day: 18, orders: [{ ...referenceOrder, employees: ["one"] }, { ...referenceOrder, employees: [], cancelled: true }, { ...referenceOrder, employees: ["two"] }] },
-  { label: "Niedziela", day: 19, orders: [], free: true }
-];
-
 function OrdersMiniCalendar() {
   const days = [29, 30, ...Array.from({ length: 31 }, (_, i) => i + 1), ...Array.from({ length: 9 }, (_, i) => i + 1)];
   return (
@@ -27,7 +16,7 @@ function OrdersMiniCalendar() {
 }
 
 function OrdersSidePanel() {
-  return <aside className="orders-side-panel"><OrdersMiniCalendar /><div className="orders-side-actions"><button type="button" disabled><span>Zlecenia wielosesyjne</span><b>3</b><img src={asset("subpage-arrow.svg")} alt="" /></button><Link href="/orders/history"><span>Historia zamówień</span><img src={asset("subpage-arrow.svg")} alt="" /></Link></div></aside>;
+  return <aside className="orders-side-panel"><OrdersMiniCalendar /><div className="orders-side-actions"><Link href="/orders/multi-session"><span>Zlecenia wielosesyjne</span><b>3</b><img src={asset("subpage-arrow.svg")} alt="" /></Link><Link href="/orders/history"><span>Historia zamówień</span><img src={asset("subpage-arrow.svg")} alt="" /></Link></div></aside>;
 }
 
 function OrdersToolbar() {

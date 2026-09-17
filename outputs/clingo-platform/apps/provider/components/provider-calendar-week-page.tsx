@@ -1,18 +1,7 @@
-import { ProviderCalendarAppointment, type CalendarAppointment } from "./provider-calendar-appointment";
+import { weekCalendarDays as days, type WeekDay } from "./provider-orders-data";
+import { ProviderCalendarAppointment } from "./provider-calendar-appointment";
 import { ProviderCalendarToolbar } from "./provider-calendar-toolbar";
 import { ProviderShell } from "./provider-shell";
-
-type WeekDay = { date: string; summary: string; today?: boolean; appointments: CalendarAppointment[]; absence?: boolean };
-const referenceAppointment: CalendarAppointment = { start: "08:45", end: "10:30", client: "Anita Kowalska", service: "Sprzątanie obiektów", detail: "Mieszkań i domów", top: 51, height: 101.5, status: "confirmed" };
-const days: WeekDay[] = [
-  { date: "Pn. 7", summary: "8 zamówień", appointments: [{ ...referenceAppointment, status: "muted" }, { ...referenceAppointment, start: "12:30", end: "16:00", top: 239.5, height: 203, status: "muted" }] },
-  { date: "Wt. 8", summary: "Przykład · 30 min", appointments: [{ ...referenceAppointment, end: "09:15", height: 29, compact: "30", service: undefined, detail: undefined }] },
-  { date: "Śr. 9", summary: "1 zamówienie", appointments: [{ ...referenceAppointment, detail: "Biur i lokali użytkowych", status: "muted" }], absence: true },
-  { date: "Czw. 10", summary: "Przykład · 45 min", appointments: [{ ...referenceAppointment, end: "09:30", height: 43.5, compact: "45", service: undefined, detail: undefined }] },
-  { date: "Pt. 11", summary: "Przykład · 60 min", appointments: [{ ...referenceAppointment, end: "09:45", height: 58, compact: "60", detail: undefined }] },
-  { date: "Sb. 12", summary: "2 zamówienia", today: true, appointments: [referenceAppointment, { ...referenceAppointment, start: "12:30", end: "16:00", top: 268.5, height: 203, status: "none" }] },
-  { date: "Nd. 13", summary: "Dzień wolny", appointments: [] }
-];
 
 function WeekDayHeading({ day }: { day: WeekDay }) {
   return <div className={`week-day-heading${day.today ? " is-today" : ""}`}><div><strong>{day.date}</strong>{day.today ? <span>Dzisiaj</span> : null}</div><p>{day.summary}</p></div>;

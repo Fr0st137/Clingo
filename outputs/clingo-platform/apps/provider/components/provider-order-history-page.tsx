@@ -1,12 +1,10 @@
+import { historicalOrders as orders, type HistoricalOrder } from "./provider-orders-data";
+import Link from "next/link";
 import { ProviderBackLink, ProviderPageSize, ProviderPagination } from "./provider-list-controls";
 import { ProviderShell } from "./provider-shell";
 
 const asset = (name: string) => `/figma-assets/order-history/${name}`;
 const columns = ["Nr zamówienia", "Klient", "Rodzaj usługi", "Usługa", "Termin początkowy", "Termin końcowy", "Status", "Kwota"];
-type HistoricalOrder = { number: string; client: string; category: string; service: string; start: string; end: string; price: string };
-const referenceOrder: HistoricalOrder = { number: "20258754178", client: "Aneta Kowalska", category: "Sprzątnie obiektów", service: "Mieszkań i domów", start: "17.10.2025, 13:30", end: "17.10.2025, 16:15", price: "367,50 zł" };
-const orders = Array.from({ length: 15 }, () => referenceOrder);
-
 function OrderHistoryToolbar() {
   return (
     <div className="order-history-toolbar">
@@ -21,7 +19,7 @@ function OrderHistoryToolbar() {
 }
 
 function OrderHistoryRow({ order }: { order: HistoricalOrder }) {
-  return <tr>{[order.number, order.client, order.category, order.service, order.start, order.end].map((value, i) => <td key={i}><span>{value}</span></td>)}<td><span className="order-history-status">Wykonane<img src={asset("completed.svg")} alt="" /></span></td><td><div className="order-history-price"><span>{order.price}</span><button type="button" disabled aria-label={`Szczegóły zamówienia ${order.number}`}><img src={asset("details.svg")} alt="" /></button></div></td></tr>;
+  return <tr>{[order.number, order.client, order.category, order.service, order.start, order.end].map((value, i) => <td key={i}><span>{value}</span></td>)}<td><span className="order-history-status">Wykonane<img src={asset("completed.svg")} alt="" /></span></td><td><div className="order-history-price"><span>{order.price}</span><Link href={`/orders/${order.id}/edit`} aria-label={`Edytuj zamówienie ${order.number}`}><img src={asset("details.svg")} alt="" /></Link></div></td></tr>;
 }
 
 export function ProviderOrderHistoryPage() {
