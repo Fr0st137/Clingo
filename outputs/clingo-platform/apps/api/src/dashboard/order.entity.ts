@@ -64,6 +64,7 @@ export class OrderEntity {
     apartment?: string;
     notes?: string;
     invoice?: { companyName: string; taxId: string; address: string } | null;
+    sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
     requestId?: string;
     requestHash?: string;
   } | null;

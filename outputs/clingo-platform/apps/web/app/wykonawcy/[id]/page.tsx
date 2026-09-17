@@ -9,6 +9,7 @@ type PublicProviderPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const paulinaFallback: ProviderProfileData = {
@@ -64,8 +65,10 @@ export async function generateMetadata({ params }: PublicProviderPageProps): Pro
   };
 }
 
-export default async function PublicProviderPage({ params }: PublicProviderPageProps) {
+export default async function PublicProviderPage({ params, searchParams }: PublicProviderPageProps) {
   const { id } = await params;
+  const query = await searchParams;
+  const read = (key: string) => typeof query[key] === "string" ? query[key] as string : "";
   let profile: ProviderProfileData;
 
   if (id === paulinaFallback.id) {
@@ -80,7 +83,11 @@ export default async function PublicProviderPage({ params }: PublicProviderPageP
 
   return (
     <PublicShell>
-      <PublicProviderProfileView profile={profile} />
+      <PublicProviderProfileView profile={profile} request={{
+        area: read("area"),
+        address: read("address") || read("location"),
+        addons: read("addons")
+      }} />
     </PublicShell>
   );
 }

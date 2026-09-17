@@ -6,6 +6,7 @@ import { Eye } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { clearAccountProfileCache } from "../lib/account";
 
 type AuthMode = "login" | "register";
 type AuthStep = "email" | "register-details" | "activation" | "login-password";
@@ -33,7 +34,8 @@ async function postAuthJson<T>(path: string, body: Record<string, unknown>): Pro
   });
 
   if (!response.ok) {
-    const error: AuthApiError = new Error(`Auth request failed with status ${response.status}.`);
+    const payload = await response.json().catch(() => ({}));
+    const error: AuthApiError = new Error(payload.message || "Nie udało się przetworzyć formularza.");
     error.status = response.status;
     throw error;
   }
@@ -42,7 +44,7 @@ async function postAuthJson<T>(path: string, body: Record<string, unknown>): Pro
 }
 
 function getSafeNextPath(value?: string) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\x00-\x1f\x7f]/.test(value)) {
     return "/zamowienia";
   }
 
@@ -54,6 +56,7 @@ function getSafeNextPath(value?: string) {
 }
 
 function setLocalSession(email: string) {
+  clearAccountProfileCache();
   document.cookie = "clingo-auth=1; path=/; max-age=2592000; SameSite=Lax";
   document.cookie = `clingo-user-email=${encodeURIComponent(email)}; path=/; max-age=2592000; SameSite=Lax`;
   window.localStorage.setItem(
@@ -305,7 +308,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
         return;
       }
 
-      setStatusMessage("Nie udało się utworzyć konta. Sprawdź dane i spróbuj ponownie.");
+      setStatusMessage(error instanceof Error ? error.message : "Nie udało się utworzyć konta.");
     } finally {
       setIsSubmitting(false);
     }
@@ -320,7 +323,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
       await postAuthJson("/auth/login", { email, password });
       completeAuth();
     } catch (error) {
-      setStatusMessage((error as AuthApiError).status === 401 ? "Nieprawidłowy adres e-mail lub hasło." : "Nie udało się połączyć z serwerem. Spróbuj zalogować się ponownie.");
+      setStatusMessage(error instanceof Error ? error.message : "Nie udało się zalogować.");
     } finally {
       setIsSubmitting(false);
     }
@@ -385,6 +388,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
             type={showPassword ? "text" : "password"}
             value={password}
           />
+          <p className="px-2 text-[13px] text-[#536479]">Hasło: 15–128 znaków. Użyj unikalnej frazy; spacje są dozwolone.</p>
           <FloatingInput autoComplete="given-name" label="Imię" name="first-name" onChange={setFirstName} value={firstName} />
           <FloatingInput autoComplete="family-name" label="Nazwisko" name="last-name" onChange={setLastName} value={lastName} />
           <FloatingInput

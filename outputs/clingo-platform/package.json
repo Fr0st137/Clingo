@@ -2,22 +2,33 @@
   "name": "clingo-platform",
   "private": true,
   "version": "0.1.0",
+  "overrides": {
+    "postcss": "8.5.26",
+    "lodash": "4.18.1",
+    "multer": "2.3.0"
+  },
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
+    "dev:provider": "npm --workspace apps/provider run dev",
     "dev:api": "npm --workspace apps/api run start:dev",
     "build:web": "npm --workspace apps/web run build",
+    "build:provider": "npm --workspace apps/provider run build",
     "build:api": "npm --workspace apps/api run build",
     "start:web": "npm --workspace apps/web run start --",
+    "start:provider": "npm --workspace apps/provider run start",
     "preview:web": "npm run build:web && npm run start:web",
     "lint:web": "npm --workspace apps/web run lint",
     "test:booking": "npm run build:api && node --test scripts/booking.test.cjs",
+    "verify:account": "node scripts/verify-account.cjs",
     "verify:booking": "node scripts/verify-booking.cjs",
     "verify:navigation": "node scripts/verify-navigation.cjs",
     "test:order-api": "node --test scripts/order-api.test.cjs",
-    "test:offer-request": "node --test scripts/offer-request.test.cjs"
+    "test:offer-request": "node --test scripts/offer-request.test.cjs",
+    "test:provider-search": "node --test scripts/provider-search.test.cjs"
   },
   "workspaces": [
     "apps/web",
-    "apps/api"
+    "apps/api",
+    "apps/provider"
   ]
 }

@@ -24,7 +24,7 @@ if errorlevel 1 (
 
 call :ensure_docker
 
-call :start_docker_if_needed
+call :boot_docker_desktop
 
 set "POSTGRES_HOST=127.0.0.1"
 set "POSTGRES_PORT=55432"
@@ -181,7 +181,7 @@ if errorlevel 1 (
 )
 exit /b 0
 
-:start_docker_if_needed
+:boot_docker_desktop
 where docker >nul 2>nul
 if errorlevel 1 (
   exit /b 0

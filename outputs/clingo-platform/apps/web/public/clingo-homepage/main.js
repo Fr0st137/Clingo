@@ -1,6 +1,7 @@
 "use strict";
 
-window.initializeClingoHomepage = function(root, navigate, images = {}) {
+window.initializeClingoHomepage = function(root, navigate, images = {}, options = {}) {
+  const initialValues = options.initialValues || {};
   const controller = new AbortController();
   const listen = (target, type, callback, options = {}) => target.addEventListener(type, callback, { ...(typeof options === "boolean" ? { capture: options } : options), signal: controller.signal });
 ﻿"use strict";
@@ -24,6 +25,7 @@ const locationClear = root.querySelector("[data-location-clear]");
 const locationPrimaryLabel = root.querySelector("[data-location-primary-label]");
 const locationQueryLabel = root.querySelector("[data-location-query-label]");
 const locationOptions = root.querySelectorAll("[data-location-option]");
+for (const menu of [serviceMenu, areaMenu, locationMenu]) menu?.classList.remove("is-open");
 const addonToggle = root.querySelector("[data-addon-toggle]");
 const addonTotal = root.querySelector("[data-addon-total]");
 const searchSubmit = root.querySelector("[data-search-submit]");
@@ -39,20 +41,33 @@ const headerMobileBackdrop = root.querySelector("[data-header-mobile-backdrop]")
 const headerMobileMenu = root.querySelector("[data-header-mobile-menu]");
 let setNotificationsOpen = () => {};
 let refreshAreaFieldState = () => {};
+let selectedServiceValue = "";
 
 const addonItems = [
-  { id: "mycie-okien", title: "Mycie okien", icon: "/clingo-homepage/assets/icons/addon-mycie-okien.png", quantity: 0 },
-  { id: "lodowka", title: "Czyszczenie lodówki", icon: "/clingo-homepage/assets/icons/addon-lodowka.png", quantity: 0 },
-  { id: "naczynia", title: "Mycie naczyń", icon: "/clingo-homepage/assets/icons/addon-naczynia.png", quantity: 0 },
-  { id: "piekarnik", title: "Mycie piekarnika", icon: "/clingo-homepage/assets/icons/addon-piekarnik.png", quantity: 0 },
-  { id: "okap", title: "Mycie okapu", icon: "/clingo-homepage/assets/icons/addon-okap.png", quantity: 0 },
-  { id: "mikrofalowka", title: "Mycie mikrofalówki", icon: "/clingo-homepage/assets/icons/addon-mikrofalowka.png", quantity: 0 },
-  { id: "prasowanie-1", title: "Prasowanie", icon: "/clingo-homepage/assets/icons/addon-prasowanie.png", quantity: 0 },
-  { id: "szafa", title: "Sprzątanie i mycie wnętrza szafy", icon: "/clingo-homepage/assets/icons/addon-szafa.png", quantity: 0 },
-  { id: "szafki", title: "Sprzątanie wnętrza szafek", icon: "/clingo-homepage/assets/icons/addon-szafki.png", quantity: 0 },
-  { id: "kuweta", title: "Sprzątanie kuwety", icon: "/clingo-homepage/assets/icons/addon-kuweta.png", quantity: 0 },
-  { id: "prasowanie-2", title: "Prasowanie", icon: "/clingo-homepage/assets/icons/addon-prasowanie.png", quantity: 0 }
+  { id: "window-cleaning", title: "Mycie okien", icon: "/clingo-homepage/assets/icons/addon-mycie-okien.png", quantity: 0 },
+  { id: "fridge-cleaning", title: "Czyszczenie lodówki", icon: "/clingo-homepage/assets/icons/addon-lodowka.png", quantity: 0 },
+  { id: "dishes", title: "Mycie naczyń", icon: "/clingo-homepage/assets/icons/addon-naczynia.png", quantity: 0 },
+  { id: "oven-cleaning", title: "Mycie piekarnika", icon: "/clingo-homepage/assets/icons/addon-piekarnik.png", quantity: 0 },
+  { id: "hood-cleaning", title: "Mycie okapu", icon: "/clingo-homepage/assets/icons/addon-okap.png", quantity: 0 },
+  { id: "microwave", title: "Mycie mikrofalówki", icon: "/clingo-homepage/assets/icons/addon-mikrofalowka.png", quantity: 0 },
+  { id: "ironing", title: "Prasowanie", icon: "/clingo-homepage/assets/icons/addon-prasowanie.png", quantity: 0 },
+  { id: "wardrobe-inside", title: "Sprzątanie i mycie wnętrza szafy", icon: "/clingo-homepage/assets/icons/addon-szafa.png", quantity: 0 },
+  { id: "cabinet-inside", title: "Sprzątanie wnętrza szafek", icon: "/clingo-homepage/assets/icons/addon-szafki.png", quantity: 0 },
+  { id: "litter-box", title: "Sprzątanie kuwety", icon: "/clingo-homepage/assets/icons/addon-kuweta.png", quantity: 0 }
 ];
+
+for (const addOn of options.addOns || []) {
+  if (!addonItems.some(item => item.id === addOn.id)) {
+    addonItems.push({ id: addOn.id, title: addOn.label, icon: "/clingo-homepage/assets/icons/services-extra.svg", quantity: 0 });
+  }
+}
+
+for (const selection of (initialValues.addons || "").split(",")) {
+  const [id, rawQuantity] = selection.split(":");
+  const item = addonItems.find(item => item.id === id);
+  const quantity = Number(rawQuantity);
+  if (item && Number.isInteger(quantity) && quantity > 0) item.quantity = Math.min(20, quantity);
+}
 
 const getAddonTotal = () =>
   addonItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -121,7 +136,7 @@ const renderAddons = () => {
       card.classList.add("is-active");
     }
 
-    const safeTitle = item.title.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    const safeTitle = item.title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
     card.innerHTML = `
       <span class="home-page__addon-check" aria-hidden="true">
@@ -172,7 +187,7 @@ const renderAddons = () => {
 
     listen(plusButton, "click", (event) => {
       event.stopPropagation();
-      item.quantity = Math.min(50, item.quantity + 1);
+      item.quantity = Math.min(20, item.quantity + 1);
       renderAddons();
     });
 
@@ -200,8 +215,28 @@ if (addonToggle) {
 }
 
 if (searchSubmit) {
+  for (const input of [areaInput, locationInput].filter(Boolean)) {
+    listen(input, "keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); searchSubmit.click(); }
+    });
+  }
   listen(searchSubmit, "click", () => {
-    navigate("/tablica-ogloszen");
+    const params = new URLSearchParams();
+    const area = areaInput?.value.replace(/[^\d.,]/g, "").replace(",", ".").trim() || "";
+    const address = locationInput?.value.trim() || "";
+    const addOnQuantities = new Map();
+    addonItems.filter((item) => item.quantity > 0).forEach((item) => {
+      addOnQuantities.set(item.id, (addOnQuantities.get(item.id) || 0) + item.quantity);
+    });
+    const addOns = [...addOnQuantities].map(([id, quantity]) => `${id}:${quantity}`).join(",");
+    if (selectedServiceValue) params.set("service", selectedServiceValue);
+    if (area) params.set("area", area);
+    if (address) params.set("address", address);
+    if (addOns) params.set("addons", addOns);
+    const query = params.toString();
+    closeSearchDropdowns();
+    setAddonsPanelOpen(false);
+    navigate(`/tablica-ogloszen${query ? `?${query}` : ""}`);
   });
 }
 
@@ -317,7 +352,7 @@ if (notificationsMenu) {
 }
 
 if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) {
-  let selectedServiceValue = null;
+  selectedServiceValue = initialValues.service || "";
 
   const renderServiceValue = () => {
     serviceValue.textContent = selectedServiceValue || "Rodzaj usługi";
@@ -374,7 +409,7 @@ if (serviceTrigger && serviceMenu && serviceValue && serviceOptions.length > 0) 
   });
 
   for (const item of serviceOptions) {
-    item.classList.remove("is-selected");
+    item.classList.toggle("is-selected", item.dataset.serviceOption === selectedServiceValue);
   }
 
   renderServiceValue();
@@ -384,7 +419,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
   areaOptionsRoot.replaceChildren();
   const values = [];
   const squareMeters = "m\u00B2";
-  let selectedAreaValue = null;
+  let selectedAreaValue = Number(initialValues.area) > 0 ? Number(initialValues.area) : null;
 
   const syncAreaInputWidth = () => {
     if (!root.isConnected || controller.signal.aborted) return;
@@ -454,6 +489,7 @@ if (areaOptionsRoot && areaTrigger && areaMenu && areaInput && areaSizer && area
     option.type = "button";
     option.className = "home-page__search-area-option";
     option.dataset.value = String(value);
+    option.classList.toggle("is-selected", value === selectedAreaValue);
     option.textContent = `${value} ${squareMeters}`;
 
     listen(option, "click", () => {
@@ -553,8 +589,8 @@ if (
   locationOptions.length > 0
 ) {
   const defaultLocationText = "Miejsce objęte usługą";
-  const resolvedLocationText = "Floriańska 48, Warszawa, Polska";
-  let selectedLocationValue = "";
+  let selectedLocationValue = initialValues.location || "";
+  locationInput.value = selectedLocationValue;
 
   const renderLocationField = () => {
     const isOpen = locationMenu.classList.contains("is-open");
@@ -565,7 +601,7 @@ if (
     locationMenu.classList.toggle("has-value", hasValue);
     locationInput.placeholder = isOpen ? "" : defaultLocationText;
     locationInput.style.color = hasValue || isOpen ? "#2e3b4c" : "#7c8691";
-    locationPrimaryLabel.textContent = resolvedLocationText;
+    locationPrimaryLabel.textContent = selectedLocationValue || currentValue || defaultLocationText;
     locationQueryLabel.textContent = `Wyszukaj ${queryText}`;
   };
 
@@ -592,8 +628,8 @@ if (
     renderLocationField();
   };
 
-  const commitLocationSelection = () => {
-    selectedLocationValue = resolvedLocationText;
+  const commitLocationSelection = (value) => {
+    selectedLocationValue = value.trim();
     locationInput.value = selectedLocationValue;
     closeLocationMenu();
   };
@@ -630,7 +666,10 @@ if (
   for (const option of locationOptions) {
     listen(option, "click", (event) => {
       event.stopPropagation();
-      commitLocationSelection();
+      const value = option.dataset.locationOption === "query"
+        ? locationInput.value
+        : selectedLocationValue || locationInput.value;
+      if (value.trim()) commitLocationSelection(value);
     });
   }
 
@@ -649,6 +688,6 @@ if (
   };
 };
 
-if (!document.querySelector("[data-clingo-homepage]")) {
+if (!document.querySelector("[data-clingo-homepage], [data-clingo-search]")) {
   window.initializeClingoHomepage(document, href => { window.location.href = href; });
 }

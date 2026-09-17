@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { getAccountProfile } from "./account";
+import type { AccountProfile } from "./account";
+import { fetchPrivateJson } from "./private-api";
 import { getProviderProfile } from "./api";
 import type { BookingPageProps } from "./booking-client";
 import { offerRequestState, requestPricing } from "./offer-request";
@@ -17,7 +18,7 @@ export async function loadBookingPage(params: Record<string, string | string[] |
   if (!email || !cookieStore.get("clingo-session")?.value) redirect(loginUrl);
   const [profile, user] = await Promise.all([
     getProviderProfile(providerId).catch(() => null),
-    getAccountProfile(email).catch(() => null)
+    fetchPrivateJson<{ user: AccountProfile }>("/auth/profile").then(result => result.user)
   ]);
   if (!profile) notFound();
   if (offerRequestState(profile, read("area"), read("address")) !== "ready") {

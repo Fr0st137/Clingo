@@ -22,6 +22,7 @@ export const REDIS_CLIENT = Symbol("REDIS_CLIENT");
         });
         // Connect in the background: an optional cache must never delay a page.
         redis.on("error", () => {});
+        Object.assign(redis, { onModuleDestroy: () => redis.disconnect() });
         void redis.connect().catch(() => {});
         return redis;
       }

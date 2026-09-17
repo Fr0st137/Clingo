@@ -26,7 +26,7 @@ const profile = {
 };
 
 test('missing or invalid area and either missing field keep checkout unavailable', () => {
-  for (const area of ['', ' ', '0', '-2', 'NaN', 'Infinity', 'not-an-area', '75']) {
+  for (const area of ['', ' ', '0', '-2', 'NaN', 'Infinity', 'not-an-area', '81']) {
     assert.equal(offerRequestState(profile, area, 'Warszawa, Testowa 1'), 'missing');
   }
   assert.equal(offerRequestState(profile, '62', ''), 'missing');
@@ -37,6 +37,10 @@ test('a supported locality restores checkout only with an available pricing area
   for (const address of ['Warszawa, Floriańska 48', '  WARSZAWA , Testowa 1 ', 'Testowa 1, 00-001 Warszawa', 'Testowa 1 00-001 Warszawa']) {
     assert.equal(offerRequestState(profile, '62', address), 'ready');
   }
+  assert.equal(offerRequestState(profile, '60', 'Warszawa, Testowa 1'), 'ready');
+  assert.equal(offerRequestState(profile, '75', 'Warszawa, Testowa 1'), 'ready');
+  assert.equal(requestPricing(profile.pricing, '60').id, 'single-62');
+  assert.equal(requestPricing(profile.pricing, '75').id, 'single-80');
   assert.equal(pricingArea(profile.pricing[1]), 80);
 });
 

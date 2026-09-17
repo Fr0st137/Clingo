@@ -9,9 +9,11 @@ import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { OrderHeader } from "./order-header";
 import { OrderProcessShell } from "./order-process-shell";
+import { MultiSessionScheduleScreen } from "./multi-session-schedule-screen";
 import type { OrderCardData } from "./order-card";
 import type { BookingAvailability, BookingDraft, BookingPageProps, BookingQuote } from "../lib/booking-client";
 import { BookingError, bookingDate, bookingDayLabel, bookingTime, postBooking } from "../lib/booking-client";
+import { isMultiSessionBookingState, multiSessionDateValue, multiSessionIso, multiSessionStorageKey, type MultiSessionBookingSession } from "../lib/multi-session-booking";
 
 function useDraft(props: BookingPageProps) {
   const key = `clingo-booking:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}`;
@@ -61,7 +63,7 @@ function ErrorNotice({ message, status, backHref }: { message: string; status?: 
   </div>;
 }
 
-export function OrderDateScreen(props: BookingPageProps) {
+function SingleSessionOrderDateScreen(props: BookingPageProps) {
   const router = useRouter();
   const { draft, update, ready, save } = useDraft(props);
   const [month, setMonth] = useState(() => bookingDate().slice(0, 7));
@@ -149,6 +151,11 @@ export function OrderDateScreen(props: BookingPageProps) {
   </OrderProcessShell>;
 }
 
+export function OrderDateScreen(props: BookingPageProps) {
+  const isMultiSession = props.profile.tags.some((tag) => tag.toLocaleLowerCase("pl-PL") === "wielosesyjne");
+  return isMultiSession ? <MultiSessionScheduleScreen {...props} /> : <SingleSessionOrderDateScreen {...props} />;
+}
+
 function SummarySection({ children, title, action }: { action?: () => void; children: ReactNode; title: string }) {
   return <section className="grid gap-[15px] rounded-[30px] border border-[#e6edf3] bg-white p-[30px] shadow-[0_0_14px_rgba(0,0,0,0.04)]"><header className="flex items-center justify-between px-0.5"><h2 className="m-0 text-[20px] font-medium leading-6 text-[#111827]">{title}</h2>{action ? <button className="border-0 bg-transparent p-0 text-[14px] font-medium text-[#0079de]" onClick={action} type="button">Edytuj</button> : null}</header>{children}</section>;
 }
@@ -159,7 +166,158 @@ function FloatingField({ label, value, onChange, required = false, placeholder, 
   </label>;
 }
 
-export function OrderSummaryScreen(props: BookingPageProps) {
+function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
+  const router = useRouter();
+  const { draft, update, ready, save, key } = useDraft(props);
+  const [sessions, setSessions] = useState<MultiSessionBookingSession[] | null>(null);
+  const [scheduleLoaded, setScheduleLoaded] = useState(false);
+  const [quote, setQuote] = useState<BookingQuote | null>(null);
+  const [error, setError] = useState("");
+  const [errorStatus, setErrorStatus] = useState<number>();
+  const [submitting, setSubmitting] = useState(false);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const inFlight = useRef(false);
+  const backHref = `/zamowienie?${props.query}`;
+  const scheduleKey = multiSessionStorageKey(props);
+  const selectionKey = JSON.stringify(props.selection);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(scheduleKey) ?? "null");
+      setSessions(isMultiSessionBookingState(stored) ? stored.sessions : null);
+    } catch { setSessions(null); }
+    setScheduleLoaded(true);
+  }, [scheduleKey]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    postBooking<BookingQuote>("quote", props.selection, controller.signal).then(setQuote).catch((err) => {
+      if (err.name !== "AbortError") { setError(err.message); setErrorStatus(err.status); }
+    });
+    return () => controller.abort();
+  }, [selectionKey]);
+
+  const editSchedule = () => { save(); router.push(backHref); };
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (inFlight.current || !quote || !sessions?.length) return;
+    const bookingSessions = sessions.map((session) => {
+      const startsAt = multiSessionIso(session.date, session.start);
+      const rawEndsAt = multiSessionIso(session.date, session.end);
+      const endsAt = startsAt && rawEndsAt && Date.parse(rawEndsAt) <= Date.parse(startsAt)
+        ? new Date(Date.parse(rawEndsAt) + 24 * 60 * 60_000).toISOString()
+        : rawEndsAt;
+      return { startsAt, endsAt, workers: session.workerCount };
+    });
+    if (bookingSessions.some((session) => !session.startsAt || !session.endsAt)) {
+      setError("Harmonogram zawiera nieprawidłowy termin. Wróć do harmonogramu i wybierz go ponownie.");
+      return;
+    }
+    inFlight.current = true;
+    setSubmitting(true);
+    setError("");
+    setErrorStatus(undefined);
+    save();
+    try {
+      const order = await postBooking<OrderCardData>("confirm", {
+        ...props.selection,
+        startsAt: bookingSessions[0].startsAt,
+        sessions: bookingSessions,
+        address: draft.address,
+        apartment: draft.apartment,
+        contactName: draft.contactName,
+        contactPhone: draft.contactPhone,
+        notes: draft.notes,
+        requestId: draft.requestId,
+        expectedTotal: quote.totalValue,
+        invoice: draft.invoiceRequested ? { companyName: draft.companyName, taxId: draft.taxId, address: draft.invoiceAddress } : null
+      });
+      if (!order.id) throw new Error("Brak potwierdzenia zapisu. Spróbuj ponownie.");
+      try {
+        sessionStorage.removeItem(key);
+        sessionStorage.removeItem(scheduleKey);
+      } catch { /* The server deduplicates retries. */ }
+      router.replace(`/zamowienie/potwierdzenie?id=${encodeURIComponent(order.id)}`);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nie udało się zapisać zamówienia.");
+      setErrorStatus(err instanceof BookingError ? err.status : undefined);
+      inFlight.current = false;
+      setSubmitting(false);
+    }
+  };
+
+  if (!ready || !scheduleLoaded) return <OrderProcessShell activeStep={2}><p className="text-center text-[#7c8691]">Wczytywanie zamówienia…</p></OrderProcessShell>;
+  if (!sessions?.length) return <OrderProcessShell activeStep={2}><div className="mx-auto max-w-[780px] rounded-[30px] bg-white p-[30px] text-[#2e3b4c]"><p>Najpierw wygeneruj harmonogram realizacji zamówienia.</p><Link className="mt-4 inline-block text-[#0079de]" href={backHref}>Przejdź do harmonogramu</Link></div></OrderProcessShell>;
+
+  return <OrderProcessShell activeStep={2}>
+    <form onSubmit={submit} className="mx-auto grid w-full max-w-[1200px] items-start gap-[20px] xl:grid-cols-[780px_400px]" data-node-id="4559:7318">
+      <fieldset disabled={submitting} className="grid min-w-0 gap-[20px] border-0 p-0">
+        <SummarySection title="Adres realizacji">
+          <div className="grid gap-[20px] md:grid-cols-2">
+            <FloatingField label="Numer mieszkania" value={draft.apartment} onChange={(apartment) => update({ apartment })} placeholder="Wpisz numer, jeśli dotyczy…" maxLength={30} />
+            <div className="relative flex h-[52px] min-w-0 items-center justify-between gap-[10px] rounded-[30px] border border-[#e5e7eb] bg-[#f9fafb] px-[20px] text-[14px] focus-within:border-[#0079de]">
+              <span className="absolute left-[19px] top-[-13px] rounded-[10px] bg-gradient-to-t from-[#f9fafb] to-white px-1 py-0.5 text-[#2e3b4c]">Adres</span>
+              <input ref={addressRef} aria-label="Adres" className="min-w-0 flex-1 border-0 bg-transparent text-[#2e3b4c] outline-none" maxLength={350} onChange={(event) => update({ address: event.target.value })} required value={draft.address} />
+              <button className="shrink-0 text-[14px] font-medium text-[#0079de]" onClick={() => addressRef.current?.focus()} type="button">Edytuj</button>
+            </div>
+          </div>
+        </SummarySection>
+
+        <SummarySection title="Termin realizacji" action={editSchedule}>
+          <div className="grid gap-[8px]">
+            {sessions.map((session, index) => {
+              const date = multiSessionDateValue(session.date);
+              return <div className="min-h-[57px] rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] py-[5px]" key={session.id}>
+                <div className="grid min-h-[47px] items-center gap-[10px] text-[14px] text-[#2e3b4c] md:grid-cols-[154px_154px_minmax(0,1fr)]">
+                  <span className="font-medium">Sesja {index + 1}</span>
+                  <span>{date ? bookingDayLabel(date) : session.date}</span>
+                  <span className="flex items-center justify-end gap-[5px]">
+                    <span>{session.start}</span>
+                    <span className="grid justify-items-center px-[9px] text-[12px] text-[#7c8691]">
+                      {session.duration}
+                      <img alt="" className="h-[16px] w-[16px]" src="/figma-assets/schedule-arrow-right.svg" />
+                    </span>
+                    <span>{session.end}</span>
+                  </span>
+                </div>
+              </div>;
+            })}
+          </div>
+        </SummarySection>
+
+        <SummarySection title="Zamówienie">
+          <div className="grid gap-[18px]">
+            {quote ? quote.summary.lines.map((line) => <div className="flex items-center justify-between gap-4 border-b border-[#e5e7eb] px-0.5 pb-[8px] text-[14px] text-[#2e3b4c]" key={line.id}><span>{line.label}</span><span className="shrink-0 font-medium">{line.value}</span></div>) : <p className="text-[14px] text-[#7c8691]">Przeliczamy cenę…</p>}
+          </div>
+        </SummarySection>
+
+        <SummarySection title="Uwagi do zamówienia">
+          <textarea aria-label="Uwagi do zamówienia" className="h-[111px] w-full resize-none rounded-[15px] border border-[#e5e7eb] bg-white p-[15px] text-[14px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af] focus:border-[#0079de]" maxLength={2000} onChange={(event) => update({ notes: event.target.value })} placeholder="Wpisz jeżeli masz jakieś dodatkowe uwagi…" value={draft.notes} />
+        </SummarySection>
+      </fieldset>
+
+      <aside className="grid gap-[20px]">
+        <section className="grid gap-[20px] rounded-[30px] border border-[#e6edf3] bg-white p-[30px] shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+          <ProviderLine profile={props.profile} size={53} />
+          <div className="flex items-center justify-between rounded-[15px] border border-[#e5e7eb] p-[15px] text-[16px] font-bold text-[#2e3b4c]"><span>Suma</span><span>{quote?.summary.total ?? "…"}</span></div>
+          <div className="rounded-[15px] bg-[#f4f6f9] p-[15px] text-[14px] leading-[22px] text-[#2e3b4c]"><strong>UWAGA!</strong><br />Rozliczenie odbywa się bezpośrednio z Wykonawcą (poza platformą), a szczegóły usługi możesz ustalić po złożeniu zamówienia.</div>
+          <ErrorNotice message={error} status={errorStatus} backHref={`/zamowienie/podsumowanie?${props.query}`} />
+          {errorStatus === 409 ? <button className="text-[14px] font-medium text-[#0079de]" onClick={editSchedule} type="button">Powrót do harmonogramu</button> : null}
+          <button className="h-[48px] w-full rounded-[30px] bg-[#0079de] text-[14px] font-medium text-white disabled:opacity-40" disabled={!quote || submitting || !draft.address || !draft.contactName || !draft.contactPhone} type="submit">{submitting ? "Zapisywanie zamówienia…" : "Potwierdź i zamów"}</button>
+        </section>
+
+        <section className="rounded-[30px] border border-[#e6edf3] bg-white/60 p-[30px] text-[14px] leading-[22px] text-[#2e3b4c] shadow-[0_0_14px_rgba(0,0,0,0.04)]">
+          <strong className="block pb-[3px]">ZGODY I INFORMACJE</strong>
+          Finalizując zamówienie, akceptujesz <Link href="/regulaminy" target="_blank" rel="noreferrer" className="underline">Regulamin, Politykę prywatności</Link> oraz <Link href="/standardy-uslug" target="_blank" rel="noreferrer" className="underline">Standardy usług</Link> dla wybranego typu usługi. W związku z realizacją rezerwacji będziemy wysyłać Ci wiadomości SMS oraz e-mail z powiadomieniami dotyczącymi zarezerwowanej usługi.
+        </section>
+      </aside>
+    </form>
+  </OrderProcessShell>;
+}
+
+function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
   const router = useRouter();
   const { draft, update, ready, save, key } = useDraft(props);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
@@ -233,6 +391,11 @@ export function OrderSummaryScreen(props: BookingPageProps) {
       </aside>
     </form>
   </OrderProcessShell>;
+}
+
+export function OrderSummaryScreen(props: BookingPageProps) {
+  const isMultiSession = props.profile.tags.some((tag) => tag.toLocaleLowerCase("pl-PL") === "wielosesyjne");
+  return isMultiSession ? <MultiSessionOrderSummaryScreen {...props} /> : <SingleSessionOrderSummaryScreen {...props} />;
 }
 
 export function OrderConfirmationScreen({ order }: { order: OrderCardData }) {

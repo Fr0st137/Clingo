@@ -90,7 +90,12 @@ function MenuIcon({ active, name }: { active: boolean; name: MenuIconName }) {
 
 export function Sidebar({ active = "Rezerwacje", compact = false, user = defaultUser }: SidebarProps) {
   const activeKey = normalize(active === "Zamówienia" ? "Rezerwacje" : active);
-  const logout = () => {
+  const logout = async () => {
+    const response = await fetch("/api/auth/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => null);
+    if (!response || (!response.ok && response.status !== 401)) {
+      window.alert("Nie udało się zakończyć sesji na serwerze. Spróbuj ponownie.");
+      return;
+    }
     clearAccountProfileCache();
     document.cookie = "clingo-auth=; path=/; max-age=0; SameSite=Lax";
     document.cookie = "clingo-user-email=; path=/; max-age=0; SameSite=Lax";
@@ -117,6 +122,7 @@ export function Sidebar({ active = "Rezerwacje", compact = false, user = default
 
         <button
           aria-label="Edytuj profil"
+          onClick={() => { window.location.href = "/ustawienia"; }}
           className="absolute left-[56px] top-[10px] grid h-[24px] w-[24px] place-items-center rounded-[45px] bg-[#e5e7eb] p-[5px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.25)]"
           type="button"
         >

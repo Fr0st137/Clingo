@@ -292,7 +292,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
     const [searchFields, filters, listings] = await Promise.all([
       client.query<BoardPayload["searchFields"][number]>('select id, label, value from board_search_fields order by "orderIndex" asc'),
       client.query<Record<string, unknown>>('select id, title, options from board_filters order by "orderIndex" asc'),
-      client.query<Record<string, unknown>>('select b.* from board_listings b inner join provider_profiles p on p.id = b.id order by b."orderIndex" asc')
+      client.query<Record<string, unknown>>('select b.*, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id order by b."orderIndex" asc')
     ]);
 
     return {
@@ -302,6 +302,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
         title: String(filter.title)
       })),
       listings: listings.rows.map((listing) => ({
+        addOns: (asJson<Array<{ id: string; label: string }>>(listing.profileAddOns as string) ?? []).map(({ id, label }) => ({ id, label })),
         completedOrders: Number(listing.completedOrders),
         experience: String(listing.experience ?? ""),
         id: String(listing.id),

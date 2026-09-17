@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { FigmaBackground } from "../components/figma-background";
+import "../public/clingo-homepage/styles/base.css";
 import "./globals.css";
+// The header must be styled before streamed page content is painted.
+import "../public/clingo-homepage/styles/header-not-login.css";
+import "../public/clingo-homepage/styles/home.css";
 
 export const metadata: Metadata = {
   title: "Clingo | Rezerwacje",

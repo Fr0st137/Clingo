@@ -1,4 +1,5 @@
 "use client";
+import { FavoriteButton } from "./favorite-button";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -6,6 +7,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 export interface BoardListingData {
+  addOns?: Array<{ id: string; label: string }>;
   id: string;
   provider: string;
   rating: number;
@@ -18,6 +20,18 @@ export interface BoardListingData {
   image: string;
   imageFit?: "cover" | "contain";
   imageScale?: string;
+}
+
+export type ListingRequest = { area?: string; address?: string; service?: string; addons?: string };
+
+function withRequest(path: string, request: ListingRequest) {
+  const params = new URLSearchParams();
+  if (request.area) params.set("area", request.area);
+  if (request.address) params.set("address", request.address);
+  if (request.service) params.set("service", request.service);
+  if (request.addons) params.set("addons", request.addons);
+  const query = params.toString();
+  return `${path}${query ? `?${query}` : ""}`;
 }
 
 function ListingImage({ listing }: { listing: BoardListingData }) {
@@ -48,8 +62,7 @@ function Rating({ rating, reviews, experience }: { rating: number; reviews: numb
   );
 }
 
-export function BoardListingCard({ listing }: { listing: BoardListingData }) {
-  const [favorite, setFavorite] = useState(false);
+export function BoardListingCard({ listing, request = {} }: { listing: BoardListingData; request?: ListingRequest }) {
   const modeClasses =
     listing.modeTone === "blue" ? "bg-[#e9f5ff] text-[#0079de]" : "bg-[#f4f6f9] text-[#2e3b4c]";
 
@@ -59,13 +72,13 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
       data-name="Ogłoszenie na tablicy"
     >
       <div className="flex w-full items-start gap-[40px] overflow-hidden p-[15px]">
-        <Link aria-label={`Profil wykonawcy ${listing.provider}`} href={`/wykonawcy/${listing.id}`}>
+        <Link aria-label={`Profil wykonawcy ${listing.provider}`} href={withRequest(`/wykonawcy/${listing.id}`, request)}>
           <ListingImage listing={listing} />
         </Link>
 
         <div className="flex w-[541px] shrink-0 flex-col items-start gap-[10px] overflow-hidden pt-[5px]">
           <h3 className="m-0 h-[24px] w-[541px] whitespace-nowrap text-[20px] font-semibold leading-normal text-[#2e3b4c]">
-            <Link href={`/wykonawcy/${listing.id}`}>{listing.provider}</Link>
+            <Link href={withRequest(`/wykonawcy/${listing.id}`, request)}>{listing.provider}</Link>
           </h3>
           <Rating rating={listing.rating} reviews={listing.reviews} experience={listing.experience} />
           <div className="flex items-start gap-[15px] overflow-hidden">
@@ -92,23 +105,12 @@ export function BoardListingCard({ listing }: { listing: BoardListingData }) {
           </p>
         </div>
 
-        <button
-          aria-pressed={favorite}
-          aria-label="Ulubione"
-          className={[
-            "flex h-[38px] w-[38px] shrink-0 items-center justify-center overflow-hidden rounded-[30px] border p-[11px] transition-colors",
-            favorite ? "border-[#0079de] bg-[#e9f5ff]" : "border-[#e6edf3] bg-[#f9fafb]"
-          ].join(" ")}
-          onClick={() => setFavorite((current) => !current)}
-          type="button"
-        >
-          <img alt="" className={["h-[16px] w-[16px]", favorite ? "opacity-100" : "opacity-70"].join(" ")} src="/figma-assets/board-heart.svg" />
-        </button>
+        <FavoriteButton providerId={listing.id} />
       </div>
 
       <Link
         className="flex h-[48px] w-full shrink-0 items-center justify-between overflow-hidden border-t border-[#e6edf3] px-[15px] py-[10px]"
-        href={`/profil-ogloszeniowy/${listing.id}`}
+        href={withRequest(`/profil-ogloszeniowy/${listing.id}`, request)}
       >
         <span className="text-[12px] font-normal leading-normal text-[#9ca3af]">Zamów usługę</span>
         <span className="flex items-center justify-center overflow-hidden rounded-[30px] px-[10px] py-[2px]">

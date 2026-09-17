@@ -2,17 +2,20 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { MouseEvent } from "react";
+
+export type HomepageSearchOptions = { initialValues?: Record<string, string>; addOns?: Array<{ id: string; label: string }> };
 
 declare global {
   interface Window {
-    initializeClingoHomepage?: (root: HTMLElement, navigate: (href: string) => void, images: Record<string, string>) => () => void;
+    initializeClingoHomepage?: (root: HTMLElement, navigate: (href: string) => void, images: Record<string, string>, options?: HomepageSearchOptions) => () => void;
   }
 }
 
 export function HomepageClient({ markup, images }: { markup: string; images: Record<string, string> }) {
   const root = useRef<HTMLDivElement>(null);
+  const html = useMemo(() => ({ __html: markup }), [markup]);
   const cleanup = useRef<(() => void) | undefined>(undefined);
   const router = useRouter();
   const initialize = useCallback(() => {
@@ -42,7 +45,7 @@ export function HomepageClient({ markup, images }: { markup: string; images: Rec
 
   return (
     <>
-      <div data-clingo-homepage ref={root} onClick={followLink} dangerouslySetInnerHTML={{ __html: markup }} />
+      <div data-clingo-homepage ref={root} onClick={followLink} dangerouslySetInnerHTML={html} />
       <Script src="/clingo-homepage/main.js" strategy="afterInteractive" onReady={initialize} />
     </>
   );

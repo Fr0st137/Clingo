@@ -1,4 +1,5 @@
 import { OrderCardData } from "../components/order-card";
+import { fetchPrivateJson } from "./private-api";
 import { unstable_noStore as noStore } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -18,11 +19,8 @@ import {
 import {
   getBoardFromDb,
   getChatFromDb,
-  getFavoritesFromDb,
-  getOpinionsFromDb,
   getProviderProfileFromDb,
-  getReviewsFromDb,
-  getSettingsFromDb
+  getReviewsFromDb
 } from "./db-fallback";
 
 export type DashboardPayload = {
@@ -81,7 +79,7 @@ async function fetchDashboardJson<T>(path: string): Promise<T> {
 // data must always go through their authenticated, uncached requests.
 async function fetchCatalogueJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBaseUrl()}${path}`, {
-    next: { revalidate: 30 },
+    next: { revalidate: 30, tags: ["catalogue"] },
     signal: AbortSignal.timeout(3000)
   });
   if (!response.ok) throw new Error(`Catalogue request failed: ${response.status}.`);
@@ -131,29 +129,35 @@ export async function cancelOrder(id: string, email: string): Promise<OrderCardD
   return response.json();
 }
 
-export async function rescheduleOrder(id: string, email: string, startsAt: string, endsAt: string): Promise<OrderCardData> {
+export async function getRescheduleAvailability(id: string, month: string, sessionIndex?: number): Promise<import("./order-reschedule").RescheduleAvailability> {
+  const response = await fetch(`${apiBaseUrl()}/dashboard/orders/${encodeURIComponent(id)}/reschedule-availability`, {
+    method: "POST", headers: await orderHeaders(), body: JSON.stringify({ month, sessionIndex }), cache: "no-store", signal: AbortSignal.timeout(15000)
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.message === "string" ? data.message : "Nie udało się pobrać dostępnych terminów.");
+  return data;
+}
+
+export async function rescheduleOrder(id: string, email: string, startsAt: string, endsAt: string, sessionIndex?: number): Promise<OrderCardData> {
   const baseUrl = apiBaseUrl();
 
   const response = await fetch(`${baseUrl}/dashboard/orders/${id}/reschedule?email=${encodeURIComponent(email)}`, {
     method: "PATCH",
-    body: JSON.stringify({ endsAt, startsAt }),
+    body: JSON.stringify({ endsAt, startsAt, sessionIndex }),
     cache: "no-store",
     headers: await orderHeaders()
   });
 
   if (!response.ok) {
-    throw new Error(`Reschedule order request failed with status ${response.status}.`);
+    const data = await response.json().catch(() => null);
+    throw new Error(typeof data?.message === "string" ? data.message : "Nie udało się przełożyć zlecenia. Spróbuj ponownie.");
   }
 
   return response.json();
 }
 
 export async function getFavorites(): Promise<FavoriteProviderData[]> {
-  try {
-    return await fetchDashboardJson<FavoriteProviderData[]>("/dashboard/favorites");
-  } catch {
-    return getFavoritesFromDb();
-  }
+  return fetchPrivateJson<FavoriteProviderData[]>("/dashboard/favorites");
 }
 
 export async function getChat(): Promise<ChatPayload> {
@@ -165,11 +169,7 @@ export async function getChat(): Promise<ChatPayload> {
 }
 
 export async function getOpinions(): Promise<OpinionsPayload> {
-  try {
-    return await fetchDashboardJson<OpinionsPayload>("/dashboard/reviews/opinions");
-  } catch {
-    return getOpinionsFromDb();
-  }
+  return fetchPrivateJson<OpinionsPayload>("/dashboard/reviews/opinions");
 }
 
 export async function getStandardsReviews(): Promise<ReviewCardData[]> {
@@ -189,19 +189,29 @@ export async function getRegulationsReviews(): Promise<ReviewCardData[]> {
 }
 
 export async function getSettings(): Promise<SettingsPayload> {
-  try {
-    return await fetchDashboardJson<SettingsPayload>("/dashboard/settings");
-  } catch {
-    return getSettingsFromDb();
-  }
+  return fetchPrivateJson<SettingsPayload>("/dashboard/settings");
 }
 
 export async function getBoard(): Promise<BoardPayload> {
+  let board: BoardPayload;
   try {
-    return await fetchCatalogueJson<BoardPayload>("/dashboard/board");
+    board = await fetchCatalogueJson<BoardPayload>("/dashboard/board");
   } catch {
-    return getBoardFromDb();
+    board = await getBoardFromDb();
   }
+
+  if (board.listings.every(listing => Array.isArray(listing.addOns))) return board;
+
+  const listings = await Promise.all(board.listings.map(async listing => {
+    try {
+      const profile = await getProviderProfile(listing.id);
+      return { ...listing, addOns: profile.addOns?.map(({ id, label }) => ({ id, label })) ?? [] };
+    } catch {
+      return { ...listing, addOns: [] };
+    }
+  }));
+
+  return { ...board, listings };
 }
 
 export async function getProviderProfile(id: string): Promise<ProviderProfileData> {

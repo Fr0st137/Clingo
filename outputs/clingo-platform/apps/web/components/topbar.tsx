@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { CSSProperties, FormEvent, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
+import { ProviderNameSearch } from "./provider-name-search";
 
 type TopbarProps = {
   isMenuOpen?: boolean;
@@ -40,14 +41,6 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
     setIsAuthenticated(document.cookie.split("; ").some((cookie) => cookie === "clingo-auth=1"));
   }, []);
 
-  const submitHeaderSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const query = String(formData.get("header-search") || "").trim();
-    const suffix = query ? `?q=${encodeURIComponent(query)}` : "";
-    router.push(`/tablica-ogloszen${suffix}`);
-  };
-
   const togglePanel = (nextPanelType: "notification" | "favorites" | "chat") => {
     const shouldClose = isPanelOpen && panelType === nextPanelType;
     setPanelType(nextPanelType);
@@ -69,7 +62,6 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
 
   return (
     <>
-      <link rel="stylesheet" href="/clingo-homepage/styles/header-not-login.css" />
       <header
         className={`header-not-login clingo-app-header${effectiveMobileOpen ? " is-mobile-menu-open" : ""}`}
         style={{ "--color-white": "#ffffff" } as CSSProperties}
@@ -77,7 +69,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
         <div className="header-not-login__inner">
           <div className="header-not-login__left-group">
             <Link className="header-not-login__logo" href="/home" aria-label="Clingo">
-              <img src={assetPath("assets/images/logo-clingo-color-new.png")} alt="Clingo" />
+              <img src={assetPath("assets/images/logo-clingo-color-new.png")} alt="Clingo" width={117} height={36} />
             </Link>
 
             <nav className="header-not-login__nav" aria-label="Główna nawigacja">
@@ -90,21 +82,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
             </nav>
           </div>
 
-          <form className="header-not-login__search" role="search" onSubmit={submitHeaderSearch}>
-            <label className="header-not-login__search-label" htmlFor="header-search">
-              Szukaj
-            </label>
-            <span className="header-not-login__search-icon" aria-hidden="true">
-              <img src={assetPath("assets/icons/header-search.svg")} alt="" />
-            </span>
-            <input
-              id="header-search"
-              name="header-search"
-              className="header-not-login__search-input"
-              type="search"
-              placeholder="Imię i nazwisko | Nazwa firmy"
-            />
-          </form>
+          <ProviderNameSearch className="header-not-login__search" inputId="header-search" />
 
           <div className="header-not-login__actions" aria-label="Szybkie akcje">
             <div
@@ -119,7 +97,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                   aria-expanded={isPanelOpen && panelType === "notification"}
                   onClick={() => togglePanel("notification")}
                 >
-                  <img src={assetPath("assets/icons/header-notification-bell.svg")} alt="" />
+                  <img src={assetPath("assets/icons/header-notification-bell.svg")} alt="" width={16} height={16} />
                 </button>
 
                 <button
@@ -127,9 +105,9 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                   type="button"
                   aria-label="Ulubione"
                   aria-expanded={isPanelOpen && panelType === "favorites"}
-                  onClick={() => togglePanel("favorites")}
+                  onClick={() => router.push(isAuthenticated ? "/ulubione" : "/logowanie?next=%2Fulubione")}
                 >
-                  <img src={assetPath("assets/icons/header-heart.svg")} alt="" />
+                  <img src={assetPath("assets/icons/header-heart.svg")} alt="" width={16} height={16} />
                 </button>
 
                 <button
@@ -139,13 +117,15 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
                   aria-expanded={isPanelOpen && panelType === "chat"}
                   onClick={() => togglePanel("chat")}
                 >
-                  <img src={assetPath("assets/icons/header-chat.svg")} alt="" />
+                  <img src={assetPath("assets/icons/header-chat.svg")} alt="" width={16} height={16} />
                 </button>
               </div>
 
               <div className="header-not-login__notifications-panel" aria-label={panelCopy[panelType].title}>
                 <img
                   className="header-not-login__notifications-shape"
+                  width={325}
+                  height={262}
                   src={assetPath("assets/images/header-notifications-shape.svg")}
                   alt=""
                   aria-hidden="true"
@@ -206,7 +186,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
             <div className="header-not-login__contractor-menu">
               <button className="header-not-login__contractor-button" type="button" aria-haspopup="true">
                 <span>Dla Wykonawców</span>
-                <img src={assetPath("assets/icons/header-angle-down.svg")} alt="" aria-hidden="true" />
+                <img src={assetPath("assets/icons/header-angle-down.svg")} alt="" aria-hidden="true" width={14} height={14} />
               </button>
 
               <div className="header-not-login__contractor-dropdown" aria-label="Menu dla wykonawców">
@@ -234,21 +214,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
 
           <div className="header-not-login__mobile-backdrop" onClick={toggleMobile} />
           <div className="header-not-login__mobile-menu">
-            <form className="header-not-login__mobile-search" role="search" onSubmit={submitHeaderSearch}>
-              <label className="header-not-login__search-label" htmlFor="header-search-mobile">
-                Szukaj
-              </label>
-              <span className="header-not-login__search-icon" aria-hidden="true">
-                <img src={assetPath("assets/icons/header-search.svg")} alt="" />
-              </span>
-              <input
-                id="header-search-mobile"
-                name="header-search"
-                className="header-not-login__search-input"
-                type="search"
-                placeholder="Imię i nazwisko | Nazwa firmy"
-              />
-            </form>
+            <ProviderNameSearch className="header-not-login__mobile-search" inputId="header-search-mobile" onNavigate={toggleMobile} />
 
             <nav className="header-not-login__mobile-nav" aria-label="Mobilna nawigacja">
               <Link className="header-not-login__mobile-link" href="/home#jak-to-dziala">

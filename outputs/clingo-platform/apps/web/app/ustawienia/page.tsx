@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { fetchPrivateJson } from "../../lib/private-api";
+import type { AccountProfile } from "../../lib/account";
 import { DashboardShell } from "../../components/dashboard-shell";
 import { PageHeading } from "../../components/page-heading";
 import {
@@ -8,26 +9,23 @@ import {
 } from "../../components/settings-section";
 import {
   accountProfileToSidebarUser,
-  getAccountProfile,
   settingsFromAccountProfile
 } from "../../lib/account";
 import { getSettings } from "../../lib/api";
 
 export default async function SettingsPage() {
-  const cookieStore = await cookies();
-  const accountEmail = cookieStore.get("clingo-user-email")?.value;
   const [settings, accountProfile] = await Promise.all([
     getSettings(),
-    getAccountProfile(accountEmail ? decodeURIComponent(accountEmail) : undefined)
+    fetchPrivateJson<{ user: AccountProfile }>("/auth/profile").then(result => result.user)
   ]);
   const accountSettings = settingsFromAccountProfile(settings, accountProfile);
   const accountUser = accountProfileToSidebarUser(accountProfile);
 
   return (
     <DashboardShell active="Ustawienia" user={accountUser}>
-      <section className="w-full md:w-[1090px]">
+      <section className="min-w-0 w-full">
         <PageHeading
-          description="Sprawdzaj opinie pozostawione przez klientów po wykonanych zleceniach."
+          description="Zarządzaj swoimi danymi, hasłem i preferencjami powiadomień."
           title="Ustawienia"
         />
 

@@ -1,10 +1,17 @@
-const steps = [
+const bookingSteps = [
   { id: 1, label: "Wybierz termin" },
   { id: 2, label: "Podsumowanie" },
   { id: 3, label: "Gotowe" }
 ] as const;
 
-export function OrderSteps({ activeStep }: { activeStep: 1 | 2 | 3 }) {
+const multiSessionSteps = [
+  { id: 1, label: "Harmonogram" },
+  { id: 2, label: "Podsumowanie" },
+  { id: 3, label: "Gotowe" }
+] as const;
+
+export function OrderSteps({ activeStep, mode = "booking" }: { activeStep: 1 | 2 | 3; mode?: "booking" | "multi-session" }) {
+  const steps = mode === "multi-session" ? multiSessionSteps : bookingSteps;
   return (
     <nav aria-label="Etapy zamówienia" className="relative mx-auto h-[80px] w-full max-w-[1200px]" data-node-id="4099:5842">
       <span className="absolute left-[6%] top-[30px] h-px w-[43.6%] bg-[#dce0e3]" aria-hidden="true" />

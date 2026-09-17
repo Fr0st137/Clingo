@@ -24,8 +24,10 @@ async function bootstrap() {
   }
 }
 
-bootstrap().catch((error) => {
-  console.error("[seed] Import danych nie powiodl sie.");
-  console.error(error instanceof Error ? error.stack || error.message : error);
-  process.exit(1);
-});
+bootstrap()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("[seed] Import danych nie powiodl sie.");
+    console.error(error instanceof Error ? error.stack || error.message : error);
+    process.exit(1);
+  });

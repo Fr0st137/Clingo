@@ -1,3 +1,5 @@
+import { ReviewPhotos } from "./review-photos";
+import { FavoriteButton } from "./favorite-button";
 import Link from "next/link";
 import { Award, Check, CheckCircle2, ChevronLeft, Clock, Heart, MapPin, ShieldCheck, Sparkles, Star } from "lucide-react";
 
@@ -29,7 +31,7 @@ export interface ProviderProfileData {
     durationMinutes: number;
     selected?: boolean;
   }>;
-  reviews: Array<{ id: string; author: string; rating: number; date: string; content: string }>;
+  reviews: Array<{ id: string; author: string; rating: number; date: string; content: string; images?: Array<{ id: string; url: string; label: string }> }>;
   standards: string[];
   summary: {
     duration: string;
@@ -113,13 +115,7 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
               </div>
             </div>
 
-            <button
-              aria-label="Dodaj do ulubionych"
-              className="grid h-[42px] w-[42px] place-items-center rounded-full bg-[#fff0f2] text-[#ed3d4d] transition-all hover:bg-[#ffe5e9]"
-              type="button"
-            >
-              <Heart className="h-5 w-5 fill-current" />
-            </button>
+            <FavoriteButton providerId={profile.id} />
           </div>
         </article>
 
@@ -174,6 +170,7 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
                   <RatingStars rating={review.rating} />
                 </div>
                 <p className="mt-3 text-[13px] leading-6 text-[#34465d]">{review.content}</p>
+                <ReviewPhotos images={review.images} />
               </article>
             ))}
           </div>

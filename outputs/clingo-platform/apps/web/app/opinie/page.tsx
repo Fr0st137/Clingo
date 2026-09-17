@@ -8,7 +8,7 @@ export default async function OpinionsPage() {
 
   return (
     <DashboardShell active="Twoje opinie">
-      <section className="w-full md:w-[1090px]">
+      <section className="min-w-0 w-full">
         <PageHeading
           description="Sprawdzaj opinie, które pozostawiłeś innym wykonawcom."
           title="Twoje opinie"
@@ -16,8 +16,9 @@ export default async function OpinionsPage() {
 
         <section className="grid gap-5 md:mt-[10px] md:max-w-[745px]">
           <div>
-            <h3 className="mb-3 text-[14px] font-bold text-clingo-ink">Ostatnie</h3>
+            <h3 className="mb-3 text-[14px] font-bold text-clingo-ink">Usługi do oceny</h3>
             <div className="grid gap-3">
+              {opinions.pendingReviews.length === 0 && <p className="text-[14px] text-clingo-muted">Nie masz usług oczekujących na ocenę. Pojawią się tutaj po oznaczeniu zamówienia jako wykonane.</p>}
               {opinions.pendingReviews.map((item) => (
                 <PendingReviewCard item={item} key={item.id} />
               ))}
@@ -27,6 +28,7 @@ export default async function OpinionsPage() {
           <div>
             <h3 className="mb-3 text-[14px] font-bold text-clingo-ink">Ocenione</h3>
             <div className="grid gap-5">
+              {opinions.userReviews.length === 0 && <p className="text-[14px] text-clingo-muted">Nie wystawiono jeszcze żadnej opinii.</p>}
               {opinions.userReviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
               ))}

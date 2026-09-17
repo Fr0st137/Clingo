@@ -12,7 +12,15 @@ export type DashboardOrder = {
   dateLines: string[];
   range?: boolean;
   actions: string[];
-  bookingDetails?: { contactName?: string; contactPhone?: string; frequencyLabel?: string; notes?: string; invoice?: { companyName: string; taxId: string; address: string } | null };
+  bookingDetails?: {
+    addOns?: Array<{ id: string; label: string; quantity: number }>;
+    contactName?: string;
+    contactPhone?: string;
+    frequencyLabel?: string;
+    notes?: string;
+    invoice?: { companyName: string; taxId: string; address: string } | null;
+    sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
+  };
   summary?: {
     duration: string;
     lines: Array<{ id: string; label: string; value: string }>;
@@ -117,6 +125,7 @@ export type FilterGroup = {
 };
 
 export type BoardListing = {
+  addOns?: Array<{ id: string; label: string }>;
   id: string;
   provider: string;
   rating: number;

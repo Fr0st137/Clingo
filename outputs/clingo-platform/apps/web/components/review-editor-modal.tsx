@@ -1,226 +1,79 @@
 "use client";
-
-import { ImagePlus, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { X, Star, ImagePlus } from "lucide-react";
+import { accountRequest } from "../lib/account-client";
 import type { ReviewImage } from "./review-card";
-
-export type ReviewEditorData = {
-  avatarTone: "person" | "brand" | "light";
-  content?: string;
-  id: string;
-  images?: ReviewImage[];
-  person: string;
-  rating?: number;
-  service: string;
-};
-
-type ReviewEditorModalProps = {
-  mode: "add" | "edit";
-  review: ReviewEditorData;
-};
-
-const reviewApiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-const starSrc = "/figma-assets/board-rating-star.svg";
-
-const photoStyles = [
-  "bg-[linear-gradient(135deg,#e8eef5_0%,#b9c4ce_45%,#f8fbff_100%)]",
-  "bg-[linear-gradient(135deg,#d9c8b7_0%,#8c7f72_48%,#f2ede8_100%)]",
-  "bg-[linear-gradient(135deg,#c4b39f_0%,#efe1ce_45%,#8b6d58_100%)]"
-];
-
-function defaultPhotos(images?: ReviewImage[]) {
-  return (images ?? []).slice(0, 3).map((image, index) => ({
-    ...image,
-    label: image.label || `Zdjęcie ${index + 1}`
-  }));
-}
-
-export function ReviewEditorModal({ mode, review }: ReviewEditorModalProps) {
+export type ReviewEditorData = { avatarTone: "person" | "brand" | "light"; content?: string; id: string; images?: ReviewImage[]; person: string; rating?: number; service: string; };
+type Photo = ReviewImage & { dataUrl?: string };
+export function ReviewEditorModal({ mode, review }: { mode: "add" | "edit"; review: ReviewEditorData }) {
   const router = useRouter();
-  const [rating, setRating] = useState(review.rating ?? (mode === "edit" ? 4 : 0));
+  const picker = useRef<HTMLInputElement>(null);
+  const [rating, setRating] = useState(review.rating ?? 0);
   const [content, setContent] = useState(review.content ?? "");
-  const [photos, setPhotos] = useState(defaultPhotos(review.images));
-  const [isSaving, setIsSaving] = useState(false);
+  const [photos, setPhotos] = useState<Photo[]>(review.images ?? []);
+  const [saving, setSaving] = useState(false);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [status, setStatus] = useState("");
-
   const title = mode === "edit" ? "Edytuj opinię" : "Dodaj opinię";
-  const charsLeft = useMemo(() => `${content.length}/1000`, [content]);
-
-  const close = () => {
-    router.push("/opinie");
-  };
-
-  const addPhoto = () => {
-    if (photos.length >= 3) {
-      return;
-    }
-
-    setPhotos((current) => [
-      ...current,
-      {
-        id: `local-photo-${Date.now()}`,
-        label: `Zdjęcie efektów ${current.length + 1}`
-      }
-    ]);
-  };
-
-  const saveReview = async () => {
-    if (!rating) {
-      setStatus("Wybierz ocenę.");
-      return;
-    }
-
-    if (!content.trim()) {
-      setStatus("Wpisz treść opinii.");
-      return;
-    }
-
-    setIsSaving(true);
+  async function addPhotos(files: FileList | null) {
+    if (!files) return;
     setStatus("");
-
+    if (files.length + photos.length > 3) { setStatus("Możesz dodać maksymalnie 3 zdjęcia."); return; }
+    setLoadingPhotos(true);
     try {
-      const response = await fetch(`${reviewApiBaseUrl}/dashboard/reviews/opinions/${encodeURIComponent(review.id)}`, {
-        body: JSON.stringify({
-          content,
-          images: photos,
-          rating
-        }),
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        method: "PATCH"
-      });
-
-      if (!response.ok) {
-        throw new Error(`Review save failed with status ${response.status}.`);
+      const added: Photo[] = [];
+      for (const file of Array.from(files)) {
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) throw new Error("Wybierz JPG, PNG lub WebP do 2 MB.");
+        const dataUrl = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(new Error("Nie można odczytać pliku.")); reader.readAsDataURL(file); });
+        added.push({ id: crypto.randomUUID(), label: "Zdjęcie efektów usługi", dataUrl });
       }
-
-      router.push("/opinie");
-      router.refresh();
-    } catch {
-      setStatus("Nie udało się zapisać opinii.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <section className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(54,63,76,0.6)] px-4 backdrop-blur-[3.5px]">
-      <div className="relative w-full max-w-[600px] rounded-[25px] bg-white p-[30px] text-[#2e3b4c]">
-        <div className="flex flex-col gap-5">
-          <header className="grid gap-[10px]">
-            <div className="flex w-full items-center justify-between gap-4">
-              <h1 className="m-0 text-[24px] font-semibold leading-normal">{title}</h1>
-              <button
-                className="flex h-[38px] items-center justify-center gap-2 rounded-[99px] bg-[#0079de] px-5 py-3 text-[14px] font-medium text-white"
-                onClick={addPhoto}
-                type="button"
-              >
-                Dodaj zdjęcie efektów
-                <ImagePlus className="h-[14px] w-[14px]" strokeWidth={2} />
-              </button>
-            </div>
-
-            <div className="grid gap-[10px]">
-              <p className="m-0 text-[14px] font-semibold leading-normal">Dodaj ocenę</p>
-              <div className="flex items-center gap-[10px]">
-                {Array.from({ length: 5 }).map((_, index) => {
-                  const starValue = index + 1;
-
-                  return (
-                    <button
-                      aria-label={`Ustaw ocenę ${starValue}`}
-                      className="h-8 w-8 border-0 bg-transparent p-0"
-                      key={starValue}
-                      onClick={() => {
-                        setStatus("");
-                        setRating(starValue);
-                      }}
-                      type="button"
-                    >
-                      <img
-                        alt=""
-                        className={starValue <= rating ? "h-full w-full" : "h-full w-full grayscale opacity-20"}
-                        src={starSrc}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </header>
-
-          <label className="relative flex h-[163px] w-full items-end">
-            <span className="absolute left-[19px] top-0 z-10 rounded-[10px] bg-gradient-to-b from-[#f7fbfe] to-white px-1 py-[2px] text-[14px] font-medium leading-none">
-              Twoja opinia
-            </span>
-            <textarea
-              className="h-[155px] w-full resize-none rounded-[30px] border border-[#dce0e3] bg-white px-[19px] py-[18px] pr-[76px] text-[14px] leading-[26px] text-[#334155] outline-none focus:border-[#0079de]"
-              maxLength={1000}
-              onChange={(event) => {
-                setStatus("");
-                setContent(event.target.value);
-              }}
-              placeholder="Opisz swoje doświadczenie z usługą."
-              value={content}
-            />
-            <span className="absolute bottom-[11px] right-[20px] text-[12px] leading-normal text-[#7c8691]">{charsLeft}</span>
-          </label>
-
-          {photos.length ? (
-            <div className="flex w-full flex-wrap gap-5">
-              {photos.map((photo, index) => (
-                <div
-                  aria-label={photo.label}
-                  className={`relative h-[120px] w-[120px] overflow-hidden rounded-[20px] bg-cover bg-center p-[10px] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)] ${photoStyles[index % photoStyles.length]}`}
-                  key={photo.id}
-                >
-                  <div className="absolute inset-0 bg-[rgba(0,0,0,0.1)]" />
-                  <button
-                    aria-label="Usuń zdjęcie"
-                    className="absolute right-[10px] top-[10px] grid h-6 w-6 place-items-center rounded-full border-0 bg-white p-0 text-[#d63b3b]"
-                    onClick={() => setPhotos((current) => current.filter((item) => item.id !== photo.id))}
-                    type="button"
-                  >
-                    <X className="h-[14px] w-[14px]" strokeWidth={2.4} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          {status ? <p className="m-0 text-[13px] font-medium leading-normal text-[#d63b3b]">{status}</p> : null}
-
-          <div className="flex h-12 w-full gap-[15px]">
-            <button
-              className="flex flex-1 items-center justify-center rounded-[30px] border border-[#e5e7eb] bg-white text-[14px] font-semibold text-[#2e3b4c]"
-              onClick={close}
-              type="button"
-            >
-              Anuluj
-            </button>
-            <button
-              className="flex flex-1 items-center justify-center rounded-[30px] border border-[#e6edf3] bg-[#0079de] text-[14px] font-semibold text-white disabled:cursor-wait disabled:opacity-70"
-              disabled={isSaving}
-              onClick={saveReview}
-              type="button"
-            >
-              {isSaving ? "Zapisywanie..." : "Zapisz"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <button
-        aria-label="Zamknij"
-        className="absolute right-[calc(50%-330px)] top-[calc(50%-200px)] grid h-[35px] w-[35px] place-items-center rounded-[30px] border-0 bg-[rgba(46,59,76,0.7)] p-[5px] text-white max-md:right-4 max-md:top-4"
-        onClick={close}
-        type="button"
-      >
-        <X className="h-5 w-5" strokeWidth={2.2} />
-      </button>
+      setPhotos(current => [...current, ...added]);
+    } catch (error) { setStatus(error instanceof Error ? error.message : "Nie udało się dodać zdjęć."); }
+    finally { setLoadingPhotos(false); if (picker.current) picker.current.value = ""; }
+  }
+  async function save(event: React.FormEvent) {
+    event.preventDefault(); setStatus("");
+    if (!rating) { setStatus("Wybierz ocenę od 1 do 5."); return; }
+    if (!content.trim()) { setStatus("Wpisz treść opinii."); return; }
+    setSaving(true);
+    try {
+      await accountRequest(`reviews/${review.id}`, "PUT", { rating, content, images: photos.map(photo => photo.dataUrl ? { dataUrl: photo.dataUrl } : { id: photo.id }) });
+      router.push("/opinie"); router.refresh();
+    } catch (error) { setStatus(error instanceof Error ? error.message : "Nie udało się zapisać opinii."); }
+    finally { setSaving(false); }
+  }
+  async function remove() {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setSaving(true); setStatus("");
+    try { await accountRequest(`reviews/${review.id}`, "DELETE"); router.push("/opinie"); router.refresh(); }
+    catch (error) { setStatus(error instanceof Error ? error.message : "Nie udało się usunąć opinii."); }
+    finally { setSaving(false); }
+  }
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(54,63,76,0.6)] p-3 backdrop-blur-sm">
+    <section role="dialog" aria-modal="true" aria-labelledby="review-title" className="relative max-h-[94vh] w-full max-w-[650px] overflow-y-auto rounded-[24px] bg-white p-5 shadow-xl sm:p-8">
+      <button aria-label="Zamknij opinię" disabled={saving} onClick={() => router.push("/opinie")} className="absolute right-4 top-4 rounded-full p-2 text-[#536479]" type="button"><X className="h-5 w-5" /></button>
+      <h2 id="review-title" className="pr-10 text-[24px] font-bold text-clingo-ink">{title}</h2>
+      <p className="mt-2 text-[14px] text-clingo-muted">{review.person} · {review.service}</p>
+      <form onSubmit={save}>
+        <fieldset disabled={saving || loadingPhotos} className="mt-6 grid gap-5">
+          <fieldset><legend className="mb-2 text-[14px] font-semibold text-clingo-ink">Twoja ocena</legend><div className="flex gap-3">{[1,2,3,4,5].map(value => <label key={value} className="cursor-pointer rounded-lg p-1 focus-within:ring-2 focus-within:ring-[#0079de]">
+            <input type="radio" className="sr-only" name="rating" aria-label={`${value} ${value === 1 ? "gwiazdka" : value < 5 ? "gwiazdki" : "gwiazdek"}`} checked={rating === value} onChange={() => setRating(value)} />
+            <Star className={`h-8 w-8 ${value <= rating ? "fill-[#f2bd1d] text-[#f2bd1d]" : "text-[#b4bdc7]"}`} />
+          </label>)}</div></fieldset>
+          <label className="text-[14px] font-semibold text-clingo-ink">Treść opinii<textarea aria-label="Treść opinii" required maxLength={1000} autoFocus className="mt-2 min-h-[140px] w-full rounded-[15px] border border-[#dce4ee] p-4 text-[14px] font-normal outline-none focus:border-[#0079de]" value={content} onChange={event => setContent(event.target.value)} placeholder="Opisz swoje doświadczenie z usługą." /><span className="block text-right text-[12px] font-normal text-clingo-muted">{content.length}/1000</span></label>
+          <div><p className="mb-3 text-[14px] font-semibold text-clingo-ink">Zdjęcia (opcjonalnie)</p><div className="flex flex-wrap gap-3">{photos.map(photo => <div key={photo.id} className="relative"><img src={photo.dataUrl || photo.url} alt={photo.label} className="h-[85px] w-[110px] rounded-xl object-cover" /><button aria-label="Usuń zdjęcie" type="button" onClick={() => setPhotos(current => current.filter(item => item.id !== photo.id))} className="absolute right-1 top-1 rounded-full bg-white p-1"><X className="h-4 w-4" /></button></div>)}
+          {photos.length < 3 && <button type="button" onClick={() => picker.current?.click()} className="grid h-[85px] w-[110px] place-items-center rounded-xl border border-dashed border-[#9caebf] text-[#0079de]" aria-label="Dodaj zdjęcia"><ImagePlus className="h-6 w-6" /></button>}</div>
+          <input ref={picker} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" multiple onChange={event => void addPhotos(event.target.files)} />
+          <p className="mt-2 text-[12px] text-clingo-muted">Do 3 zdjęć JPG, PNG lub WebP, każde do 2 MB i 16 megapikseli.</p></div>
+          <p className="rounded-xl bg-[#f4f8fc] p-3 text-[13px] leading-5 text-[#536479]">Opinia i zdjęcia będą publiczne na profilu wykonawcy. Pokazujemy imię i pierwszą literę nazwiska. Nie dodawaj danych osobowych ani zdjęć osób bez ich zgody.</p>
+        </fieldset>
+        {status && <p role="alert" className="mt-4 text-[14px] text-red-700">{status}</p>}
+        {confirmDelete && <p role="alert" className="mt-4 text-[14px] text-red-700">Usunąć tę opinię wraz ze zdjęciami? Kliknij ponownie „Usuń opinię”, aby potwierdzić.</p>}
+        <div className="mt-6 flex flex-wrap justify-end gap-3">{mode === "edit" && <button type="button" disabled={saving || loadingPhotos} onClick={remove} className="mr-auto rounded-full border border-red-200 px-4 py-3 text-[14px] text-red-700">Usuń opinię</button>}
+        <button disabled={saving || loadingPhotos} type="submit" className="rounded-full bg-[#0079de] px-7 py-3 text-[14px] font-semibold text-white disabled:opacity-50">{saving ? "Zapisywanie…" : loadingPhotos ? "Wczytywanie zdjęć…" : "Zapisz opinię"}</button></div>
+      </form>
     </section>
-  );
+  </div>;
 }
