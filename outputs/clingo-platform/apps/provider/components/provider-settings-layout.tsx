@@ -11,14 +11,15 @@ const tabs: ReadonlyArray<{ label: ProviderSettingsTab; href?: string }> = [
   { label: "Kalendarz", href: "/settings/calendar" }
 ];
 
-export function ProviderSettingsLayout({ active, figmaNode, children, fitContent = false }: {
+export function ProviderSettingsLayout({ active, figmaNode, children, fitContent = false, live = false }: {
   active: ProviderSettingsTab;
   figmaNode: string;
   children: ReactNode;
   fitContent?: boolean;
+  live?: boolean;
 }) {
   return (
-    <ProviderShell figmaNode={figmaNode} settingsActive>
+    <ProviderShell figmaNode={figmaNode} settingsActive live={live}>
       <div className="settings-content">
         <div className="settings-layout">
           <nav className="settings-tabs" aria-label="Ustawienia konta">

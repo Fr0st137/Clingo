@@ -4,6 +4,7 @@ import { AuthModule } from "./auth/auth.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { DatabaseModule } from "./database/database.module";
 import { RedisModule } from "./redis/redis.module";
+import { ProviderModule } from "./provider/provider.module";
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { RedisModule } from "./redis/redis.module";
     DatabaseModule,
     RedisModule,
     AuthModule,
-    DashboardModule
+    DashboardModule,
+    ProviderModule
   ]
 })
 export class AppModule {}

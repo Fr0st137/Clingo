@@ -1,7 +1,7 @@
-import { ProviderEmployeeAddPage } from "../../../components/provider-employee-add-page";
+import { ProviderEmployeeFormPage } from "../../../components/provider-employee-form-page";
 
 export const metadata = { title: "Dodaj pracownika | Panel wykonawcy Clingo" };
 
 export default function AddEmployeePage() {
-  return <ProviderEmployeeAddPage />;
+  return <ProviderEmployeeFormPage mode="add" />;
 }

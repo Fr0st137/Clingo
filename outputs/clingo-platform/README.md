@@ -23,6 +23,8 @@ Optional local services:
 docker compose up -d
 ```
 
+PostgreSQL/PostGIS and Redis use `restart: unless-stopped`, so Docker Desktop starts them again after its engine restarts. The root `start-clingo-provider.bat` launcher also starts Docker Desktop when needed, brings up both containers, waits for PostgreSQL, starts the API and only then opens the provider panel.
+
 ## Fast local preview
 
 The root `start-clingo-platform.bat` now builds the website once before opening the optimized production preview. The longer startup replaces on-demand page compilation. Re-run it after code changes. `start-clingo-development.bat` (or `npm run dev:web`) keeps automatic updates and uses Turbopack; its first page visit can still include compilation.
@@ -94,3 +96,9 @@ npm run test:order-api
 ```
 
 The web check additionally requires the frontend on port 3000 (`CLINGO_TEST_WEB` can override it). Checks create isolated disposable accounts/provider/orders and remove only their fixtures. They verify persistence, ownership, malformed input, password migration/rotation, revoked sessions, durable limits, concurrent uniqueness, photo validation/metadata removal, public review rendering and cookie/CSRF behavior. `browser-account-fixture.cjs setup/check/cleanup` supports an optional local browser smoke check.
+
+## Provider team, clients and settings
+
+The provider application now has its own authenticated session and API-backed employee list, add/edit/delete forms and recurring weekly work schedules. Day/week views, real hour totals, employee filters and CSV export use saved employee records. The client directory supports scoped contacts, addresses and notes with search and versioned edits. Company settings, notification preferences and password changes use authenticated API endpoints; a scoped JSON export is available. Service drafts support prices, duration, search, edits, archive and restore, and location settings save the service address and travel radius. Manual jobs connect saved clients, services and employees in a shared month/week/day calendar, list and history. Job snapshots preserve customer contact, address and service details, while an account lock prevents overlapping jobs for one employee. Publishing drafts, geocoding/search coverage, notification delivery and linking customer reservations to provider jobs remain future work. The remaining provider screens are explicitly marked as previews.
+
+See [provider team setup and verification](docs/provider-team-live.md) for the additive database migrations, account setup, tests and remaining scope. Team schedules are not yet connected to customer booking availability. Run `npm run test:provider-team` for the provider service/proxy tests.

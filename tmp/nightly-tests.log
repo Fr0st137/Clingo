@@ -1,0 +1,214 @@
+TAP version 13
+# Subtest: quote includes selected quantity, service duration and frequency discount
+ok 1 - quote includes selected quantity, service duration and frequency discount
+  ---
+  duration_ms: 7.1846
+  type: 'test'
+  ...
+# Subtest: rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+ok 2 - rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+  ---
+  duration_ms: 0.8664
+  type: 'test'
+  ...
+# Subtest: Polish wall time is independent of the server time zone and daylight saving changes
+ok 3 - Polish wall time is independent of the server time zone and daylight saving changes
+  ---
+  duration_ms: 3.89
+  type: 'test'
+  ...
+# Subtest: availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+ok 4 - availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+  ---
+  duration_ms: 28.3403
+  type: 'test'
+  ...
+# Subtest: buffers, lead time and past hours are enforced
+ok 5 - buffers, lead time and past hours are enforced
+  ---
+  duration_ms: 30.2215
+  type: 'test'
+  ...
+# Subtest: multi-session duration is split into at least two bounded sessions without losing minutes
+ok 6 - multi-session duration is split into at least two bounded sessions without losing minutes
+  ---
+  duration_ms: 0.3492
+  type: 'test'
+  ...
+# Subtest: multi-session generator uses real free slots and returns a complete schedule
+ok 7 - multi-session generator uses real free slots and returns a complete schedule
+  ---
+  duration_ms: 42.4995
+  type: 'test'
+  ...
+# Subtest: confirmed multi-session order is persisted with its schedule and mode
+ok 8 - confirmed multi-session order is persisted with its schedule and mode
+  ---
+  duration_ms: 55.5721
+  type: 'test'
+  ...
+# Subtest: chronological timeline retains the saved session index in rescheduling links
+ok 9 - chronological timeline retains the saved session index in rescheduling links
+  ---
+  duration_ms: 70.2039
+  type: 'test'
+  ...
+# Subtest: past sessions and inactive orders do not offer session changes
+ok 10 - past sessions and inactive orders do not offer session changes
+  ---
+  duration_ms: 9.2004
+  type: 'test'
+  ...
+# Subtest: single-session details keep their existing design and action
+ok 11 - single-session details keep their existing design and action
+  ---
+  duration_ms: 3.1767
+  type: 'test'
+  ...
+# Subtest: session link opens the requested session and month in the rescheduling form
+ok 12 - session link opens the requested session and month in the rescheduling form
+  ---
+  duration_ms: 16.374
+  type: 'test'
+  ...
+# Subtest: missing or invalid area and either missing field keep checkout unavailable
+ok 13 - missing or invalid area and either missing field keep checkout unavailable
+  ---
+  duration_ms: 2.0972
+  type: 'test'
+  ...
+# Subtest: a supported locality restores checkout only with an available pricing area
+ok 14 - a supported locality restores checkout only with an available pricing area
+  ---
+  duration_ms: 1.4632
+  type: 'test'
+  ...
+# Subtest: other cities and similarly named streets cannot activate checkout
+ok 15 - other cities and similarly named streets cannot activate checkout
+  ---
+  duration_ms: 0.8263
+  type: 'test'
+  ...
+# Subtest: coverage is provider-specific, accepts Polish names and never falls back to the office address
+ok 16 - coverage is provider-specific, accepts Polish names and never falls back to the office address
+  ---
+  duration_ms: 0.5419
+  type: 'test'
+  ...
+# Subtest: only explicit, available add-ons are restored; demo selections do not alter the price
+ok 17 - only explicit, available add-ons are restored; demo selections do not alter the price
+  ---
+  duration_ms: 0.4813
+  type: 'test'
+  ...
+# Subtest: refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+ok 18 - refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+  ---
+  duration_ms: 1.8577
+  type: 'test'
+  ...
+# Subtest: recovers from a dropped connection and keeps authenticated GET requests
+ok 19 - recovers from a dropped connection and keeps authenticated GET requests
+  ---
+  duration_ms: 461.2519
+  type: 'test'
+  ...
+# Subtest: recovers when the API responds 503 during a restart
+ok 20 - recovers when the API responds 503 during a restart
+  ---
+  duration_ms: 1399.0969
+  type: 'test'
+  ...
+# Subtest: preserves authentication and missing-order errors without retry or fallback
+ok 21 - preserves authentication and missing-order errors without retry or fallback
+  ---
+  duration_ms: 22.2114
+  type: 'test'
+  ...
+# Subtest: persistent connection failures produce a recoverable error, never an empty order list
+ok 22 - persistent connection failures produce a recoverable error, never an empty order list
+  ---
+  duration_ms: 1372.4173
+  type: 'test'
+  ...
+# Subtest: persistent API failures produce the same recoverable error
+ok 23 - persistent API failures produce the same recoverable error
+  ---
+  duration_ms: 1382.0469
+  type: 'test'
+  ...
+# Subtest: times out when the API accepts a connection but never completes its response
+ok 24 - times out when the API accepts a connection but never completes its response
+  ---
+  duration_ms: 8020.1937
+  type: 'test'
+  ...
+# Subtest: board pagination shows exactly ten listings per page
+ok 25 - board pagination shows exactly ten listings per page
+  ---
+  duration_ms: 2.5094
+  type: 'test'
+  ...
+# Subtest: page numbers reflect total results and clamp invalid pages
+ok 26 - page numbers reflect total results and clamp invalid pages
+  ---
+  duration_ms: 0.513
+  type: 'test'
+  ...
+# Subtest: search ignores case, Polish diacritics and punctuation
+ok 27 - search ignores case, Polish diacritics and punctuation
+  ---
+  duration_ms: 5.4608
+  type: 'test'
+  ...
+# Subtest: all query words must occur in the provider name in any order
+ok 28 - all query words must occur in the provider name in any order
+  ---
+  duration_ms: 2.2636
+  type: 'test'
+  ...
+# Subtest: exact and prefix matches rank ahead of embedded matches
+ok 29 - exact and prefix matches rank ahead of embedded matches
+  ---
+  duration_ms: 0.4932
+  type: 'test'
+  ...
+# Subtest: availability excludes the current order, retains its duration and requires ownership
+ok 30 - availability excludes the current order, retains its duration and requires ownership
+  ---
+  duration_ms: 445.436
+  type: 'test'
+  ...
+# Subtest: rescheduling saves the new date without changing price or extras and rechecks conflicts
+ok 31 - rescheduling saves the new date without changing price or extras and rechecks conflicts
+  ---
+  duration_ms: 76.2468
+  type: 'test'
+  ...
+# Subtest: multi-session move preserves other sessions, workers and updates the overall date range
+ok 32 - multi-session move preserves other sessions, workers and updates the overall date range
+  ---
+  duration_ms: 88.3097
+  type: 'test'
+  ...
+# Subtest: multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+ok 33 - multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+  ---
+  duration_ms: 651.0101
+  type: 'test'
+  ...
+# Subtest: cancelled, completed and past services cannot be rescheduled
+ok 34 - cancelled, completed and past services cannot be rescheduled
+  ---
+  duration_ms: 8.8627
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13349.6893

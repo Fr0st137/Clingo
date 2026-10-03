@@ -24,7 +24,11 @@
     "verify:navigation": "node scripts/verify-navigation.cjs",
     "test:order-api": "node --test scripts/order-api.test.cjs",
     "test:offer-request": "node --test scripts/offer-request.test.cjs",
-    "test:provider-search": "node --test scripts/provider-search.test.cjs"
+    "test:provider-search": "node --test scripts/provider-search.test.cjs",
+    "test:provider-team": "npm run build:api && node --test scripts/provider-team.test.cjs scripts/provider-proxy.test.cjs scripts/provider-settings.test.cjs scripts/provider-clients.test.cjs scripts/provider-offers.test.cjs scripts/provider-jobs.test.cjs scripts/provider-reviews.test.cjs scripts/provider-multi-orders.test.cjs",
+    "verify:provider-team": "npm run build:api && node scripts/verify-provider-team.cjs",
+    "verify:provider-service-config": "node scripts/verify-provider-service-config.cjs",
+    "test:provider-analytics": "node --test scripts/provider-analytics.test.cjs"
   },
   "workspaces": [
     "apps/web",

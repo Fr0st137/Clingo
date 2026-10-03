@@ -1,3 +1,4 @@
+import { ProviderJobEntity } from "../provider/provider-jobs.entity";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -18,6 +19,11 @@ import { OrderEntity } from "../dashboard/order.entity";
 import { PanelReviewEntity } from "../dashboard/panel-review.entity";
 import { ProviderProfileEntity } from "../dashboard/provider-profile.entity";
 import { SettingsSectionEntity } from "../dashboard/settings-section.entity";
+import { ProviderAccountEntity, ProviderEmployeeEntity, ProviderMembershipEntity } from "../provider/provider.entity";
+import { ProviderClientEntity } from "../provider/provider-clients.entity";
+import { ProviderOfferEntity } from "../provider/provider-offers.entity";
+import { ProviderReviewEntity } from "../provider/provider-reviews.entity";
+import { ProviderMultiOrderEntity } from "../provider/provider-multi-orders.entity";
 
 @Module({
   imports: [
@@ -31,6 +37,7 @@ import { SettingsSectionEntity } from "../dashboard/settings-section.entity";
         password: config.get<string>("POSTGRES_PASSWORD", "clingo"),
         database: config.get<string>("POSTGRES_DB", "clingo"),
         entities: [
+          ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity,
           AuthSessionEntity,
           AuthRateLimitEntity,
           CustomerFavoriteEntity, CustomerReviewEntity, CustomerReviewImageEntity,

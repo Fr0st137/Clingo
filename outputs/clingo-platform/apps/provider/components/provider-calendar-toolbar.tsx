@@ -1,24 +1,55 @@
-import Link from "next/link";
+import type { CalendarView } from "../lib/provider-jobs";
 
 const asset = (name: string) => `/figma-assets/calendar/${name}`;
 
-export function ProviderCalendarToolbar({ view }: { view: "month" | "week" | "day" }) {
+export function ProviderCalendarToolbar({
+  view,
+  periodLabel,
+  services,
+  service,
+  onViewChange,
+  onPrevious,
+  onNext,
+  onServiceChange,
+  onAdd,
+  onRefresh
+}: {
+  view: CalendarView;
+  periodLabel: string;
+  services: string[];
+  service: string;
+  onViewChange: (view: CalendarView) => void;
+  onPrevious: () => void;
+  onNext: () => void;
+  onServiceChange: (service: string) => void;
+  onAdd: () => void;
+  onRefresh: () => void;
+}) {
   return (
     <div className={`calendar-toolbar${view === "week" ? " is-week" : view === "day" ? " is-day" : ""}`}>
       <nav className="view-switcher" aria-label="Widok kalendarza">
-        <Link href="/" className={view === "month" ? "is-active" : ""} aria-current={view === "month" ? "page" : undefined}>Miesiąc</Link>
-        <Link href="/calendar/week" className={view === "week" ? "is-active" : ""} aria-current={view === "week" ? "page" : undefined}>Tydzień</Link>
-        <Link href="/calendar/day" className={view === "day" ? "is-active" : ""} aria-current={view === "day" ? "page" : undefined}>Dzień</Link>
+        {(["month", "week", "day"] as const).map(value => (
+          <button type="button" className={view === value ? "is-active" : ""} aria-pressed={view === value} onClick={() => onViewChange(value)} key={value}>
+            {value === "month" ? "Miesiąc" : value === "week" ? "Tydzień" : "Dzień"}
+          </button>
+        ))}
       </nav>
       <div className="month-switcher">
-        <span className="month-arrow is-previous"><img src={asset("angle.svg")} alt="" /></span>
-        <strong>{view === "week" ? "Październik 7 - 13" : view === "day" ? "Sobota, 13 Paź" : "Październik 2026"}</strong>
-        <span className="month-arrow is-next"><img src={asset("angle.svg")} alt="" /></span>
+        <button type="button" className="month-arrow is-previous" aria-label="Poprzedni okres" onClick={onPrevious}><img src={asset("angle.svg")} alt="" /></button>
+        <strong>{periodLabel}</strong>
+        <button type="button" className="month-arrow is-next" aria-label="Następny okres" onClick={onNext}><img src={asset("angle.svg")} alt="" /></button>
       </div>
       <div className="calendar-tools">
-        <span className="service-filter">Wszystkie rodzaje usług<img src={asset("dropdown.svg")} alt="" /></span>
-        <span className="add-event">Dodaj zdarzenie<i aria-hidden="true" /></span>
-        <img className="options-icon" src={asset("options.svg")} alt="Opcje" />
+        <label className="service-filter">
+          <span className="sr-only">Rodzaj usługi</span>
+          <select value={service} onChange={event => onServiceChange(event.target.value)} aria-label="Rodzaj usługi">
+            <option value="">Wszystkie rodzaje usług</option>
+            {services.map(title => <option value={title} key={title}>{title}</option>)}
+          </select>
+          <img src={asset("dropdown.svg")} alt="" />
+        </label>
+        <button type="button" className="add-event" onClick={onAdd}>Dodaj zdarzenie<i aria-hidden="true" /></button>
+        <button type="button" className="calendar-options" aria-label="Odśwież kalendarz" onClick={onRefresh}><img className="options-icon" src={asset("options.svg")} alt="" /></button>
       </div>
     </div>
   );
