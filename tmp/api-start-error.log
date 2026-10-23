@@ -1,0 +1,35 @@
+[Nest] 32588  - 17.10.2026, 13:47:28   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (1)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:31   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (2)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:34   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (3)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:37   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (4)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:40   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (5)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:43   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (6)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:46   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (7)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:49   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (8)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:52   ERROR [TypeOrmModule] Unable to connect to the database. Retrying (9)...
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16)
+[Nest] 32588  - 17.10.2026, 13:47:52   ERROR [ExceptionHandler] Error: connect ECONNREFUSED 127.0.0.1:55432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1636:16) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 55432
+}

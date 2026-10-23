@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { offerPrice } from "../lib/provider-offers";
 import { ApiError, providerApi } from "../lib/provider-client";
-import { timeLabel } from "../lib/provider-jobs";
+import { jobStatuses, timeLabel, type Job } from "../lib/provider-jobs";
 import { ProviderModal } from "./provider-modal";
 import { ProviderShell } from "./provider-shell";
 import { useSettingsResource } from "./provider-settings-state";
@@ -58,6 +58,8 @@ function MultiOrderDetails({ order, busy, error, onClose, onAction }: { order: M
 
 function MultiSessionContent() {
   const resource = useSettingsResource<MultiOrder[]>("multi-orders");
+  const bookings = useSettingsResource<Job[]>("jobs");
+  const publicBookings = Array.from(new Map((bookings.data ?? []).filter(job => job.source === "booking" && (job.sessionCount ?? 0) > 1).map(job => [job.bookingId, job])).values());
   const [sort, setSort] = useState("start-asc");
   const [filter, setFilter] = useState<"all" | MultiOrder["status"]>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -84,6 +86,7 @@ function MultiSessionContent() {
     <div className="multi-session-orders-list">
       <div className="multi-session-orders-heading"><div><h1>Zlecenia wielosesyjne</h1><p>Zlecenia wielosesyjne widnieją także na liście zamówień jako poszczególne sesje.</p></div><label className="multi-session-orders-sort"><span>Sortuj:</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="start-asc">Data początkowa, rosnąco</option><option value="start-desc">Data początkowa, malejąco</option><option value="newest">Najnowsze zgłoszenia</option></select><img src="/figma-assets/orders/multi-session/icon-02.svg" alt="" /></label></div>
       <div className="multi-session-filter" role="group" aria-label="Status zlecenia">{(["all", "pending", "accepted", "rejected"] as const).map(value => <button type="button" className={filter === value ? "is-active" : ""} onClick={() => setFilter(value)} aria-pressed={filter === value} key={value}>{value === "all" ? "Wszystkie" : statusLabels[value]}</button>)}</div>
+      <section aria-label="Rezerwacje wielosesyjne ze strony Clingo"><h2>Rezerwacje ze strony Clingo</h2>{bookings.loading ? <p role="status">Wczytywanie rezerwacji…</p> : bookings.error ? <p role="alert">{bookings.error}</p> : !publicBookings.length ? <p>Brak rezerwacji wielosesyjnych ze strony Clingo.</p> : publicBookings.map(job => <p key={job.bookingId}><Link href={`/orders?booking=${job.bookingId}`}>{job.clientName} · {job.serviceTitle} · {job.sessionCount} sesji · {job.summary?.total} · {jobStatuses[job.status]}</Link></p>)}</section>
       {message && <p className="provider-feedback" role="status">{message}</p>}
       {resource.loading && <div className="provider-state" role="status">Wczytywanie zleceń wielosesyjnych…</div>}
       {resource.error && <div className="provider-state" role="alert"><p>{resource.error}</p><button type="button" className="settings-button" onClick={resource.reload}>Spróbuj ponownie</button></div>}

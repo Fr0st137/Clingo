@@ -1,4 +1,6 @@
 import { ProviderJobEntity } from "./provider-jobs.entity";
+import { ProviderBookingsService } from "./provider-bookings.service";
+import { ProviderBookingsController } from "./provider-bookings.controller";
 import { ProviderJobsService } from "./provider-jobs.service";
 import { ProviderJobsController } from "./provider-jobs.controller";
 import { Module } from "@nestjs/common";
@@ -22,6 +24,6 @@ import { ProviderMultiOrderEntity } from "./provider-multi-orders.entity";
 import { ProviderMultiOrdersService } from "./provider-multi-orders.service";
 import { ProviderMultiOrdersController } from "./provider-multi-orders.controller";
 
-@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
+@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderBookingsController, ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderBookingsService, ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
 export class ProviderModule {}
 

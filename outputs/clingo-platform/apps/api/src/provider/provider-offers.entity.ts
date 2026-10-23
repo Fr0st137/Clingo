@@ -14,7 +14,7 @@ export class ProviderOfferEntity implements OfferInput {
   @Column({ name: "price_minor", type: "integer" }) priceMinor!: number;
   @Column({ name: "duration_minutes", type: "integer" }) durationMinutes!: number;
   @Column({ type: "jsonb", default: () => "'{}'::jsonb" }) configuration!: OfferConfiguration;
-  @Column({ type: "varchar", length: 20, default: "draft" }) status!: "draft" | "archived";
+  @Column({ type: "varchar", length: 20, default: "draft" }) status!: "draft" | "archived" | "published";
   @Column({ type: "integer", default: 1 }) revision!: number;
   @CreateDateColumn({ name: "created_at", type: "timestamptz" }) createdAt!: Date;
 }

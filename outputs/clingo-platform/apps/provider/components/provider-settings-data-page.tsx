@@ -9,6 +9,7 @@ import { ApiError, providerApi } from "../lib/provider-client";
 import { downloadJson, type ProfileSettingsResponse, type ProviderProfileSettings } from "../lib/provider-settings";
 
 function CompanyForm() {
+  const publicProfiles = useSettingsResource<Array<{ id: string; provider: string }>>("bookings/profiles");
   const resource = useSettingsResource<ProfileSettingsResponse>("settings/profile");
   const context = useProvider();
   const setAccountName = context?.setAccountName;
@@ -55,8 +56,8 @@ function CompanyForm() {
     <SettingsSection title="Adres e-mail do logowania" description="To konto służy do logowania zarówno w panelu wykonawcy, jak i klienta. Zmiana adresu oraz weryfikacja e-maila nie są jeszcze dostępne.">
       <SettingsInput label="Adres e-mail do logowania" type="email" value={resource.data?.loginEmail ?? ""} readOnly autoComplete="username" />
     </SettingsSection>
-    <SettingsSection title="Publiczny profil Clingo" description="Łączenie działalności z publicznym profilem będzie dostępne w kolejnym etapie.">
-      <p className="team-help">Po połączeniu profilu pojawi się tutaj link do udostępniania klientom.</p>
+    <SettingsSection title="Publiczny profil Clingo" description="Rezerwacje z połączonych profili pojawiają się na liście zleceń i w kalendarzu.">
+      {publicProfiles.loading ? <p>Wczytywanie profili…</p> : publicProfiles.error ? <p role="alert">{publicProfiles.error}</p> : publicProfiles.data?.length ? publicProfiles.data.map(profile => <p key={profile.id}><a target="_blank" rel="noreferrer" href={`${process.env.NEXT_PUBLIC_CUSTOMER_URL ?? "http://localhost:3000"}/wykonawcy/${encodeURIComponent(profile.id)}`}>{profile.provider} — otwórz profil dla klientów</a></p>) : <p className="team-help">Brak połączonego profilu. Skontaktuj się z administratorem Clingo, aby potwierdzić własność profilu i połączyć go z działalnością.</p>}
     </SettingsSection>
   </form>;
 }

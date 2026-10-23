@@ -1,4 +1,5 @@
 "use client";
+import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
 
 import { CalendarDays, Clock3, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -82,7 +83,7 @@ export function OrderCheckoutForm({
   user
 }: OrderCheckoutFormProps) {
   const router = useRouter();
-  const pricing = profile.pricing?.find((item) => item.id === pricingId) ?? profile.pricing?.[0];
+  const pricing = profile.areaPricing ? areaPricingOption(profile.areaPricing, pricingId) : profile.pricing?.find((item) => item.id === pricingId) ?? profile.pricing?.[0];
   const frequency = profile.frequencies?.find((item) => item.id === frequencyId) ?? profile.frequencies?.[0];
   const selectedAddOns = addOns.flatMap((selection) => {
     const addOn = profile.addOns?.find((item) => item.id === selection.id);

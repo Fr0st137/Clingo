@@ -1,4 +1,5 @@
 import { BadRequestException } from "@nestjs/common";
+import { areaPricingOption, AreaPricing } from "./area-pricing";
 
 export type BookingSelection = {
   providerId?: string;
@@ -32,6 +33,7 @@ export type MultiScheduleInput = BookingSelection & {
 };
 
 type Offer = {
+  areaPricing?: AreaPricing | null;
   pricing?: Array<{ id: string; label: string; priceValue: number; duration: string }> | null;
   frequencies?: Array<{ id: string; label: string; discount: string }> | null;
   addOns?: Array<{ id: string; label: string; priceValue: number; durationMinutes: number }> | null;
@@ -45,7 +47,7 @@ export function durationLabel(minutes: number) {
 }
 
 export function quoteBooking(offer: Offer, selection: BookingSelection) {
-  const pricing = selection.pricingId ? offer.pricing?.find(p => p.id === selection.pricingId) : offer.pricing?.[0];
+  const pricing = offer.areaPricing ? areaPricingOption(offer.areaPricing, selection.pricingId) : selection.pricingId ? offer.pricing?.find(p => p.id === selection.pricingId) : offer.pricing?.[0];
   const frequency = selection.frequencyId ? offer.frequencies?.find(f => f.id === selection.frequencyId) : offer.frequencies?.[0];
   if (!pricing || !frequency) throw new BadRequestException("Wybrany wariant usługi jest niedostępny. Wróć do ogłoszenia.");
   if (!Array.isArray(selection.addOns ?? []) || (selection.addOns?.length ?? 0) > 50) throw new BadRequestException("Nieprawidłowa lista usług dodatkowych.");

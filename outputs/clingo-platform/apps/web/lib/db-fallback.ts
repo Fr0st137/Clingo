@@ -292,7 +292,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
     const [searchFields, filters, listings] = await Promise.all([
       client.query<BoardPayload["searchFields"][number]>('select id, label, value from board_search_fields order by "orderIndex" asc'),
       client.query<Record<string, unknown>>('select id, title, options from board_filters order by "orderIndex" asc'),
-      client.query<Record<string, unknown>>('select b.*, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id order by b."orderIndex" asc')
+      client.query<Record<string, unknown>>('select b.*, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id where p.published = true order by b."orderIndex" asc')
     ]);
 
     return {
@@ -323,7 +323,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
 
 export async function getProviderProfileFromDb(id: string): Promise<ProviderProfileData> {
   return withDb(async (client) => {
-    const result = await client.query<Record<string, unknown>>("select * from provider_profiles where id = $1 limit 1", [id]);
+    const result = await client.query<Record<string, unknown>>("select * from provider_profiles where id = $1 and published = true limit 1", [id]);
     const profile = result.rows[0];
 
     if (!profile) {
@@ -331,6 +331,7 @@ export async function getProviderProfileFromDb(id: string): Promise<ProviderProf
     }
 
     return {
+      areaPricing: asJson<ProviderProfileData["areaPricing"]>(profile.area_pricing as string | null),
       completedOrders: Number(profile.completedOrders),
       description: String(profile.description),
       experience: String(profile.experience),

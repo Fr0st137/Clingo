@@ -21,6 +21,7 @@
     "test:booking": "npm run build:api && node --test scripts/booking.test.cjs",
     "verify:account": "node scripts/verify-account.cjs",
     "verify:booking": "node scripts/verify-booking.cjs",
+    "verify:booking-bridge": "npm run build:api && node scripts/verify-booking-bridge.cjs",
     "verify:navigation": "node scripts/verify-navigation.cjs",
     "test:order-api": "node --test scripts/order-api.test.cjs",
     "test:offer-request": "node --test scripts/offer-request.test.cjs",

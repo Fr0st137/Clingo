@@ -22,8 +22,8 @@ export type OfferConfiguration = {
   addOns: OfferAddOn[];
   standardsAccepted: boolean;
 };
-export type Offer = { id: string; title: string; category: string; description: string; priceMinor: number; durationMinutes: number; configuration: OfferConfiguration; status: "draft" | "archived"; revision: number };
-export type OfferDraft = { title: string; category: string; description: string; price: string; duration: string; status: "draft" | "archived" };
+export type Offer = { id: string; publicProfileId?: string | null; title: string; category: string; description: string; priceMinor: number; durationMinutes: number; configuration: OfferConfiguration; status: "draft" | "archived" | "published"; revision: number };
+export type OfferDraft = { title: string; category: string; description: string; price: string; duration: string; status: Offer["status"] };
 export const offerDraft = (offer?: Offer): OfferDraft => offer ? { title: offer.title, category: offer.category, description: offer.description, price: (offer.priceMinor / 100).toFixed(2).replace(".", ","), duration: String(offer.durationMinutes), status: offer.status } : { title: "", category: "homes", description: "", price: "", duration: "60", status: "draft" };
 export function priceMinor(value: string): number | null {
   const match = /^(\d{1,6})(?:[.,](\d{1,2}))?$/.exec(value.trim());

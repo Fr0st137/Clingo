@@ -44,14 +44,15 @@ function SectionTitle({ children, description }: { children: string; description
   return <div className="offer-config-section-title"><h2>{children}</h2>{description && <p>{description}</p>}</div>;
 }
 
-function Toolbar({ busy, dirty, save, preview, message }: { busy: boolean; dirty: boolean; save: () => void; preview: () => void; message: string }) {
+function Toolbar({ busy, dirty, save, publish, published, preview, publicProfileId, message }: { busy: boolean; dirty: boolean; save: () => void; publish: () => void; published: boolean; preview: () => void; publicProfileId?: string | null; message: string }) {
   return <div className="offer-config-toolbar">
     <Link href="/services" className="offer-config-back" aria-label="Wróć do usług"><span aria-hidden="true">‹</span>Powrót</Link>
     <div className="offer-config-toolbar-actions">
       {message && <span className="offer-config-save-state" role="status">{message}</span>}
       <button type="button" className="offer-config-button is-secondary" onClick={preview}>Podgląd</button>
-      <button type="button" className="offer-config-button is-secondary" disabled={busy || !dirty} onClick={save}>{busy ? "Zapisywanie..." : "Zapisz jako szkic"}</button>
-      <button type="button" className="offer-config-button is-primary" disabled title="Publikacja będzie dostępna po uruchomieniu katalogu usług">Opublikuj</button>
+      {publicProfileId && <a className="offer-config-button is-secondary" href={`${process.env.NEXT_PUBLIC_CUSTOMER_URL ?? "http://localhost:3000"}/profil-ogloszeniowy/${publicProfileId}`} target="_blank" rel="noopener noreferrer">Zobacz ogłoszenie</a>}
+      <button type="button" className="offer-config-button is-secondary" disabled={busy || (!dirty && !published)} onClick={save}>{busy ? "Zapisywanie..." : published ? "Wycofaj do szkicu" : "Zapisz jako szkic"}</button>
+      <button type="button" className="offer-config-button is-primary" disabled={busy || (published && !dirty)} onClick={publish}>{published ? "Zapisz i opublikuj zmiany" : "Opublikuj"}</button>
     </div>
   </div>;
 }
@@ -105,8 +106,8 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
     };
   }
 
-  async function save() {
-    if (pending.current || conflict || !dirty) return;
+  async function save(status: Offer["status"]) {
+    if (pending.current || conflict || (!dirty && status === original.status)) return;
     setError(""); setMessage("");
     const configuration = parseConfiguration();
     if (!configuration) return;
@@ -118,11 +119,11 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
         description,
         priceMinor: offer.priceMinor,
         durationMinutes: offer.durationMinutes,
-        status: offer.status,
+        status,
         configuration,
         revision: original.revision
       });
-      setOriginal(saved); setDraft(toDraft(saved.configuration)); setDescription(saved.description); update(saved); setMessage("Szkic zapisany");
+      setOriginal(saved); setDraft(toDraft(saved.configuration)); setDescription(saved.description); update(saved); setMessage(status === "published" ? "Ogłoszenie opublikowane" : "Szkic zapisany — niewidoczny dla klientów");
     } catch (caught) {
       setError((caught as Error).message);
       setConflict(caught instanceof ApiError && caught.status === 409);
@@ -167,13 +168,13 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
 
   const minutes = Number(draft.durationPer100SquareMeters);
   const previewPrice = priceMinor(draft.ratePerSquareMeter);
-  const toolbarProps = { busy, dirty, save, preview: () => setPreviewOpen(true), message };
+  const toolbarProps = { busy, dirty, save: () => save("draft"), publish: () => save("published"), published: original.status === "published", publicProfileId: original.publicProfileId, preview: () => setPreviewOpen(true), message };
   return <section className="offer-config-page" aria-label={`Konfiguracja ogłoszenia ${offer.title}`} data-figma-node="4007:6672">
     <Toolbar {...toolbarProps} />
     <div className="offer-config-scroll">
       <header className="offer-config-hero">
         <img src={offer.category === "homes" || offer.category === "offices" ? "/figma-assets/services/config/header-cleaning.png" : `/figma-assets/services/${category?.image ?? "cleaning.png"}`} alt="" />
-        <div><h1>{offer.title}</h1><p>{category?.detail ?? offer.category}</p><span><i />{offer.status === "archived" ? "Archiwum" : "Szkic"}</span></div>
+        <div><h1>{offer.title}</h1><p>{category?.detail ?? offer.category}</p><span><i />{original.status === "published" ? "Opublikowane" : original.status === "archived" ? "Archiwum" : "Szkic"}</span></div>
       </header>
 
       <div className="offer-config-price-grid">

@@ -190,12 +190,12 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
               </button>
 
               <div className="header-not-login__contractor-dropdown" aria-label="Menu dla wykonawców">
-                <Link className="header-not-login__contractor-dropdown-link" href="/logowanie?next=/zamowienia">
+                <a className="header-not-login__contractor-dropdown-link" href="/dla-wykonawcow">
                   Zaloguj się
-                </Link>
-                <Link className="header-not-login__contractor-dropdown-link" href="/logowanie?mode=register&next=/zamowienia">
+                </a>
+                <a className="header-not-login__contractor-dropdown-link" href="/dla-wykonawcow?mode=register">
                   Zostań Wykonawcą
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -229,6 +229,7 @@ export function Topbar({ isMenuOpen = false, onMenuToggle }: TopbarProps) {
               <Link className="header-not-login__mobile-link" href="/logowanie?next=/zamowienia">
                 Moje konto
               </Link>
+              <a className="header-not-login__mobile-link" href="/dla-wykonawcow">Panel wykonawcy</a>
             </nav>
           </div>
         </div>

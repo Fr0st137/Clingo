@@ -9,19 +9,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
 import { OfferSummaryUnavailable } from "./offer-summary-unavailable";
-import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, requestPricing } from "../lib/offer-request";
+import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, profilePricing } from "../lib/offer-request";
 import type { OfferRequest } from "../lib/offer-request";
 import { declaredServiceAreas } from "../../api/src/dashboard/service-area";
 
 type AddOn = NonNullable<ProviderProfileData["addOns"]>[number];
 type Frequency = NonNullable<ProviderProfileData["frequencies"]>[number];
-
-const fallbackOverview = [
-  { id: "rating", label: "Ocena", value: "5.0" },
-  { id: "orders", label: "Wykonane usługi", value: "87" },
-  { id: "experience", label: "Doświadczenie", value: "3 lata" },
-  { id: "location", label: "Obszar", value: "Warszawa" }
-];
 
 const fallbackPricing = [
   {
@@ -308,7 +301,12 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const photos: Array<{ id: string; label: string; gradient: string; image?: string }> = profile.photos?.length
     ? profile.photos
     : profile.gallery;
-  const overview = profile.overview?.length ? profile.overview : fallbackOverview;
+  const overview = profile.overview?.length ? profile.overview : [
+    { id: "rating", label: "Ocena", value: profile.reviewsCount ? Number(profile.rating).toFixed(1) : "Brak opinii" },
+    { id: "orders", label: "Wykonane usługi", value: String(profile.completedOrders) },
+    { id: "experience", label: "Doświadczenie", value: profile.experience || "Nie podano" },
+    { id: "location", label: "Obszar", value: declaredServiceAreas(profile.metrics).join(", ") || profile.location }
+  ];
   const pricing = profile.pricing?.length ? profile.pricing : fallbackPricing;
   const frequencies = profile.frequencies?.length ? profile.frequencies : fallbackFrequencies;
   const addOns = profile.addOns ?? [];
@@ -316,26 +314,27 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const [area, setArea] = useState(Number.isFinite(initialArea) && initialArea > 0 ? String(initialArea) : "");
   const [address, setAddress] = useState(initialRequest.address ?? "");
   const [selectedPricingId, setSelectedPricingId] = useState(() =>
-    requestPricing(pricing, initialRequest.area ?? "", initialRequest.pricing)?.id ?? "");
+    profilePricing(profile, initialRequest.area ?? "", initialRequest.pricing)?.id ?? "");
   const [selectedFrequencyId, setSelectedFrequencyId] = useState(() => frequencies.find(item => item.id === initialRequest.frequency)?.id ?? frequencies[0]?.id ?? "");
   const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => offerAddOnQuantities(profile, initialRequest.addons));
   const requestState = offerRequestState(profile, area, address);
   const coveredAreas = declaredServiceAreas(profile.metrics);
   const pricingAreas = pricing.map(pricingArea).filter((value): value is number => value !== null);
-  const maximumArea = Math.max(0, ...pricingAreas);
+  const maximumArea = profile.areaPricing?.maximum ?? Math.max(0, ...pricingAreas);
   const requestedArea = numericArea(area);
   const areaOptions = [...new Set([
     ...Array.from({ length: Math.floor(maximumArea / 5) }, (_, index) => (index + 1) * 5),
     ...pricingAreas,
-    ...(Number.isFinite(requestedArea) && requestedArea > 0 ? [requestedArea] : [])
-  ])].sort((first, second) => first - second);
+    ...(Number.isFinite(requestedArea) && requestedArea > 0 ? [requestedArea] : []),
+    ...(profile.areaPricing ? [profile.areaPricing.minimum, profile.areaPricing.maximum] : [])
+  ])].filter(value => !profile.areaPricing || value >= profile.areaPricing.minimum && value <= profile.areaPricing.maximum).sort((first, second) => first - second);
 
   const selectedAddOnItems = useMemo(
     () => selectedQuantityEntries(addOns, addOnQuantities),
     [addOns, addOnQuantities]
   );
 
-  const selectedPricing = pricing.find((item) => item.id === selectedPricingId) ?? pricing[0];
+  const selectedPricing = profilePricing(profile, area, selectedPricingId) ?? pricing[0];
   const selectedFrequency = frequencies.find((item) => item.id === selectedFrequencyId) ?? frequencies[0];
   const discount = frequencyDiscount(selectedFrequency?.discount ?? "0%");
   const baseTotal = selectedPricing?.priceValue ?? priceFromText(profile.summary.total);
@@ -396,7 +395,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <select aria-label="Metraż" className="mt-2 h-[44px] w-full rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] text-[14px] text-[#2e3b4c] outline-none focus:border-[#0079de]" value={Number.isFinite(requestedArea) && areaOptions.includes(requestedArea) ? String(requestedArea) : ""} onChange={event => {
             const value = event.target.value;
             setArea(value);
-            const option = requestPricing(pricing, value);
+            const option = profilePricing(profile, value);
             if (option) setSelectedPricingId(option.id);
           }}>
             <option value="">Wybierz metraż</option>

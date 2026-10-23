@@ -1,0 +1,1081 @@
+{
+  "provider_accounts": [
+    {
+      "id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Sprzatanie",
+      "legal_name": "",
+      "phone": "",
+      "contact_name": "",
+      "contact_phone": "",
+      "contact_email": "",
+      "profile_revision": 1,
+      "notifications": {
+        "sms": {
+          "changed": false,
+          "created": false,
+          "cancelled": false,
+          "marketing": false
+        },
+        "email": {
+          "changed": false,
+          "created": false,
+          "cancelled": false,
+          "marketing": false
+        }
+      },
+      "notifications_revision": 1,
+      "location": {
+        "city": "",
+        "street": "",
+        "radiusKm": 0,
+        "postalCode": ""
+      },
+      "location_revision": 1,
+      "created_at": "2026-09-29T17:21:58.587Z"
+    },
+    {
+      "id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "name": "Clingo Tydzień",
+      "legal_name": "",
+      "phone": "",
+      "contact_name": "",
+      "contact_phone": "",
+      "contact_email": "",
+      "profile_revision": 1,
+      "notifications": {
+        "sms": {
+          "changed": false,
+          "created": false,
+          "cancelled": false,
+          "marketing": false
+        },
+        "email": {
+          "changed": false,
+          "created": false,
+          "cancelled": false,
+          "marketing": false
+        }
+      },
+      "notifications_revision": 1,
+      "location": {
+        "city": "",
+        "street": "",
+        "radiusKm": 0,
+        "postalCode": ""
+      },
+      "location_revision": 1,
+      "created_at": "2026-09-29T18:46:07.110Z"
+    }
+  ],
+  "provider_memberships": [
+    {
+      "id": "64e9edc6-674d-44d5-ab63-362bf360c78f",
+      "user_id": "8f8658b3-d377-42ce-acf9-ec7cb02c17e7",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "role": "owner"
+    },
+    {
+      "id": "a5b6a9f0-a270-4fc1-bad6-b9e41f1197a4",
+      "user_id": "224b9da2-7b0f-4125-b847-d120306ddb8e",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "role": "owner"
+    }
+  ],
+  "provider_jobs": [
+    {
+      "id": "40ba715f-11ab-4e22-aa68-6892ae0e8d39",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-09-27T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 105,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.164Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "bacf3f94-5178-4591-b8f6-e819addb0db3",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-09-27T22:00:00.000Z",
+      "start_minute": 750,
+      "duration_minutes": 210,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.183Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "0cd6f327-63d3-4bba-b8f8-7cc705e21aa7",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-09-28T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 30,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.204Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "7668c8e1-0594-4b63-bcba-6ed865516baa",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-09-29T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 105,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.222Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "05b1c5a4-dc2d-4292-8f6a-b93588d2de59",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-09-30T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 45,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.241Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "4d0d10fd-e4bc-4631-981a-6847a2ba2350",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-10-01T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 60,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.257Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "bfb66576-c962-4e06-a0bd-08c7f15d6565",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-10-02T22:00:00.000Z",
+      "start_minute": 525,
+      "duration_minutes": 105,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.273Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "55f545f4-c749-4099-8894-fdbcc39abe1a",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "client_id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "offer_id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "employee_id": null,
+      "date": "2026-10-02T22:00:00.000Z",
+      "start_minute": 750,
+      "duration_minutes": 210,
+      "price_minor": 14900,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Anita Kowalska",
+      "client_phone": "+48 500 100 200",
+      "client_email": "anita@example.test",
+      "address": "Floriańska 48/16, 03-001 Warszawa",
+      "service_title": "Sprzątanie obiektów",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.288Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "cc4936ef-7c15-481b-a0f3-ddb22c03788a",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": null,
+      "date": "2026-09-28T22:00:00.000Z",
+      "start_minute": 600,
+      "duration_minutes": 90,
+      "price_minor": 16500,
+      "status": "completed",
+      "notes": "Zlecenie testowe. [demo-order-seed:2026-09-30]",
+      "client_name": "Klient testowy A",
+      "client_phone": "",
+      "client_email": "klient-a@example.test",
+      "address": "ul. Testowa 12, 00-001 Warszawa",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "34d31c22-4894-44a7-8d56-94cf3327a6db",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": null,
+      "date": "2026-09-29T22:00:00.000Z",
+      "start_minute": 990,
+      "duration_minutes": 90,
+      "price_minor": 16500,
+      "status": "scheduled",
+      "notes": "Zlecenie testowe. [demo-order-seed:2026-09-30]",
+      "client_name": "Klient testowy A",
+      "client_phone": "",
+      "client_email": "klient-a@example.test",
+      "address": "ul. Testowa 12, 00-001 Warszawa",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "23ec9a46-ba2e-4df1-a4e3-6c028a186662",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "offer_id": "07dcd6bc-c33f-4b60-a7ca-6f4c5e93946e",
+      "employee_id": null,
+      "date": "2026-09-29T22:00:00.000Z",
+      "start_minute": 1110,
+      "duration_minutes": 60,
+      "price_minor": 12000,
+      "status": "scheduled",
+      "notes": "Zlecenie testowe. [demo-order-seed:2026-09-30]",
+      "client_name": "Klient testowy B",
+      "client_phone": "",
+      "client_email": "klient-b@example.test",
+      "address": "ul. Przykładowa 8, 30-001 Kraków",
+      "service_title": "TEST · Mycie okien",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "6375a14b-3ad8-413c-8ef0-140ce486ce80",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": null,
+      "date": "2026-09-30T22:00:00.000Z",
+      "start_minute": 540,
+      "duration_minutes": 90,
+      "price_minor": 16500,
+      "status": "scheduled",
+      "notes": "Zlecenie testowe. [demo-order-seed:2026-09-30]",
+      "client_name": "Klient testowy B",
+      "client_phone": "",
+      "client_email": "klient-b@example.test",
+      "address": "ul. Przykładowa 8, 30-001 Kraków",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "3a19031d-8a55-435b-88b9-b35dfdfe35c3",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "07dcd6bc-c33f-4b60-a7ca-6f4c5e93946e",
+      "employee_id": null,
+      "date": "2026-10-01T22:00:00.000Z",
+      "start_minute": 660,
+      "duration_minutes": 60,
+      "price_minor": 12000,
+      "status": "cancelled",
+      "notes": "Zlecenie testowe. [demo-order-seed:2026-09-30]",
+      "client_name": "Klient testowy A",
+      "client_phone": "",
+      "client_email": "klient-a@example.test",
+      "address": "ul. Testowa 12, 00-001 Warszawa",
+      "service_title": "TEST · Mycie okien",
+      "employee_name": "",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "851924da-bb78-4fcd-8643-e02c9a43e331",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": "14e479dd-04a9-481c-9be6-753aa407b175",
+      "date": "2026-10-19T22:00:00.000Z",
+      "start_minute": 540,
+      "duration_minutes": 90,
+      "price_minor": 16500,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Klient testowy B",
+      "client_phone": "",
+      "client_email": "klient-b@example.test",
+      "address": "ul. Przykładowa 8, 30-001 Kraków",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "Test",
+      "revision": 1,
+      "created_at": "2026-10-03T11:33:09.444Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "aa3937e9-5b0d-4d13-b37c-2f91e83610d4",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": "14e479dd-04a9-481c-9be6-753aa407b175",
+      "date": "2026-10-14T22:00:00.000Z",
+      "start_minute": 780,
+      "duration_minutes": 180,
+      "price_minor": 16500,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Klient testowy A",
+      "client_phone": "",
+      "client_email": "klient-a@example.test",
+      "address": "ul. Testowa 12, 00-001 Warszawa",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "Test",
+      "revision": 2,
+      "created_at": "2026-10-03T12:55:42.330Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    },
+    {
+      "id": "f362a2ac-3c1b-4ba2-958c-a192dbfdbb6b",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "employee_id": "14e479dd-04a9-481c-9be6-753aa407b175",
+      "date": "2026-10-09T22:00:00.000Z",
+      "start_minute": 540,
+      "duration_minutes": 90,
+      "price_minor": 16500,
+      "status": "scheduled",
+      "notes": "",
+      "client_name": "Klient testowy B",
+      "client_phone": "",
+      "client_email": "klient-b@example.test",
+      "address": "ul. Przykładowa 8, 30-001 Kraków",
+      "service_title": "TEST · Sprzątanie mieszkania",
+      "employee_name": "Test",
+      "revision": 1,
+      "created_at": "2026-10-03T12:56:40.174Z",
+      "multi_order_id": null,
+      "session_index": null,
+      "session_count": null
+    }
+  ],
+  "provider_multi_orders": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "client_name": "Klient testowy A",
+      "service_title": "Sprzątanie mieszkania",
+      "service_detail": "Pakiet regularny",
+      "start_date": "2026-10-09T22:00:00.000Z",
+      "end_date": "2026-10-13T22:00:00.000Z",
+      "area_square_meters": 83,
+      "add_on_count": 2,
+      "total_price_minor": 124500,
+      "external": false,
+      "status": "pending",
+      "sessions": [
+        {
+          "date": "2026-10-10",
+          "employeeId": null,
+          "startMinute": 540,
+          "durationMinutes": 120
+        },
+        {
+          "date": "2026-10-11",
+          "employeeId": null,
+          "startMinute": 540,
+          "durationMinutes": 120
+        },
+        {
+          "date": "2026-10-12",
+          "employeeId": null,
+          "startMinute": 540,
+          "durationMinutes": 120
+        },
+        {
+          "date": "2026-10-13",
+          "employeeId": null,
+          "startMinute": 540,
+          "durationMinutes": 120
+        },
+        {
+          "date": "2026-10-14",
+          "employeeId": null,
+          "startMinute": 540,
+          "durationMinutes": 120
+        }
+      ],
+      "notes": "Testowe zlecenie cykliczne: pięć porannych sesji.",
+      "revision": 1,
+      "accepted_at": null,
+      "created_at": "2026-10-03T11:51:07.920Z"
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "offer_id": "07dcd6bc-c33f-4b60-a7ca-6f4c5e93946e",
+      "client_name": "Klient testowy B",
+      "service_title": "Mycie okien",
+      "service_detail": "Okna i witryny",
+      "start_date": "2026-10-16T22:00:00.000Z",
+      "end_date": "2026-10-19T22:00:00.000Z",
+      "area_square_meters": 120,
+      "add_on_count": 1,
+      "total_price_minor": 96800,
+      "external": true,
+      "status": "pending",
+      "sessions": [
+        {
+          "date": "2026-10-17",
+          "employeeId": null,
+          "startMinute": 600,
+          "durationMinutes": 150
+        },
+        {
+          "date": "2026-10-18",
+          "employeeId": null,
+          "startMinute": 600,
+          "durationMinutes": 150
+        },
+        {
+          "date": "2026-10-19",
+          "employeeId": null,
+          "startMinute": 600,
+          "durationMinutes": 150
+        },
+        {
+          "date": "2026-10-20",
+          "employeeId": null,
+          "startMinute": 600,
+          "durationMinutes": 150
+        }
+      ],
+      "notes": "Zlecenie zewnętrzne, wejście od strony parkingu.",
+      "revision": 1,
+      "accepted_at": null,
+      "created_at": "2026-10-03T11:51:07.920Z"
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000003",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "client_id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "offer_id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "client_name": "Klient testowy A",
+      "service_title": "Sprzątanie mieszkania",
+      "service_detail": "Pakiet po remoncie",
+      "start_date": "2026-10-23T22:00:00.000Z",
+      "end_date": "2026-10-25T23:00:00.000Z",
+      "area_square_meters": 64,
+      "add_on_count": 3,
+      "total_price_minor": 73500,
+      "external": false,
+      "status": "pending",
+      "sessions": [
+        {
+          "date": "2026-10-24",
+          "employeeId": null,
+          "startMinute": 780,
+          "durationMinutes": 180
+        },
+        {
+          "date": "2026-10-25",
+          "employeeId": null,
+          "startMinute": 780,
+          "durationMinutes": 180
+        },
+        {
+          "date": "2026-10-26",
+          "employeeId": null,
+          "startMinute": 780,
+          "durationMinutes": 180
+        }
+      ],
+      "notes": "Trzy popołudniowe sesje testowe.",
+      "revision": 1,
+      "accepted_at": null,
+      "created_at": "2026-10-03T11:51:07.920Z"
+    }
+  ],
+  "provider_reviews": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Anna Nowak",
+      "service_title": "Sprzątanie mieszkania",
+      "rating": 5,
+      "content": "Bardzo dokładne sprzątanie całego mieszkania. Wszystko zostało wykonane punktualnie, a kuchnia i łazienka wyglądają świetnie.",
+      "helpful_count": 6,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-09-30T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000002",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Piotr Zieliński",
+      "service_title": "Sprzątanie biura",
+      "rating": 5,
+      "content": "Świetny kontakt i sprawna realizacja. Biuro było gotowe przed rozpoczęciem pracy zespołu.",
+      "helpful_count": 3,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-09-23T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000003",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Karolina Wiśniewska",
+      "service_title": "Sprzątanie mieszkania",
+      "rating": 4,
+      "content": "Usługa wykonana solidnie i bez opóźnień. Doceniam dbałość o szczegóły w kuchni.",
+      "helpful_count": 2,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-09-12T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000004",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Marta Wójcik",
+      "service_title": "Mycie okien",
+      "rating": 5,
+      "content": "Okna są idealnie czyste, bez smug. Bardzo profesjonalne podejście i porządek po zakończonej pracy.",
+      "helpful_count": 5,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-08-29T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000005",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Tomasz Kamiński",
+      "service_title": "Sprzątanie mieszkania",
+      "rating": 3,
+      "content": "Ogólnie w porządku, ale realizacja trwała trochę dłużej niż zakładaliśmy. Kontakt z wykonawcą był dobry.",
+      "helpful_count": 1,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-08-14T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000006",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Ewa Lewandowska",
+      "service_title": "Sprzątanie biura",
+      "rating": 5,
+      "content": "Regularne sprzątanie przebiega bez problemów. Zespół jest punktualny, dyskretny i bardzo dokładny.",
+      "helpful_count": 4,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-07-20T11:27:04.022Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000007",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "author_name": "Michał Dąbrowski",
+      "service_title": "Mycie okien",
+      "rating": 4,
+      "content": "Dobra jakość wykonania i szybki termin. Chętnie skorzystam ponownie przy kolejnym większym sprzątaniu.",
+      "helpful_count": 0,
+      "reported": false,
+      "revision": 1,
+      "created_at": "2026-06-15T11:27:04.022Z"
+    }
+  ],
+  "provider_employees": [
+    {
+      "id": "ab0d6f08-d9de-48c9-83a3-dff1653d37ab",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "name": "Anna Kowalska",
+      "email": "anna.kowalska@example.test",
+      "phone": "+48 501 234 567",
+      "show_in_calendar": true,
+      "services": [
+        "homes",
+        "offices"
+      ],
+      "schedule": [
+        {
+          "day": 1,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 2,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 3,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 4,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 5,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 6,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        },
+        {
+          "day": 0,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        }
+      ],
+      "revision": 1,
+      "created_at": "2026-10-03T10:05:44.963Z"
+    },
+    {
+      "id": "788fcbb4-ad5b-409a-9b27-0dece56e60db",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "name": "Marek Nowak",
+      "email": "marek.nowak@example.test",
+      "phone": "+48 502 345 678",
+      "show_in_calendar": true,
+      "services": [
+        "homes"
+      ],
+      "schedule": [
+        {
+          "day": 1,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 2,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 3,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 4,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 5,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        },
+        {
+          "day": 6,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        },
+        {
+          "day": 0,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        }
+      ],
+      "revision": 1,
+      "created_at": "2026-10-03T10:06:11.218Z"
+    },
+    {
+      "id": "5278c3d1-a257-4f8f-b16a-220242cf2b6a",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "name": "Zofia Wiśniewska",
+      "email": "zofia.wisniewska@example.test",
+      "phone": "+48 503 456 789",
+      "show_in_calendar": true,
+      "services": [
+        "offices"
+      ],
+      "schedule": [
+        {
+          "day": 1,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        },
+        {
+          "day": 2,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 3,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 4,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 5,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 6,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 0,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        }
+      ],
+      "revision": 1,
+      "created_at": "2026-10-03T10:06:26.814Z"
+    },
+    {
+      "id": "14e479dd-04a9-481c-9be6-753aa407b175",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Test",
+      "email": "mail@mail.xyz",
+      "phone": "123123123",
+      "show_in_calendar": true,
+      "services": [
+        "homes",
+        "offices"
+      ],
+      "schedule": [
+        {
+          "day": 1,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 2,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 3,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 4,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 5,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 6,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 0,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        }
+      ],
+      "revision": 1,
+      "created_at": "2026-10-03T10:42:30.891Z"
+    },
+    {
+      "id": "e8cb6f37-462b-4629-a678-67ed1c7d80a9",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Tymoteusz Kalinowski",
+      "email": "tymkal137@gmail.com",
+      "phone": "+48600830232",
+      "show_in_calendar": true,
+      "services": [
+        "homes",
+        "offices"
+      ],
+      "schedule": [
+        {
+          "day": 1,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 2,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 3,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 4,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 5,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": true
+        },
+        {
+          "day": 6,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        },
+        {
+          "day": 0,
+          "end": "16:00",
+          "start": "08:00",
+          "enabled": false
+        }
+      ],
+      "revision": 1,
+      "created_at": "2026-10-03T13:05:57.524Z"
+    }
+  ],
+  "provider_clients": [
+    {
+      "id": "b4edcd22-0831-4736-ac6d-39a24a8131ea",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "name": "Anita Kowalska",
+      "email": "anita@example.test",
+      "phone": "+48 500 100 200",
+      "street": "Floriańska 48/16",
+      "postal_code": "03-001",
+      "city": "Warszawa",
+      "notes": "",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.137Z"
+    },
+    {
+      "id": "66bc9244-fb97-41b5-9a86-534fe67c863c",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Klient testowy A",
+      "email": "klient-a@example.test",
+      "phone": "",
+      "street": "ul. Testowa 12",
+      "postal_code": "00-001",
+      "city": "Warszawa",
+      "notes": "Dane testowe. [demo-order-seed:2026-09-30]",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z"
+    },
+    {
+      "id": "fc919818-5961-46f8-8ed1-8a064693bff6",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Klient testowy B",
+      "email": "klient-b@example.test",
+      "phone": "",
+      "street": "ul. Przykładowa 8",
+      "postal_code": "30-001",
+      "city": "Kraków",
+      "notes": "Dane testowe. [demo-order-seed:2026-09-30]",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z"
+    },
+    {
+      "id": "6b20f90b-8349-4a8d-a493-619b8b257391",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "name": "Tymoteusz Kalinowski",
+      "email": "kounterstrike6@gmail.com",
+      "phone": "+48600830232",
+      "street": "Barona 20D/15",
+      "postal_code": "43-100",
+      "city": "Tychy",
+      "notes": "",
+      "revision": 1,
+      "created_at": "2026-10-03T13:00:34.665Z"
+    }
+  ],
+  "provider_offers": [
+    {
+      "id": "435d41c9-e8a2-4b39-a062-6d6064b814d2",
+      "account_id": "2fe52a7c-10d5-4ad4-8864-58cf6d001853",
+      "title": "Sprzątanie obiektów",
+      "category": "homes",
+      "description": "Mieszkań i domów",
+      "price_minor": 14900,
+      "duration_minutes": 90,
+      "status": "draft",
+      "revision": 1,
+      "created_at": "2026-09-29T18:46:07.152Z",
+      "configuration": {}
+    },
+    {
+      "id": "fde97a87-11bf-44bc-985f-cf6be149df8d",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "title": "TEST · Sprzątanie mieszkania",
+      "category": "homes",
+      "description": "Usługa testowa. [demo-order-seed:2026-09-30]",
+      "price_minor": 16500,
+      "duration_minutes": 90,
+      "status": "draft",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "configuration": {}
+    },
+    {
+      "id": "07dcd6bc-c33f-4b60-a7ca-6f4c5e93946e",
+      "account_id": "43ceabb0-200b-4ba2-a107-cef8b701ccb8",
+      "title": "TEST · Mycie okien",
+      "category": "homes",
+      "description": "Usługa testowa. [demo-order-seed:2026-09-30]",
+      "price_minor": 12000,
+      "duration_minutes": 60,
+      "status": "draft",
+      "revision": 1,
+      "created_at": "2026-09-30T13:10:50.434Z",
+      "configuration": {}
+    }
+  ]
+}

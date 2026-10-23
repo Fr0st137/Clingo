@@ -6,8 +6,12 @@ import { SettingsInput, useSettingsResource, useUnsavedSettings } from "./provid
 import { ApiError, providerApi, type Employee } from "../lib/provider-client";
 import { priceMinor, type Offer } from "../lib/provider-offers";
 import { jobDraft, jobStatuses, type Job, type JobDraft } from "../lib/provider-jobs";
+import { ProviderBookingDetails } from "./provider-booking-details";
 type Client = { id: string; name: string };
 export function ProviderJobEditor({ job, date, onClose, onSaved, onReloaded }: { job?: Job; date: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
+  return job?.source === "booking" ? <ProviderBookingDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} /> : <ManualJobEditor job={job} date={date} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} />;
+}
+function ManualJobEditor({ job, date, onClose, onSaved, onReloaded }: { job?: Job; date: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
   const clients = useSettingsResource<Client[]>("clients"), offers = useSettingsResource<Offer[]>("services"), employees = useSettingsResource<Employee[]>("employees");
   const [original,setOriginal] = useState(job);
   const [draft,setDraft] = useState(()=>jobDraft(job,date));

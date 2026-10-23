@@ -2,12 +2,13 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
-import { ProviderMembershipEntity } from "./provider.entity";
+import { ProviderAccountEntity, ProviderMembershipEntity } from "./provider.entity";
+import { publishOffer, publicOfferId } from "./provider-offer-publication";
 import { ProviderOfferEntity } from "./provider-offers.entity";
 import { defaultOfferConfiguration, offerConfiguration, offerInput } from "./provider-offers.input";
 
 const storedConfiguration = (row: ProviderOfferEntity) => row.configuration && Object.keys(row.configuration).length > 0 ? offerConfiguration(row.configuration) : defaultOfferConfiguration();
-const offerView = (row: ProviderOfferEntity) => ({ id: row.id, title: row.title, category: row.category, description: row.description, priceMinor: row.priceMinor, durationMinutes: row.durationMinutes, configuration: storedConfiguration(row), status: row.status, revision: row.revision });
+const offerView = (row: ProviderOfferEntity) => ({ id: row.id, publicProfileId: row.status === "published" ? publicOfferId(row.id) : null, title: row.title, category: row.category, description: row.description, priceMinor: row.priceMinor, durationMinutes: row.durationMinutes, configuration: storedConfiguration(row), status: row.status, revision: row.revision });
 @Injectable()
 export class ProviderOffersService {
   constructor(private readonly auth: AuthService,
@@ -39,10 +40,22 @@ export class ProviderOffersService {
     const { revision, ...input } = offerInput(value, true);
     const existing = await this.offers.findOneBy({ id, accountId });
     if (!existing) throw new NotFoundException("Nie znaleziono usługi.");
+    if (input.status === "published" || existing.status === "published") {
+      return this.offers.manager.transaction(async manager => {
+        const account = await manager.findOne(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
+        if (!account) throw new NotFoundException("Nie znaleziono działalności.");
+        const current = await manager.findOne(ProviderOfferEntity, { where: { id, accountId }, lock: { mode: "pessimistic_write" } });
+        if (!current) throw new NotFoundException("Nie znaleziono usługi.");
+        if (current.revision !== revision) throw new ConflictException("Dane usługi zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
+        const next = manager.create(ProviderOfferEntity, { ...current, ...input, revision: revision! + 1 });
+        await publishOffer(manager, next, account);
+        return offerView(await manager.save(ProviderOfferEntity, next));
+      });
+    }
     const nextRevision = revision! + 1;
     const result = await this.offers.update({ id, accountId, revision }, { ...input, revision: nextRevision });
     if (result.affected !== 1) throw new ConflictException("Dane usługi zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
-    return { id, ...input, revision: nextRevision };
+    return offerView({ ...existing, ...input, revision: nextRevision });
   }
 }
 

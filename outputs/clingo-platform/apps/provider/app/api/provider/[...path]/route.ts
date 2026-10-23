@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const routes: Record<string, string[]> = {
   me: ["GET"], account: ["POST"], employees: ["GET", "POST"], clients: ["GET", "POST"],
-  services: ["GET", "POST"], jobs: ["GET", "POST"], reviews: ["GET"], "multi-orders": ["GET"], "settings/location": ["GET", "PUT"],
+  services: ["GET", "POST"], jobs: ["GET", "POST"], "bookings/profiles": ["GET"], reviews: ["GET"], "multi-orders": ["GET"], "settings/location": ["GET", "PUT"],
   "settings/profile": ["GET", "PUT"], "settings/notifications": ["GET", "PUT"], "settings/password": ["POST"], "settings/export": ["GET"],
   "auth/login": ["POST"], "auth/register": ["POST"], "auth/logout": ["POST"]
 };
 async function proxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path: segments } = await params;
   const path = segments.join("/");
-  const methods = routes[path] ?? (/^employees\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT", "DELETE"] : /^(clients|services|jobs)\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT"] : /^reviews\/[a-f0-9-]{36}\/report$/.test(path) || /^multi-orders\/[a-f0-9-]{36}\/action$/.test(path) ? ["PUT"] : []);
+  const methods = routes[path] ?? (/^employees\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT", "DELETE"] : /^(clients|services|jobs|bookings)\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT"] : /^reviews\/[a-f0-9-]{36}\/report$/.test(path) || /^multi-orders\/[a-f0-9-]{36}\/action$/.test(path) ? ["PUT"] : []);
   if (!methods.includes(request.method)) return NextResponse.json({ message: "Nie znaleziono operacji." }, { status: 404 });
   const mutating = request.method !== "GET";
   if (mutating && (request.headers.get("origin") !== request.nextUrl.origin || request.headers.get("sec-fetch-site") === "cross-site")) return NextResponse.json({ message: "Niedozwolone źródło żądania." }, { status: 403 });

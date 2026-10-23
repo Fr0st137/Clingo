@@ -1,0 +1,37 @@
+
+> clingo-platform@0.1.0 dev:web
+> npm --workspace apps/web run dev
+
+
+> @clingo/web@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.24 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.151:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Compiled middleware in 121ms
+ ✓ Ready in 1998ms
+ ○ Compiling / ...
+ ✓ Compiled / in 11.3s
+ GET / 200 in 11998ms
+ GET / 200 in 176ms
+ ○ Compiling /tablica-ogloszen ...
+ ✓ Compiled /tablica-ogloszen in 580ms
+ GET /tablica-ogloszen 200 in 957ms
+ ✓ Compiled /api/account/[...path] in 355ms
+ GET /api/account/favorites 401 in 1760ms
+ GET /tablica-ogloszen 200 in 318ms
+ GET /api/account/favorites 401 in 419ms
+ ✓ Compiled /profil-ogloszeniowy/[id] in 469ms
+ GET /profil-ogloszeniowy/clingo-test-tymkal 200 in 1405ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 221ms
+ GET /profil-ogloszeniowy/clingo-test-tymkal 200 in 475ms
+ GET /profil-ogloszeniowy/clingo-test-tymkal 200 in 183ms
+ ✓ Compiled in 294ms
+ GET /profil-ogloszeniowy/clingo-test-tymkal 200 in 464ms
+ ✓ Compiled /dla-wykonawcow in 269ms
+ GET /dla-wykonawcow 307 in 637ms

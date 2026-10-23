@@ -8,6 +8,7 @@ import { ProviderMultiOrderEntity, type ProviderMultiOrderSession } from "./prov
 import { multiOrderActionInput } from "./provider-multi-orders.input";
 import { ProviderOfferEntity } from "./provider-offers.entity";
 import { ProviderAccountEntity, ProviderEmployeeEntity, ProviderMembershipEntity } from "./provider.entity";
+import { accountBookings, bookingJobs } from "../dashboard/booking-bridge";
 
 const multiOrderView = (row: ProviderMultiOrderEntity) => ({ id: row.id, clientId: row.clientId, offerId: row.offerId, clientName: row.clientName, serviceTitle: row.serviceTitle, serviceDetail: row.serviceDetail, startDate: row.startDate, endDate: row.endDate, areaSquareMeters: row.areaSquareMeters, addOnCount: row.addOnCount, totalPriceMinor: row.totalPriceMinor, external: row.external, status: row.status, sessions: row.sessions, notes: row.notes, revision: row.revision, acceptedAt: row.acceptedAt?.toISOString() ?? null, createdAt: row.createdAt.toISOString() });
 const validDate = (value: string) => /^20\d{2}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T12:00:00Z`)) && new Date(`${value}T12:00:00Z`).toISOString().slice(0, 10) === value;
@@ -55,6 +56,8 @@ export class ProviderMultiOrdersService {
         return multiOrderView(await manager.save(ProviderMultiOrderEntity, order));
       }
       if (!validSessions(order.sessions)) throw new BadRequestException("Harmonogram zlecenia wielosesyjnego jest nieprawidłowy.");
+      const bookings = (await accountBookings(manager, accountId)).flatMap(bookingJobs);
+      if (order.sessions.some(session => bookings.some(booking => booking.status === "scheduled" && booking.date === session.date && session.startMinute < booking.startMinute + booking.durationMinutes && booking.startMinute < session.startMinute + session.durationMinutes))) throw new BadRequestException("Termin jednej z sesji jest zajęty przez rezerwację klienta.");
       const client = await manager.findOneBy(ProviderClientEntity, { id: order.clientId, accountId });
       const offer = await manager.findOneBy(ProviderOfferEntity, { id: order.offerId, accountId });
       if (!client || !offer || offer.status === "archived") throw new BadRequestException("Klient lub usługa tego zlecenia nie jest już dostępna.");

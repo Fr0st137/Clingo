@@ -14,6 +14,7 @@ export function ProviderLoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("mode") === "register") setMode("register");
     const controller = new AbortController();
     providerApi<ProviderContext>("me", "GET", undefined, controller.signal).then(result => {
       if (result.account) window.location.replace(destination());

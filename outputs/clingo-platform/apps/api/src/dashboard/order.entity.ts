@@ -7,6 +7,9 @@ type GeoPoint = {
 
 @Entity({ name: "orders" })
 export class OrderEntity {
+  @Column({ type: "integer", default: 1 })
+  revision!: number;
+
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 

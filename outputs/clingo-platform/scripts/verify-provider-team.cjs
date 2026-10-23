@@ -20,6 +20,8 @@ const { ProviderOfferEntity } = require('../apps/api/dist/provider/provider-offe
 const { ProviderReviewEntity } = require('../apps/api/dist/provider/provider-reviews.entity');
 const { ProviderMultiOrderEntity } = require('../apps/api/dist/provider/provider-multi-orders.entity');
 const { ProviderJobEntity } = require('../apps/api/dist/provider/provider-jobs.entity');
+const { ProviderProfileEntity } = require('../apps/api/dist/dashboard/provider-profile.entity');
+const { OrderEntity } = require('../apps/api/dist/dashboard/order.entity');
 
 async function main() {
   const schema = `provider_test_${randomUUID().replaceAll('-', '')}`;
@@ -33,16 +35,16 @@ async function main() {
     const authEntities = [UserEntity, AuthSessionEntity, AuthRateLimitEntity];
     // Auth also uses unqualified SQL for rate limits: isolate every pooled connection.
     const options = { type: 'postgres', host: connection.host, port: connection.port, database: connection.database, username: connection.user, password: connection.password, schema, extra: { options: `-c search_path=${schema},public` } };
-    source = new DataSource({ ...options, entities: authEntities, synchronize: true });
+    source = new DataSource({ ...options, entities: [...authEntities, ProviderAccountEntity, ProviderProfileEntity, OrderEntity], synchronize: true });
     await source.initialize(); await source.destroy();
     await db.query(`SET search_path TO "${schema}"`);
-    for (const file of ['20260924-provider-team.sql', '20260925-provider-settings.sql', '20260925-provider-clients.sql', '20260928-provider-offers-location.sql', '20260929-provider-jobs.sql', '20261003-provider-offer-configuration.sql', '20261003-provider-reviews.sql', '20261003-provider-multi-orders.sql']) {
+    for (const file of ['20260924-provider-team.sql', '20260925-provider-settings.sql', '20260925-provider-clients.sql', '20260928-provider-offers-location.sql', '20260929-provider-jobs.sql', '20261003-provider-offer-configuration.sql', '20261003-provider-reviews.sql', '20261003-provider-multi-orders.sql', '20261017-customer-provider-bookings.sql']) {
       const migration = readFileSync(resolve(__dirname, '../apps/api/src/database/migrations', file), 'utf8');
       await db.query(migration); await db.query(migration);
     }
     const module = await Test.createTestingModule({ imports: [
       ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }), RedisModule,
-      TypeOrmModule.forRoot({ ...options, entities: [...authEntities, ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity], synchronize: false, retryAttempts: 0 }),
+      TypeOrmModule.forRoot({ ...options, entities: [...authEntities, ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity, ProviderProfileEntity, OrderEntity], synchronize: false, retryAttempts: 0 }),
       ProviderModule
     ] }).compile();
     app = module.createNestApplication({ logger: false }); await app.listen(0, '127.0.0.1');

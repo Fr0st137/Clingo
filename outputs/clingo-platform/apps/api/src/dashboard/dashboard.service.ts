@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
+import { bookingStatus, lockBookingProfile } from "./booking-bridge";
 import { InjectRepository } from "@nestjs/typeorm";
 import Redis from "ioredis";
 import { ObjectLiteral, Repository } from "typeorm";
@@ -281,16 +282,6 @@ export class DashboardService implements OnModuleInit {
 
   async getDashboard(emailValue?: string): Promise<DashboardPayload> {
     const email = normalizeOrderEmail(emailValue);
-    const cacheKey = dashboardCacheKey(email);
-
-    try {
-      const cached = this.redis.status === "ready" ? await this.redis.get(cacheKey) : null;
-      if (cached) {
-        return JSON.parse(cached) as DashboardPayload;
-      }
-    } catch {
-      // Redis is optional; PostgreSQL remains the source of truth.
-    }
 
     const [orders, user] = await Promise.all([
       this.ordersRepository.find({
@@ -326,12 +317,6 @@ export class DashboardService implements OnModuleInit {
       completedOrder: completedOrder ? toDashboardOrder(completedOrder) : null
     };
 
-    try {
-      if (this.redis.status === "ready") await this.redis.set(cacheKey, JSON.stringify(payload), "EX", 60);
-    } catch {
-      // Cache write failure should not block real dashboard data.
-    }
-
     return payload;
   }
 
@@ -343,14 +328,21 @@ export class DashboardService implements OnModuleInit {
 
   async cancelOrder(id: string, emailValue?: string): Promise<DashboardOrder | null> {
     const email = normalizeOrderEmail(emailValue);
-    const order = await this.ordersRepository.findOne({ where: { id, userEmail: email } });
-
-    if (!order) {
-      return null;
-    }
-
-    order.status = "Odwołane zlecenie";
-    const saved = await this.ordersRepository.save(order);
+    const saved = await this.ordersRepository.manager.transaction(async manager => {
+      const current = await manager.findOneBy(OrderEntity, { id, userEmail: email });
+      if (!current) return null;
+      if (current.providerId) await lockBookingProfile(manager, current.providerId);
+      const order = await manager.findOne(OrderEntity, { where: { id, userEmail: email }, lock: { mode: "pessimistic_write" } });
+      if (!order) return null;
+      if (bookingStatus(order.status) === "completed") throw new BadRequestException("Wykonane zlecenie nie może zostać odwołane.");
+      if (bookingStatus(order.status) !== "cancelled") {
+        order.status = "Odwołane zlecenie";
+        order.revision += 1;
+        await manager.save(order);
+      }
+      return order;
+    });
+    if (!saved) return null;
     await this.clearDashboardCache(email);
 
     return toDashboardOrder(saved);
@@ -458,7 +450,7 @@ export class DashboardService implements OnModuleInit {
       this.boardSearchFieldsRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardFiltersRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardListingsRepository.find({ order: { orderIndex: "ASC" } }),
-      this.providerProfilesRepository.find({ select: ["id", "addOns"] })
+      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "addOns"] })
     ]);
     const profilesById = new Map(providerProfiles.map((profile) => [profile.id, profile]));
 
@@ -485,7 +477,7 @@ export class DashboardService implements OnModuleInit {
   }
 
   async getProviderProfile(id: string): Promise<ProviderProfile | null> {
-    const profile = await this.providerProfilesRepository.findOne({ where: { id } });
+    const profile = await this.providerProfilesRepository.findOne({ where: { id, published: true } });
 
     if (!profile) {
       return null;

@@ -4,7 +4,7 @@ import type { AccountProfile } from "./account";
 import { fetchPrivateJson } from "./private-api";
 import { getProviderProfile } from "./api";
 import type { BookingPageProps } from "./booking-client";
-import { offerRequestState, requestPricing } from "./offer-request";
+import { offerRequestState, profilePricing } from "./offer-request";
 
 export async function loadBookingPage(params: Record<string, string | string[] | undefined>, path: string): Promise<BookingPageProps> {
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";
@@ -25,7 +25,7 @@ export async function loadBookingPage(params: Record<string, string | string[] |
     query.delete("provider");
     redirect(`/profil-ogloszeniowy/${encodeURIComponent(providerId)}?${query}`);
   }
-  const pricingId = requestPricing(profile.pricing!, read("area"), read("pricing"))!.id;
+  const pricingId = profilePricing(profile, read("area"), read("pricing"))!.id;
   query.set("pricing", pricingId);
   if (!user) redirect(loginUrl);
   const addOns = read("addons").split(",").filter(Boolean).map(item => { const [id, quantity] = item.split(":"); return { id, quantity: Number(quantity) }; });

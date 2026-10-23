@@ -75,11 +75,10 @@ async function fetchDashboardJson<T>(path: string): Promise<T> {
   return response.json();
 }
 
-// Only the public catalogue is shared between visitors. Orders and account
-// data must always go through their authenticated, uncached requests.
+// Publication and withdrawal must be visible on the next catalogue visit.
 async function fetchCatalogueJson<T>(path: string): Promise<T> {
   const response = await fetch(`${apiBaseUrl()}${path}`, {
-    next: { revalidate: 30, tags: ["catalogue"] },
+    cache: "no-store",
     signal: AbortSignal.timeout(3000)
   });
   if (!response.ok) throw new Error(`Catalogue request failed: ${response.status}.`);

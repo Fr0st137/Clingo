@@ -7,6 +7,8 @@ import { ProviderClientEntity } from "./provider-clients.entity";
 import { ProviderOfferEntity } from "./provider-offers.entity";
 import { ProviderJobEntity } from "./provider-jobs.entity";
 import { jobInput } from "./provider-jobs.input";
+import { ProviderBookingsService } from "./provider-bookings.service";
+import { accountBookings, bookingJobs } from "../dashboard/booking-bridge";
 
 export function jobView(row: ProviderJobEntity) {
   return { id: row.id, clientId: row.clientId, offerId: row.offerId, employeeId: row.employeeId, date: row.date, startMinute: row.startMinute, durationMinutes: row.durationMinutes, priceMinor: row.priceMinor, status: row.status, notes: row.notes, clientName: row.clientName, clientPhone: row.clientPhone, clientEmail: row.clientEmail, address: row.address, serviceTitle: row.serviceTitle, employeeName: row.employeeName, multiOrderId: row.multiOrderId, sessionIndex: row.sessionIndex, sessionCount: row.sessionCount, revision: row.revision };
@@ -15,7 +17,8 @@ export function jobView(row: ProviderJobEntity) {
 export class ProviderJobsService {
   constructor(private readonly auth: AuthService,
     @InjectRepository(ProviderMembershipEntity) private readonly memberships: Repository<ProviderMembershipEntity>,
-    @InjectRepository(ProviderJobEntity) private readonly jobs: Repository<ProviderJobEntity>) {}
+    @InjectRepository(ProviderJobEntity) private readonly jobs: Repository<ProviderJobEntity>,
+    private readonly bookings: ProviderBookingsService) {}
   private async accountId(authorization?: string) {
     const user = await this.auth.sessionUser(authorization);
     const membership = await this.memberships.findOneBy({ userId: user.id });
@@ -24,7 +27,8 @@ export class ProviderJobsService {
   }
   async list(authorization?: string) {
     const accountId = await this.accountId(authorization);
-    return (await this.jobs.find({ where: { accountId }, order: { date: "ASC", startMinute: "ASC", id: "ASC" } })).map(jobView);
+    const [jobs, bookings] = await Promise.all([this.jobs.find({ where: { accountId }, order: { date: "ASC", startMinute: "ASC", id: "ASC" } }), this.bookings.forAccount(accountId)]);
+    return [...jobs.map(jobView), ...bookings].sort((a, b) => a.date.localeCompare(b.date) || a.startMinute - b.startMinute || a.id.localeCompare(b.id));
   }
   async get(authorization: string | undefined, id: string) {
     const accountId = await this.accountId(authorization);
@@ -52,6 +56,10 @@ export class ProviderJobsService {
         const now = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
         const today = now.slice(0,10), minute = Number(now.slice(11,13)) * 60 + Number(now.slice(14,16));
         if (input.date > today || (input.date === today && input.startMinute + input.durationMinutes > minute)) throw new BadRequestException("Możesz zakończyć zlecenie po upływie zaplanowanego terminu.");
+      }
+      if (input.status === "scheduled") {
+        const reservations = (await accountBookings(manager, accountId)).flatMap(bookingJobs);
+        if (reservations.some(booking => booking.status === "scheduled" && booking.date === input.date && input.startMinute < booking.startMinute + booking.durationMinutes && booking.startMinute < input.startMinute + input.durationMinutes)) throw new BadRequestException("Termin jest zajęty przez rezerwację klienta. Wybierz inny termin.");
       }
       if (employee && input.status !== "cancelled") {
         const sameDay = await manager.find(ProviderJobEntity, { where: { accountId, employeeId: employee.id, date: input.date } });

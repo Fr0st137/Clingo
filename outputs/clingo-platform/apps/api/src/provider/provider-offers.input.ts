@@ -53,7 +53,7 @@ export const defaultOfferConfiguration = (): OfferConfiguration => ({
   standardsAccepted: false
 });
 
-export type OfferInput = { title: string; category: string; description: string; priceMinor: number; durationMinutes: number; status: "draft" | "archived"; configuration: OfferConfiguration };
+export type OfferInput = { title: string; category: string; description: string; priceMinor: number; durationMinutes: number; status: "draft" | "archived" | "published"; configuration: OfferConfiguration };
 
 const integer = (value: unknown, label: string, minimum: number, maximum: number) => {
   if (!Number.isSafeInteger(value) || (value as number) < minimum || (value as number) > maximum) throw new BadRequestException(`${label} ma nieprawidłową wartość.`);
@@ -122,6 +122,6 @@ export function offerInput(value: unknown, updating = false): OfferInput & { rev
   if (typeof input.description !== "string" || input.description.length > 2000 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(input.description)) throw new BadRequestException("Opis może zawierać maksymalnie 2000 znaków.");
   if (!Number.isSafeInteger(input.priceMinor) || (input.priceMinor as number) < 1 || (input.priceMinor as number) > 10000000) throw new BadRequestException("Cena musi wynosić od 0,01 do 100 000 zł.");
   if (!Number.isInteger(input.durationMinutes) || (input.durationMinutes as number) < 15 || (input.durationMinutes as number) > 1440) throw new BadRequestException("Czas usługi musi wynosić od 15 do 1440 minut.");
-  if (input.status !== "draft" && !(updating && input.status === "archived")) throw new BadRequestException("Nieprawidłowy status usługi.");
+  if (input.status !== "draft" && !(updating && ["archived", "published"].includes(input.status as string))) throw new BadRequestException("Nieprawidłowy status usługi.");
   return { title, category: input.category, description: input.description.trim(), priceMinor: input.priceMinor as number, durationMinutes: input.durationMinutes as number, status: input.status, configuration: offerConfiguration(input.configuration), ...(updating ? { revision: revisionInput(input.revision) } : {}) };
 }

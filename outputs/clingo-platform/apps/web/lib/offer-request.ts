@@ -1,5 +1,6 @@
 import type { ProviderProfileData } from "../components/provider-profile-view";
 import { serviceAreaStatus } from "../../api/src/dashboard/service-area";
+import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
 
 export type OfferRequest = { area?: string; address?: string; pricing?: string; frequency?: string; addons?: string };
 export type OfferRequestState = "missing" | "unknown-area" | "unsupported-location" | "ready";
@@ -27,10 +28,14 @@ export function requestPricing<T extends { id: string; label: string }>(pricing:
   return tiers.find(entry => entry.area >= requestedArea)?.item;
 }
 
-export function offerRequestState(profile: Pick<ProviderProfileData, "metrics" | "pricing">, area: string, address: string): OfferRequestState {
+export function profilePricing(profile: Pick<ProviderProfileData, "pricing" | "areaPricing">, area: string, pricingId?: string) {
+  return profile.areaPricing ? areaPricingOption(profile.areaPricing, `area-${numericArea(area)}`) : requestPricing(profile.pricing ?? [], area, pricingId);
+}
+
+export function offerRequestState(profile: Pick<ProviderProfileData, "metrics" | "pricing" | "areaPricing">, area: string, address: string): OfferRequestState {
   const requestedArea = numericArea(area);
   if (!area.trim() || !Number.isFinite(requestedArea) || requestedArea <= 0 || !address.trim()) return "missing";
-  if (!requestPricing(profile.pricing ?? [], area)) return "missing";
+  if (!profilePricing(profile, area)) return "missing";
   const status = serviceAreaStatus(profile.metrics, address);
   if (status === "unknown") return "unknown-area";
   return status === "supported" ? "ready" : "unsupported-location";

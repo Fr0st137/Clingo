@@ -1,7 +1,23 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { ProviderAccountEntity } from "../provider/provider.entity";
 
 @Entity({ name: "provider_profiles" })
 export class ProviderProfileEntity {
+  @Column({ type: "boolean", default: true })
+  published!: boolean;
+
+  @Column({ name: "area_pricing", type: "simple-json", nullable: true })
+  areaPricing!: import("./area-pricing").AreaPricing | null;
+
+  // Set only by an administrator after verifying the public profile's owner.
+  @Index("provider_profiles_account_idx")
+  @Column({ name: "account_id", type: "uuid", nullable: true })
+  accountId!: string | null;
+
+  @ManyToOne(() => ProviderAccountEntity, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "account_id", foreignKeyConstraintName: "provider_profiles_account_fk" })
+  account!: ProviderAccountEntity | null;
+
   @Column({ nullable: true, type: "simple-json", name: "booking_settings" })
   bookingSettings!: import("./booking").WorkingHours | null;
 

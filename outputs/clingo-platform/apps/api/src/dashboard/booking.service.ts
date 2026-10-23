@@ -5,6 +5,7 @@ import { OrderEntity } from "./order.entity";
 import { ProviderProfileEntity } from "./provider-profile.entity";
 import { BookingInput, BookingSelection, CustomerAvailability, MultiScheduleInput, WorkingHours, addLocalDays, bookingLimit, daySlots, defaultWorkingHours, durationLabel, localDate, multiSessionDurations, quoteBooking } from "./booking";
 import { serviceAreaStatus } from "./service-area";
+import { bookingBusy, lockBookingProfile } from "./booking-bridge";
 
 @Injectable()
 export class BookingService {
@@ -12,21 +13,13 @@ export class BookingService {
 
   private async offer(selection: BookingSelection, manager = this.db.manager, lock = false) {
     if (typeof selection.providerId !== "string" || !selection.providerId || selection.providerId.length > 100) throw new BadRequestException("Najpierw wybierz wykonawcę.");
-    const offer = await manager.findOne(ProviderProfileEntity, { where: { id: selection.providerId }, ...(lock ? { lock: { mode: "pessimistic_write" as const } } : {}) });
-    if (!offer) throw new NotFoundException("Ogłoszenie nie jest już dostępne.");
+    const offer = lock ? await lockBookingProfile(manager, selection.providerId) : await manager.findOne(ProviderProfileEntity, { where: { id: selection.providerId } });
+    if (!offer || offer.published === false) throw new NotFoundException("Ogłoszenie nie jest już dostępne.");
     return offer;
   }
 
   private async busy(providerId: string, manager = this.db.manager, excludingId?: string) {
-    const orders = await manager.find(OrderEntity, { where: { providerId } });
-    return orders.filter(o => o.id !== excludingId && o.startsAt && o.endsAt && !/odwo|anul|wykon|zako|cancel|completed|done/i.test(o.status))
-      .flatMap(o => {
-        if (o.mode === "Wielosesyjne" && o.selectedOptions?.sessions?.length) {
-          return o.selectedOptions.sessions.map(session => ({ startsAt: new Date(session.startsAt), endsAt: new Date(session.endsAt) }))
-            .filter(session => Number.isFinite(session.startsAt.getTime()) && Number.isFinite(session.endsAt.getTime()));
-        }
-        return [{ startsAt: o.startsAt!, endsAt: o.endsAt! }];
-      });
+    return bookingBusy(manager, providerId, excludingId);
   }
 
   private isMultiOffer(offer: ProviderProfileEntity) {
@@ -309,7 +302,7 @@ export class BookingService {
       const current = await manager.findOneBy(OrderEntity, { id, userEmail: email });
       if (!current || !current.providerId) throw new NotFoundException("Nie znaleziono rezerwacji.");
       const offer = await this.offer({ providerId: current.providerId }, manager, true);
-      const order = await manager.findOneByOrFail(OrderEntity, { id, userEmail: email });
+      const order = await manager.findOneOrFail(OrderEntity, { where: { id, userEmail: email }, lock: { mode: "pessimistic_write" } });
       const { duration } = this.rescheduleTarget(order, sessionIndex);
       if (endsAt.getTime() - startsAt.getTime() !== duration * 60_000) throw new BadRequestException("Przełożenie nie może zmienić czasu trwania usługi.");
       const slot = (await this.rescheduleSlots(order, localDate(startsAt), duration, offer.bookingSettings ?? defaultWorkingHours, manager, sessionIndex)).find(s => s.startsAt === startsAt.toISOString());
@@ -322,6 +315,7 @@ export class BookingService {
       } else {
         order.startsAt = startsAt; order.endsAt = endsAt;
       }
+      order.revision += 1;
       await manager.save(order);
     });
   }

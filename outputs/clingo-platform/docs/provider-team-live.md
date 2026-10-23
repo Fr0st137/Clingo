@@ -1,6 +1,18 @@
 # Panel wykonawcy — dane działalności i zlecenia
 
-Stan: 3 października 2026.
+Stan: 17 października 2026.
+
+### Aktualizacja z 17 października — rezerwacje klientów
+
+Rezerwacje z publicznego katalogu są połączone z działalnością przez jawne `provider_profiles.account_id`. Administrator przypisuje profil dopiero po sprawdzeniu własności (`scripts/link-provider-profile.cjs --list`, następnie `--profile ID --account UUID`); brak automatycznego przypisywania po nazwie lub e-mailu oraz publicznego przejmowania profili. Ustawienia działalności pokazują połączone profile.
+
+Lista zleceń, kalendarz miesiąca/tygodnia/dnia, historia i analizy pobierają ręczne zlecenia oraz widok oryginalnych rezerwacji klienta. Nie tworzymy kopii rezerwacji w `provider_jobs`, więc przełożenie i odwołanie przez klienta od razu zmieniają dane panelu. Lista odświeża się co 15 sekund oraz po powrocie do okna. Rezerwacje wielosesyjne są widoczne jako osobne sesje i mają wspólne szczegóły/status. Kwoty sesji sumują się dokładnie do ceny całej rezerwacji.
+
+Wykonawca widzi zapisany kontakt, adres, cenę, usługi dodatkowe, dane faktury i uwagi. Może odwołać całą rezerwację lub oznaczyć ją jako wykonaną po ostatnim terminie; klient widzi ten sam status. Kontrola wersji i blokady transakcyjne chronią równoczesne zmiany. Zakończonej rezerwacji klient nie może odwołać. Rezerwacji publicznej nie edytuje się formularzem ręcznego zlecenia.
+
+Dostępność uwzględnia zaplanowane zlecenia ręczne oraz rezerwacje wszystkich profili tej samej działalności. Utworzenie zlecenia ręcznego i rezerwacji klienta jest serializowane blokadą działalności. Publiczne rezerwacje przyjmują zachowawczo jedną równoczesną realizację na działalność; nie mają jeszcze przydziału pracownika ani dostępności opartej na liczbie pracowników. Publikowanie szkiców usług i automatyczne dodawanie klientów do kartoteki pozostają poza tym zakresem.
+
+Migracja: `20261017-customer-provider-bookings.sql` po wcześniejszych migracjach, albo lokalnie `TYPEORM_SYNC=true`. `npm run verify:booking-bridge` sprawdza przepływ przez HTTP i PostgreSQL, izolację kont, szczegóły, zmianę terminu, wersje, wielosesyjność, dostępność i równoczesne zapisy; usuwa wyłącznie własne tymczasowe rekordy. Kompilacja panelu, 48 testów modułów wykonawcy, 8 testów booking i weryfikacja migracji na osobnym schemacie również przechodzą. Poniższe sekcje opisują wcześniejsze etapy; powyższa aktualizacja zastępuje ich informacje o braku połączenia rezerwacji.
 
 ### Aktualizacja z 3 października
 

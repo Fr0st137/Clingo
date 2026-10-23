@@ -10,11 +10,21 @@ export function useSettingsResource<T>(path: string) {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
+    let fetching = false;
     setLoading(true); setError("");
-    providerApi<T>(path, "GET", undefined, controller.signal).then(setData).catch(error => {
-      if (!controller.signal.aborted) setError(error.message);
-    }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
+    const fetchData = async (background = false) => {
+      if (fetching || background && (document.visibilityState !== "visible" || dirtyForms.size > 0)) return;
+      fetching = true;
+      try { const fresh = await providerApi<T>(path, "GET", undefined, controller.signal); if (!controller.signal.aborted) { setData(fresh); setError(""); } }
+      catch (error) { if (!controller.signal.aborted) setError((error as Error).message); }
+      finally { fetching = false; if (!controller.signal.aborted) setLoading(false); }
+    };
+    void fetchData();
+    const refresh = () => { void fetchData(true); };
+    const live = path === "jobs";
+    const timer = live ? window.setInterval(refresh, 15000) : undefined;
+    if (live) { window.addEventListener("focus", refresh); window.addEventListener("provider-bookings-changed", refresh); }
+    return () => { controller.abort(); if (timer) window.clearInterval(timer); if (live) { window.removeEventListener("focus", refresh); window.removeEventListener("provider-bookings-changed", refresh); } };
   }, [path, attempt]);
   return { data, setData, loading, error, reload: () => setAttempt(value => value + 1) };
 }
