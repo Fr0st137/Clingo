@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: utilization uses the union of bookings and subtracts employee absences without double counting
+ok 1 - utilization uses the union of bookings and subtracts employee absences without double counting
+  ---
+  duration_ms: 3.3385
+  type: 'test'
+  ...
+# Subtest: missing schedules, unassigned jobs and full-day absence never fabricate utilization
+ok 2 - missing schedules, unassigned jobs and full-day absence never fabricate utilization
+  ---
+  duration_ms: 0.4055
+  type: 'test'
+  ...
+# Subtest: dashboard separates statuses, compares actual periods and counts ordered extras once per order
+ok 3 - dashboard separates statuses, compares actual periods and counts ordered extras once per order
+  ---
+  duration_ms: 8.8535
+  type: 'test'
+  ...
+# Subtest: inclusive date windows handle leap years, DST and invalid input
+ok 4 - inclusive date windows handle leap years, DST and invalid input
+  ---
+  duration_ms: 2.4115
+  type: 'test'
+  ...
+# Subtest: totals exclude cancelled and scheduled jobs and preserve integer cents
+ok 5 - totals exclude cancelled and scheduled jobs and preserve integer cents
+  ---
+  duration_ms: 12.2439
+  type: 'test'
+  ...
+# Subtest: service and employee filters apply to both periods and rankings use IDs
+ok 6 - service and employee filters apply to both periods and rankings use IDs
+  ---
+  duration_ms: 0.8188
+  type: 'test'
+  ...
+# Subtest: returning clients count prior or same-period completions, never future or cancelled work
+ok 7 - returning clients count prior or same-period completions, never future or cancelled work
+  ---
+  duration_ms: 6.8515
+  type: 'test'
+  ...
+# Subtest: CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+ok 8 - CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+  ---
+  duration_ms: 0.5903
+  type: 'test'
+  ...
+# Subtest: presentation rejects remote URLs, executable formats, excessive photos and oversized image payloads
+ok 9 - presentation rejects remote URLs, executable formats, excessive photos and oversized image payloads
+  ---
+  duration_ms: 1.8508
+  type: 'test'
+  ...
+# Subtest: image save decodes the file, rejects corrupt bytes and retains valid photographs
+ok 10 - image save decodes the file, rejects corrupt bytes and retains valid photographs
+  ---
+  duration_ms: 9.5077
+  type: 'test'
+  ...
+# Subtest: search ignores case, Polish diacritics and punctuation
+ok 11 - search ignores case, Polish diacritics and punctuation
+  ---
+  duration_ms: 2.1163
+  type: 'test'
+  ...
+# Subtest: all query words must occur in the provider name in any order
+ok 12 - all query words must occur in the provider name in any order
+  ---
+  duration_ms: 0.2968
+  type: 'test'
+  ...
+# Subtest: exact and prefix matches rank ahead of embedded matches
+ok 13 - exact and prefix matches rank ahead of embedded matches
+  ---
+  duration_ms: 0.2721
+  type: 'test'
+  ...
+# Subtest: quote includes catalogue extras and custom positions exactly once before applying a rounded discount
+ok 14 - quote includes catalogue extras and custom positions exactly once before applying a rounded discount
+  ---
+  duration_ms: 1.1389
+  type: 'test'
+  ...
+# Subtest: amount discounts and fractional percentages keep amounts in whole grosze
+ok 15 - amount discounts and fractional percentages keep amounts in whole grosze
+  ---
+  duration_ms: 0.2354
+  type: 'test'
+  ...
+# Subtest: blank rows are skipped but partially filled or oversized custom items are rejected
+ok 16 - blank rows are skipped but partially filled or oversized custom items are rejected
+  ---
+  duration_ms: 1.3581
+  type: 'test'
+  ...
+# Subtest: discounts cannot create negative, zero or oversized saved totals
+ok 17 - discounts cannot create negative, zero or oversized saved totals
+  ---
+  duration_ms: 0.3298
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2197.4409

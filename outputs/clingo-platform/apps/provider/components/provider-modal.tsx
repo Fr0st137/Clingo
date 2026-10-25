@@ -2,6 +2,9 @@
 
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 
+let openModalCount = 0;
+let originalBodyOverflow = "";
+
 export function ProviderModal({ children, titleId, descriptionId, onClose, className = "" }: {
   children: ReactNode;
   titleId: string;
@@ -14,14 +17,16 @@ export function ProviderModal({ children, titleId, descriptionId, onClose, class
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const previousOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialog.showModal();
-    document.body.style.overflow = "hidden";
+    if (openModalCount++ === 0) {
+      originalBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     return () => {
       dialog.close();
-      document.body.style.overflow = previousOverflow;
-      previousFocus?.focus();
+      if (--openModalCount === 0) document.body.style.overflow = originalBodyOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, []);
 

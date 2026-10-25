@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { BoardPayload } from "../lib/api";
 import { numericArea } from "../lib/offer-request";
+import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
 import { paginate, paginationSequence } from "../lib/pagination";
 import { BoardFilters, type BoardAddOnFilter, type BoardFilterState } from "./board-filters";
 import { BoardAddOnsOverlay } from "./board-addons-overlay";
@@ -187,8 +188,12 @@ export function BoardInteractiveView({
   }, [initialRequest.service, initialRequest.area, initialRequest.address, initialRequest.addons, initialPage]);
 
   const filteredListings = useMemo(
-    () => sortListings(board.listings.filter((listing) => matchesFilters(listing, filters)), sortMode),
-    [board.listings, filters, sortMode]
+    () => sortListings(board.listings.flatMap(listing => {
+      if (!listing.areaPricing || !request.area) return [listing];
+      const pricing = areaPricingOption(listing.areaPricing, `area-${numericArea(request.area)}`);
+      return pricing ? [{ ...listing, price: pricing.price }] : [];
+    }).filter((listing) => matchesFilters(listing, filters)), sortMode),
+    [board.listings, filters, sortMode, request.area]
   );
   const visibleListingsCount = filteredListings.length;
   const page = paginate(filteredListings, requestedPage);

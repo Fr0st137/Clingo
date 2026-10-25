@@ -76,3 +76,13 @@ Każdy odczyt i zapis pracowników, klientów, usług, zleceń oraz ustawień wy
 
 
 
+## Publikacja usług — 23 października 2026
+
+W panelu **Twoje usługi → Szkice → wybrana usługa → Opublikuj** zapisane ogłoszenie trafia do publicznego katalogu i jest automatycznie połączone z kontem działalności. Wymagane są opis, akceptacja standardu oraz miejscowość w ustawieniach lokalizacji. Nowe profile nie otrzymują oznaczenia weryfikacji. Dotychczasowe przykładowe profile nadal wymagają osobnego potwierdzenia własności.
+
+Cena klienta wynika z dokładnego metrażu, stawki za m², dodatków i wybranego rabatu. Czas zaokrągla się w górę do 15 minut. Nowe ogłoszenia obsługują pojedyncze wizyty do 12 godzin, w zapisanej miejscowości, z dojazdem w cenie. Promień w kilometrach, naliczanie dojazdu poza miastem, przesyłanie zdjęć i automatyczne rezerwacje cykliczne pozostają niepodłączone. Przedziały pracowników są informacją planistyczną; rezerwacja blokuje całą działalność.
+
+Zmiany nazwy i miejscowości aktualizują wygenerowane profile publiczne. Edycja opublikowanej oferty aktualizuje katalog; wycofanie do szkicu lub archiwum ukrywa ogłoszenie i blokuje nowe zamówienia. Wcześniejsze rezerwacje zachowują cenę, kontakt, historię i obsługę anulowania/zakończenia.
+
+Migracja: `20261023-provider-publication.sql` po migracji mostu rezerwacji, albo lokalnie synchronizacja schematu. Test `npm run verify:publication` sprawdza cały przepływ HTTP i PostgreSQL na odizolowanych danych i usuwa swoje rekordy. Opis publikacji w tej sekcji zastępuje wcześniejsze adnotacje o publikowaniu pozostającym poza zakresem.
+

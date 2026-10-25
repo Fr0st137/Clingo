@@ -1,0 +1,2041 @@
+=== STRONA 1 ===
+Wstęp
+
+
+Clingo jest platformą typu marketplace, której celem jest łączenie klientów z wykonawcami
+usług sprzątania mieszkań i domów. Platforma umożliwia szybkie znalezienie wykonawcy,
+skonfigurowanie usługi oraz złożenie zamówienia w sposób prosty i intuicyjny.
+Głównym założeniem platformy jest umożliwienie użytkownikowi zamówienia usługi
+sprzątania w możliwie najkrótszym czasie, bez konieczności kontaktowania się z wieloma
+firmami lub ręcznego ustalania szczegółów realizacji usługi.
+Clingo pełni rolę pośrednika technologicznego pomiędzy klientem a wykonawcą.
+
+
+Zakres obejmuje:
+
+    ●   Mechaniki Systemowe
+             ○   Zasady Widełek
+             ○   System zamówień
+             ○   Kalendarz Interaktywny
+             ○   Usługi dodatkowe
+             ○   Płatności
+             ○   Czat
+    ●   Perspektywy zakresowe:
+             ○   Gość - osoba niezarejestrowana (perspektywa bazowa)
+             ○   Użytkownik - osoba zarejestrowana
+             ○   Wykonawca
+             ○   Admin Clingo
+
+Na portalu z racji na wyliczanie cen i zamówienia online, nałożony jest z góry standard
+sprzątania, dla wszystkich usług dostępnych w clingo, gdzie opisane jest dokładnie co
+wchodzi w zakres opłaconej usługi.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== STRONA 2 ===
+Mechaniki Systemowe
+
+
+
+Zasady Widełek
+
+Cel widełek
+    1.  Widełki służą do:
+            a.   szacowania czasu realizacji zlecenia,
+            b.   określania domyślnej liczby pracowników wykonujących zlecenie
+            c.   klasyfikacji zleceń (Zlecenie jednosesyjne, Zlecenie wielosesyjne”),
+            d.   filtrowania wykonawców w wynikach wyszukiwania.
+
+
+Widełki nie są gwarancją finalnej liczby osób – finalna obsada może być zmieniona przez
+Wykonawcę przy edycji zlecenia.
+Na górze panelu zamówienia wyświetla informacja:
+“Czas realizacji zamówienia jest obliczony na podstawie np. 2 pracowników”
+
+
+Struktura Widełek
+    1.  Każdy przedział widełek składa się z:
+            a.   minimalnego metrażu (liczba całkowita),
+            b.   maksymalnego metrażu (liczba całkowita lub ∞),
+            c.   liczby pracowników
+
+Ograniczenia liczby osób
+    1.  Liczba pracowników musi być mniejsza lub równa zadeklarowanej obsadzie przez
+        Wykonawcę.
+    2.  Dla działalności jednoosobowej liczba pracowników zawsze = 1.
+
+Minimalny Metraż
+    1.  Domyślna wartość minimalnego metrażu to 1m²
+    2.  Wykonawca może ustawić dowolną wartość minimalnego metrażu
+    3.  Jeśli Użytkownik poda w zleceniu metraż mniejszy niż minimalny metraż pierwszych
+        widełek, Wykonawca:
+            a.   nie jest wyświetlany w wynikach wyszukiwania,
+            b.   nie może przyjąć takiego zamówienia.
+
+Maksymalny metraż
+    1.  Maksymalny metraż może być:
+            a.   wybraną liczbą (np. z listy co 50 m²),
+            b.   wartością wpisaną ręcznie,
+
+
+
+
+
+=== STRONA 3 ===
+             c.  lub  jako „Bez limitu (∞)” wtedy automatycznie ustawiany jest metraż
+                 maksymalny, dla danego rodzaju usługi, który jest ustalany systemowo.
+    2.  Jeśli Maksymalny metraż jest ustawiony jako liczba (np.100m²):
+             a.  oznacza to twardy maksymalny metraż, który wykonawca obsługuje,
+             b.  wykonawca nie będzie widoczny dla zleceń o metrażu większym niż ten limit.
+
+    3.  W UI należy pokazać informacyjny hint:
+ „Nie będziesz widoczny dla zleceń powyżej 100 m².”
+    4.  Jeśli Maksymalny metraż ustawiony jest jako “Bez limitu ∞ ”:
+             a.  nie można dodać kolejnych widełek.
+
+Ciągłość Widełek
+    1.  Widełki nie mogą mieć luk i nachodzić na siebie.
+    2.  Po utworzeniu pierwszych widełek każde kolejne mają ustawiony minimalny metraż
+        automatycznie jako:
+             a.   Minimalny metraż = Poprzedni Minimalny metraż + 1
+    3.  Pole minimalny metraż dla kolejnych widełek jest nieedytowalny.
+
+Liczba widełek
+    1.  Maksymalna liczba widełek jest pośrednio ograniczona przez:
+             a.  Maksymalny metraż (w przypadku ustawienia „Bez limitu (∞)”),
+             b.  liczbę pracowników zadeklarowaną przez Wykonawcę
+    2.  Nie ma obowiązku tworzenia widełek dla każdej możliwej liczby pracowników.
+
+Użycie widełek w systemie
+    1.  Dla zlecenia o metrażu Xm²:
+             a.  System znajduje widełki, dla których:
+                      i.  Minimalny metraż ≤ m² ≤ Maksymalny metraż
+
+             b.  Pobiera liczbę pracowników
+             c.  Oblicza czas realizacji:
+                      i.  czas = m² / (wydajność_1_osoby × liczba pracowników)
+             d.  Na podstawie czasu i max_okno_dnia system może oznaczyć zlecenie jako
+                 „projekt wielosesyjny”.
+
+Zasady UX i komunikacji
+    1.  Widełki są opisane jako „domyślne zasady pracy”, nie gwarancja obsady.
+    2.  Przy edycji zlecenia Wykonawca może:
+             a.  ustawić dowolną liczbę pracowników ale sugeruje mu się taką jaka była użyta
+                 do wyliczenia czasu pracy,
+             b.  skrócić czas realizacji na własną odpowiedzialność).
+
+
+
+
+
+
+
+
+
+
+=== STRONA 4 ===
+Domyślne ułatwienia
+    1.  System może zaproponować automatycznie wygenerowane widełki na start
+        (edytowalne).
+    2.  Przy nietypowych konfiguracjach (np. Duża liczba pracowników przypisana do
+        małego metrażu) system może wyświetlić ostrzeżenie informacyjne, bez blokowania
+        zapisu.
+
+
+
+System Zamówień
+
+Założenia ogólne
+    1.  System zamówień Clingo opiera się na:
+            a.   widełkach metrażowych (m² → liczba pracowników),
+            b.   wydajności 1 pracownika (m²/h),
+            c.   automatycznym planowaniu harmonogramu,
+            d.   możliwości edycji po stronie Wykonawcy,
+            e.   braku płatności na platformie (rozliczenie bezpośrednio między Klientem a
+                 Wykonawcą).
+            f.   W kalendarzu można dokonywać rezerwacji na 6 mies. do przodu.
+
+    2.  System rozróżnia dwa typy zamówień:
+            a.   Zamówienie zwykłe (jednosesyjne)
+            b.   Zamówienie wielosesyjne
+
+
+Definicje systemowe
+    1.  Wydajność 1 pracownika – określona w m²/h.
+    2.  k_est – liczba pracowników wynikająca z widełek.
+    3.  Zaplanowane godziny – suma godzin wszystkich zaplanowanych sesji w kalendarzu
+        (z uwzględnieniem liczby przypisanych pracowników).
+            a.   Przykład: sesja 4h × 3 osoby = 12 roboczogodzin zaplanowane
+    4.  Pozostało – różnica pomiędzy Wymaganymi godzinami a Zaplanowanymi godzinami.
+    5.  Wymagane - suma godzin, które system obliczył na podstawie podanego przez
+        klienta metrażu oraz wydajności 1 pracownika jako czas na realizację usługi.
+            a.   Przykład: 150 m² / 10 m²/h = 15 roboczogodzin
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== STRONA 5 ===
+Zamówienie zwykłe (jednosesyjne)
+
+
+Proces po stronie Użytkownika
+    1.  Użytkownik podaje metraż, wybiera usługę i podaje lokalizację.
+    2.  Użytkownik przechodzi na tablice ogłoszeń
+             a.  System oblicza - wycenę na każdym ogłoszeniu
+    3.  Użytkownik przechodzi do profilu Wykonawcy
+             a.  system oblicza - szacowany czas realizacji.
+    4.  Użytkownik wypełnia wymagane (dla Sprzątanie obiektów - Mieszkań i domów, biur i
+        lokali użytkowych)
+             a.  Częstotliwość sprzątania
+             b.  Sposób udostępnienia lokalu
+    5.  Klika „Przejdź do zamówienia”.
+    6.  Po zalogowaniu przechodzi do kalendarza.
+    7.  Wybiera dostępny termin (data i godzina).
+    8.  Przechodzi do podsumowania zamówienia.
+    9.  Klika “Potwierdź i zamów”
+
+Automatyczne przypisywanie pracowników
+    1.  Po zatwierdzeniu terminu system automatycznie przypisuje pracowników zgodnie z:
+             a.  liczbą wynikającą z widełek (k_est),
+             b.  dostępnością pracowników w wybranym slocie.
+    2.  Algorytm przypisania może uwzględniać rotację lub najmniejsze obciążenie
+        (szczegóły do doprecyzowania na etapie końcowym).
+    3.  Wykonawca może edytować przypisanych pracowników
+
+Proces po stronie Wykonawcy
+W panelu Wykonawca może:
+    1.  Odwołać zamówienie
+             a.  Warning że sugeruje się poinformować klienta przed odwołaniem
+    2.  Przełożyć zamówienie na inny dzień
+             a.  Warning że sugeruje się poinformować klienta przed przełożeniem
+             b.  Panelu wyboru nowego dnia i godziny (tylko dostępne)
+    3.  Zmienić godzinę początku zlecenia
+             a.  jeżeli zmiana powoduje konflikt z innym zleceniem przypisanym do
+                 któregokolwiek z przypisanych pracowników, system blokuje możliwość.
+             b.  Jeżeli dojdzie do zablokowania możliwości zmiany to warning że się nie da i
+                 trzeba ręcznie edytować blokujące zlecenie w celu dokonania tej zmiany.
+    4.  Zmienić godzinę końca zamówienia
+             a.  jeżeli zmiana powoduje konflikt z innym zleceniem przypisanym do
+             b.  Edytować powierzchnię
+                    i.    po edycji popup z pytaniem, czy zaktualizować cenę zlecenia
+             c.  Zmienić częstotliwość usługi
+                    i.    Jednorazowa
+                    ii.   Raz w miesiącu
+
+
+
+
+=== STRONA 6 ===
+                   iii.   Raz na 2 tygodnie
+             d.  któregokolwiek z przypisanych pracowników, system blokuje możliwość.
+             e.  Jeżeli dojdzie do zablokowania możliwości zmiany to warning że się nie da i
+                 trzeba ręcznie edytować blokujące zlecenie w celu dokonania tej zmiany.Raz
+                 w tygodniu
+    5.  Rozliczyć zamówienie - otwiera się popup z możliwością:
+             a.  Dodania rabatu
+             b.  Wystawienie faktury
+             c.  Wystawienie faktury Pro forma
+    6.  Zamienić pracownika
+             a.  Pokazuje tylko dostępnych pracowników w czasie trwania zlecenia
+    7.  Usunąć pracownika (min. 1 przypisany)
+             a.  Warning że zamówienie zostało przewidziane na x pracowników i czy
+                 Wykonawca jest pewien że wykona zamówienie z mniejszą ilością
+                 pracowników.
+    8.  Dodać pracownika
+             a.  Pokazuje tylko dostępnych pracowników w czasie trwania zlecenia
+    9.  Możliwość dodawania notatek własnych
+    10. Podgląd historii zmian w zamówieniu
+    11. Przycisk przejścia do chatu z klientem
+    12. Możliwość dodania usługi dodatkowej
+             a.  Automatycznie dolicza się do ceny zamówienia
+    13. Możliwość dodania usługi własnej
+             a.  Automatycznie dolicza się do ceny zamówienia
+
+
+
+Zamówienia wielosesyjne (Projekt)
+Zamówienie wielosesyjne tworzone jest automatycznie, gdy zlecenie wychodzi poza
+dostępność Wykonawcy w danym dniu.
+
+
+Proces po stronie Użytkownika
+    1.  Klient podaje metraż, wybiera usługę i podaje lokalizację.
+    2.  Klient przechodzi na tablice ogłoszeń
+             a.  System oblicza - wycenę na każdym ogłoszeniu
+    3.  Klient przechodzi do profilu Wykonawcy
+             a.  system oblicza - szacowany czas realizacji.
+    4.  Klient wypełnia wymagane (brak pola “Częstotliwość sprzątania”)
+             a.  Sposób udostępnienia lokalu
+    5.  Klika „Przejdź do zamówienia”.
+    6.  Po zalogowaniu przechodzi do kalendarza.
+
+Wybór pierwszej sesji
+Klient wybiera dostępną w kalendarzu datę i godzinę.
+Dostępność zależy od wolnych slotów w kalendarzu.
+
+
+
+
+
+=== STRONA 7 ===
+Automatyczne planowanie harmonogramu
+Po wyborze pierwszej sesji przez Użytkownika  system automatycznie tworzy pełny
+harmonogram realizacji.
+    1.  System oblicza wymagany czas na podstawie:
+             a.  Metrażu
+             b.  Wydajności 1 pracownika
+    2.  System sprawdza dostępność pracowników w kalendarzu Wykonawcy.
+    3.  Harmonogram tworzony jest wyłącznie w takich slotach, w których:
+             a.  dostępnych jest co najmniej k_est pracowników,
+                    i.    Dostępność pracownika liczona jest na podstawie:
+                               1.  nie bycia przypisanym do innych sesji
+                               2.  bycia dostępnym wg grafika.
+                    ii.   slot spełnia minimalną długość (np. 3 godziny),
+                   iii.   zachowana jest maksymalna przerwa między sesjami (np. 2 dni).
+
+        System przypisuje konkretnych pracowników do każdej sesji (W widoku klienta na
+        kafelkach sesji widoczna jest jedynie liczba przypisanych pracowników.)
+        System oblicza Zaplanowane godziny.
+
+    4.  Walidacja nr 1 - jeśli w międzyczasie doszło do kolizji (np. inny użytkownik zajął slot):
+             a.  system próbuje automatycznie przeliczyć harmonogram na początkowo
+                 wybranej dacie i godzinie klienta,
+             b.  jeśli nie jest to możliwe, wyświetla komunikat “Przepraszamy, w międzyczasie
+                 inny użytkownik zajął slot zaplanowany w Twoim harmonogramie - wybierz
+                 inną datę dostępną w kalendarzu” i wymusza ponowny wybór terminu przez
+                 Klienta.
+
+
+Edycja po stronie Użytkownika
+    1.  Użytkownik podczas planowania może zaznaczyć dany dzień jako niedostępny
+        klikając w przycisk “inny dzień”
+    2.  System tworzy wtedy  nową sesję w najbliższym dostępnym terminie
+             a.  Jeżeli jest potrzeba rozbija sesję na kilka mniejszych, posiadających inną
+                 ilością pracowników oraz godzin, aczkolwiek odpowiadających wymaganiom
+                 godzinowym zamówienia.
+             b.  Rozbite sesje muszą respektować zasadę “zachowana jest maksymalna
+                 przerwa między sesjami (np. 2 dni).”
+
+        Edycja jest możliwa wyłącznie przed przejściem do podsumowania.
+
+Podsumowanie zamówienia
+    1.  W podsumowaniu Użytkownik widzi:
+             a.  Termin realizacji – lista wszystkich zaplanowanych sesji.
+             b.  Adres zamówienia – wraz z numerem mieszkania/lokalu (do uzupełnienia jeśli
+                 dotyczy).
+             c.  Szczegóły wyceny:
+                    i.    metraż,
+
+
+
+
+=== STRONA 8 ===
+                    ii.   usługi dodatkowe,
+                   iii.   dojazd,
+                   iv.    inne pozycje
+    2.  Po kliknięciu w przycisk “Potwierdź i zamów” przez Użytkownika następuje druga
+        walidacja
+        Walidacja nr 2 - jeśli w międzyczasie doszło do kolizji (np. inny użytkownik zajął slot):
+    1.  System wyświetla komunikat “Przepraszamy, w międzyczasie inny użytkownik zajął
+        slot zaplanowany w Twoim harmonogramie” i przyciskiem “Powrót do
+        harmonogramu”.
+    2.  Po przejściu do harmonogramu:
+             a.  system próbuje automatycznie przeliczyć harmonogram na początkowo
+                 wybranej dacie i godzinie klienta,
+             b.  jeśli nie jest to możliwe, wyświetla komunikat “Wybierz inną datę dostępną w
+                 kalendarzu” i wymusza ponowny wybór terminu przez Klienta.
+        Jeżeli wszystko przejdzie pomyślnie to zamówienie zapisuje się na koncie
+        użytkownika. Wysyłane są także odpowiednie maile oraz SMSy do Wykonawcy oraz
+        klienta.
+
+
+
+Proces po stronie Wykonawcy
+    1.  Wykonawca może edytować pracowników w sesji
+             a.  Zmiana liczby pracowników wpływa na:
+                    i.    Zaplanowane godziny,
+                    ii.   Pozostałe godziny.
+             b.  Dodanie pracownika:
+                    i.    czas dolicza się do zaplanowanych godzin
+                    ii.   może powodować nadmiar zaplanowanych godzin
+             c.  System/reguły
+                    i.    system automatycznie aktualizuje procent realizacji (progress bar).
+                    ii.   Wykonawca może zatwierdzić mimo nadmiaru godzin.
+                   iii.   Przy niedoborze godzin pokazuje wyraźny warning.
+                   iv.    Wykonawca może zatwierdzić mimo brakujących godzin na własne
+                          ryzyko (wymagane potwierdzenie).
+    2.  Wykonawca ma możliwość dodawać nowe sesje
+             a.  Przycisk dodania sesji jest cały czas aktywny.
+                 (Także na wypadek gdyby Wykonawca chciał dodać sesję, bo stwierdził że
+                 się nie wyrobi w zaplanowanym czasie.)
+             b.  Nowa sesja nie musi spełniać minimalnej długości (np. 3h jak w planowaniu
+                 klienta). Wykonawca może sobie zaplanować o dowolnej długości wg uznania
+             c.  Nowe sesje zwiększają Zaplanowane godziny.
+                    i.    Wykonawca może zatwierdzić mimo nadmiaru godzin
+                              1.   Na pasku postępu jest napisane np. 110% i pod nim w
+                                   “Zaplanowane” 55h a w “Wymagane” 50h.
+    3.  Wykonawca może edytować godziny sesji
+             a.  Możliwość zmiany godziny początku sesji
+             b.  Możliwość zmiany godziny końca sesji
+
+
+
+
+
+=== STRONA 9 ===
+                     i.   Jeżeli czas sesji się skraca, to także odejmuje od zaplanowanych
+                          godzin
+                    ii.   Jeżeli czas sesji się wydłuża, to także dolicza do zaplanowanych
+                          godzin
+
+
+
+
+
+
+
+    4.  Możliwość przeniesienia sesji na inny dzień
+             a.  system wyświetla ostrzeżenie o zaleceniu poinformowania Klienta.
+                 “UWAGA! Przed przełożeniem zlecenia zaleca się ustalić z klientem przez
+                 chat lub telefonicznie szczegóły nowego terminu. Przełożenie zamówienia
+                 spowoduje przesłanie do klienta wiadomości email oraz SMS z informacją o
+                 przełożeniu.”
+Jeżeli sesja się rozpoczęła, to wykonawca może jedynie zmienić godzinę końcową. Nie
+może przenieść sesji na inny dzień oraz zmienić godziny początkowej.
+    5.  Możliwość edycji powierzchni w zleceniu
+             a.  Może edytować powierzchnię objętą usługą
+             b.  System/reguły
+                     i.   System aktualizuje wymagane godziny.
+                    ii.   system automatycznie aktualizuje procent realizacji
+    6.  Możliwość dodania rabatu do usługi
+    7.  Wykonawca może zakończyć zlecenie
+             a.  Oznaczyć zlecenie jako wykonane
+                     i.    dezaktywuje to przyszłe sesje (zwolnienie slotów w kalendarzu)
+             b.  rozliczyć zlecenie i wystawić fakturę VAT oraz Pro Formę (W każdym
+                 momencie przed, w trakcie i po wykonaniu usługi)
+    8.  Wykonawca może anulować całe zlecenie co powoduje
+             a.  Pokazanie się warninga, dla wykonawcy do potwierdzenia że rozumie.
+                 “UWAGA! Przed odwołaniem zlecenia zaleca się poinformować klientem przez
+                 chat lub telefonicznie. Odwołanie zamówienia spowoduje przesłanie do
+                 klienta wiadomości email oraz SMS z informacją o odwołaniu.”
+             b.  Zamówienie wielosesyjne znika z kalendarza Wykonawcy i odblokowywuje
+                 sloty
+             c.  Zamówienie znika z zamówień aktywnych w panelu użytkownika i wpada do
+                 odwołanych.
+             d.  Klient dostaje także email oraz sms z informacją o odwołaniu.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== STRONA 10 ===
+Kalendarz Interaktywny
+
+
+
+
+
+
+
+Usługi dodatkowe
+
+
+
+Usługi dodatkowe są opisane w osobnym dokumencie
+
+    ●   Usługi dodatkowe będą inne dla każdego rodzaju usług
+    ●   Wszystkie usługi dodatkowe wyświetlają się w 3 miejscach:
+             ○   Wyszukiwarce
+             ○   Tablicy ogłoszeń
+             ○   Profilu ogłoszeniowym
+    ●   Zaznaczone usługi automatycznie wliczają się w cenę na ogłoszeniu, nawet po
+        wybraniu ich dopiero na profilu ogłoszeniowym;
+    ●   Zaznaczone usługi dodatkowe w wyszukiwarce, albo na tablicy ogłoszeniowej
+        automatycznie są zaznaczone na profilu ogłoszeniowym wykonawcy
+    ●   Jeżeli ktoś nie wykonuje usługi dodatkowej to zaznacza to na swoim profilu przy
+        konfiguracji usług dodatkowych i wtedy nie wyświetla się ten wykonawca w
+        przypadku wyboru jej w wyszukiwarce;
+    ●   Usługi dodatkowe wykonawca może ustawić na: Nie wykonuje | za darmo | podaje
+        kwotę za jaką je wykonuje;
+    ●   Przy zamówieniach regularnych opcja, czy dodać regularnie usługi dodatkowe czy
+        nie.
+
+
+
+Płatności
+
+Na Portalu Clingo występują tylko płatności między Portalem, a Wykonawcą.
+Portal nie udostępnia płatności online przy składaniu zamówień.
+
+Płatności: Wykonawca - Portal
+    1.  Podpięcie karty do opłat subskrypcyjnych
+    2.  Jeżeli płatność nie zostanie ściągnięta z karty (np. jeżeli na karcie nie ma środków,
+        karta jest nieważna) pojawia się duży komunikat nad dashboardem wykonawcy w
+        “Moje konto” z informację “Konto jest nieaktywne. Najczęstszym rozwiązaniem jest
+        podpięcie innej karty lub doładowanie środków na obecną.”
+    3.  Przy anulowaniu członkostwa konto dalej istnieje, karta jest podpięta. Pojawia się
+        duży komunikat nad dashboardem wykonawcy w “Moje konto” z informację “Konto
+
+
+
+
+=== STRONA 11 ===
+        jest nieaktywne. Wybierz plan aby wznowić członkostwo” + przycisk wyboru planu,
+        następnie okno z podiętą kartą i możliwościa jej zmiany, po akceptacji wznawia się
+        członkostwo a środki ściągane są z karty”
+
+
+
+Chat
+
+
+
+
+
+Gość - perspektywa
+
+
+
+Strona główna
+
+    1.  Nagłówek
+
+             a.  Logo
+             b.  Menu
+                    i.    Jak to działa?
+                               1.  Panel, gdzie znajdują się artykuły na temat usług sprzątania
+                                   itd.
+                               2.  Wideoporadniki dotyczące portalu Clingo, gdzie krok po kroku
+                                   opisany jest każdy panel
+                               3.  Pomoc techniczna
+                    ii.   Standardy usług Clingo
+             c.  Wyszukiwarka ogłoszeń wykonawców
+                    i.    Użytkownik wpisuje Imię nazwisko lub nazwę firmy
+                    ii.   Przenosi go na profil ogłoszeniowy konkretnego Wykonawcy, gdzie
+                          wypełnienia pola Rodzaj usługi | Powierzchnię | I lokalizację + usługi
+                          dodatkowe
+                   iii.   Po prawej stronie znajduję się Podsumowanie zamówienia, gdy
+                          wszystko się zgadza może złożyć zamówienie, ale tylko po
+                          zalogowaniu się na portalu.
+                   iv.    Może wpisać lokalizację, która nie jest w zasięgu, aczkolwiek na
+                          profilu ogłoszeniowym będzie na czerwono lokalizacja i wyszarzony
+                          przycisk “Przejdź do zamówienia” - Po najechaniu na nie będzie
+                          dymek z info że “Wykonawca nie oferuję usług w twojej lokalizacji,
+                          zmień lokalizację aby móc złożyć zamówienie”
+                    v.    I “Aby zobaczyć ogłoszenie danej osoby/firmy należy uzupełnić dane.
+                   vi.    Przycisk “Zobacz ogłoszenie”
+             d.  Powiadomienia (ikona)
+
+
+
+
+=== STRONA 12 ===
+             e.   Ulubione oferty (ikona)
+             f.   Chat (ikona)
+             g.   Moje konto (przycisk)
+             h.   Zostań Wykonawcą (przycisk)
+    2.   Wyszukiwarka
+
+
+
+
+
+
+
+
+
+
+             a.   Rodzaj usługi:
+                     i.    Sprzątanie
+                                1.  Mieszkania i Domy
+                                2.  Biura i lokale użytkowe
+                    ii.    Mycie ciśnieniowe
+                                1.  kostki brukowej, chodników, tarasów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów skośnych i płaskich
+                    iii.   Malowanie powierzchni
+                                1.  Ścian i sufitów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów blaszanych
+                                4.  Dachówek
+             b.   Powierzchnia w m2 ( pasek / wpisanie liczby)
+             c.   Lokalizacja - Dokładny adres (prośba o  lokalizację w przeglądarce)
+             d.   Przycisk Usługi dodatkowe
+                     i.    Po kliknięciu wysuwają się kafelki bez cen tylko z możliwością wyboru
+                           ilości
+                    ii.    Przy wyborze obok przycisku pole zlicza ilość wybranych usług.
+                    iii.   Gdy nie ma się wybranego Rodzaju usług to po kliknięciu w przycisk
+                           obramowanie pola Rodzaj usługi podświetla się na czerwono - Usługi
+                           dodatkowe wyświetlają się w zależności od wyboru w tym polu (inne
+                           dla “Mieszkanie lub dom” inne dla “Mycia kostki brukowej” itd.)
+    3.   Widoczna informacja o standardzie sprzątania w clingo.pl dla “Mieszkań i domów”
+         oraz “Biur i lokali użytkowych” itd.
+    4.   Wyróżnieni wykonawcy (dodatkowo płatna opcja - pozycjonuje w wyszukiwarce i
+         dodaje na stronę główną)
+    5.   Kafelki z kategoriami - Blog
+    6.   Stopka
+
+
+
+
+
+
+
+
+
+
+
+
+=== STRONA 13 ===
+Tablica ogłoszeń
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    1.  Górna belka
+             a.  Rodzaj usługi
+             b.  Powierzchnia w m2
+             c.  Lokalizacja - Dokładny adres
+    2.  Lewa boczna belka (filtry/opcje dodatkowe)
+             a.  Filtr cenowy (od - do)
+             b.  Usługi dodatkowe:
+                    i.    Po kliknięciu wyskakuje konfigurator
+             c.  Doświadczenie
+                    i.    Brak
+                    ii.   Poniżej roku
+                   iii.   1-2 lata
+                   iv.    2-5 lat
+                    v.    Powyżej 5 lat
+             d.  język (checkboxy)
+                    i.    Polski ojczysty
+                    ii.   Znajomość polskiego
+                   iii.   Angielski
+                   iv.    Ukraiński
+             e.  Przycisk “ Pokaż ogłoszenia”
+
+Informacje na ogłoszeniu (na tablicy ogłoszeniowej) -
+Wykonawcy
+
+
+
+
+
+
+
+    1.  Zdjęcie profilowe
+
+
+
+
+=== STRONA 14 ===
+    2.   Imię + pierwsza litera nazwiska / Nazwa Firmy
+    3.   Ocena Wykonawcy
+    4.   Doświadczenie Wykonawcy
+    5.   Ilość wykonanych usług przez portal
+    6.   Główna cena - wyliczona na podstawie zaznaczonych pól
+             a.   Informacja
+                     i.    ” Koszt w danej konfiguracji”
+                    ii.    Dojazd uwzględniony w cenie
+    7.   Dodaj do ulubionych (prawy górny róg)
+    8.   Zweryfikowany profil (jeżeli jest)
+
+Profil ogłoszeniowy Wykonawcy
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    1.   Belka - Rodzaj usługi | Powierzchnia | Adres
+    2.   Zdjęcie profilowe
+    3.   Imię + pierwsza litera nazwiska / Nazwa firmy
+    4.   Doświadczenie (Jak ktoś nie dodał to się nie wyświetla)
+    5.   Lokalizacja po mieście - zaznaczyć że to siedziba
+    6.   Zweryfikowany profil (jeżeli jest)
+    7.   Języki
+    8.   Ilość wykonanych usług przez portal
+    9.   Opinie - ocena (np. 4,7/5 + liczba ocen)
+    10. Ikona “Udostępnij ogłoszenie”
+    11. Ikona “Dodaj do ulubionych”
+    12. Galeria zdjęć (Jeżeli się nie dodał żadnych zdjęć to jest niedostępna)
+    13. O mnie (opis)
+    14. Doświadczenie (opis) - jeżeli ktoś doda
+    15. Informacja Co się wlicza do usługi “Standardy Usług Clingo”
+    16. Moduł konfiguracji usługi (Tylko dla zalogowanych)
+
+
+
+
+=== STRONA 15 ===
+             a.  Wybór częstotliwości usług, domyślnie jest usługa jednorazowa (raz w
+                 tygodniu; raz na 2 tygodnie; raz w miesiącu; jednorazowe)
+             b.  Pole do zaznaczenia “Na zamówieniu potrzebny jest odkurzacz -
+                 usługodawca przywiezie odkurzacz do sprzątania”
+             c.  Pole “Sposób udostępnienie lokalu” z wysuwaną listą:
+                    i.    Prośba o kontakt telefoniczny, w celu ustalenia sposobu udostępnienia
+                          lokalu objętego usługą.
+                    ii.   Ktoś będzie w lokalu objętym usługą.
+             d.  Usługi dodatkowe (W zależności od Rodzaju obiektu)
+    17. Opinie - ocena (np. 4,7/5 + liczba ocen)
+    18. Opinie pisane
+    19. Dodaj ocenę (dla zalogowanych)
+    20. Podsumowanie Zamówienia - prawy sticky bar
+             a.  Szacowany czas usługi
+             b.  Lista z wyszczególnionymi składowymi zamówienia
+             c.  Suma zamówienia
+             d.  Przycisk - Przejdź do zamówienia ( Na szaro jeśli ktoś jest niezalogowany)
+    21. Informacja
+
+
+
+
+
+
+
+
+
+
+Moduł konfiguracji usług (podział na konkretne rodzaje usług)
+
+    1.  Sprzątanie mieszkań i domów
+             a.  Wybór częstotliwości realizacji usług, domyślnie jest usługa jednorazowa (raz
+                 w tygodniu; raz na 2 tygodnie; raz w miesiącu; jednorazowe)
+             b.  Pole do zaznaczenia “Na zamówieniu potrzebny jest odkurzacz -
+                 usługodawca przywiezie odkurzacz do sprzątania”
+             c.  Pole “Sposób udostępnienie lokalu” z wysuwaną listą:
+                    i.    Prośba o kontakt telefoniczny, w celu ustalenia sposobu udostępnienia
+                          lokalu objętego usługą.
+                    ii.   Ktoś będzie w lokalu objętym usługą.
+             d.  Usługi dodatkowe (W zależności od Rodzaju usługi)
+    2.  Sprzątanie biur i lokali użytkowych
+             a.  Wybór częstotliwości realizacji usług, domyślnie jest usługa jednorazowa (raz
+                 w tygodniu; raz na 2 tygodnie; raz w miesiącu; jednorazowe)
+             b.  Pole do zaznaczenia “Na zamówieniu potrzebny jest odkurzacz -
+                 usługodawca przywiezie odkurzacz do sprzątania”
+             c.  Pole “Sposób udostępnienie lokalu” z wysuwaną listą:
+
+
+
+
+
+
+=== STRONA 16 ===
+                    i.    Prośba o kontakt telefoniczny, w celu ustalenia sposobu udostępnienia
+                          lokalu objętego usługą.
+                    ii.   Ktoś będzie w lokalu objętym usługą.
+             d.  Usługi dodatkowe (W zależności od Rodzaju usługi)
+    3.  Mycie Ciśnieniowe
+             a.  Pole “Sposób udostępnienie lokalu” z wysuwaną listą:
+                    i.    Prośba o kontakt telefoniczny, w celu ustalenia sposobu udostępnienia
+                          lokalu objętego usługą.
+                    ii.   Ktoś będzie w lokalu objętym usługą.
+             b.  Pole na załączenie zdjęcia do zamówienia obszaru objętego usługą przez
+                 użytkownika
+             c.  Usługi dodatkowe (W zależności od Rodzaju usługi)
+    4.  Malowanie powierzchni
+             a.  Pole “Sposób udostępnienie lokalu” z wysuwaną listą:
+                    i.    Prośba o kontakt telefoniczny, w celu ustalenia sposobu udostępnienia
+                          lokalu objętego usługą.
+                    ii.   Ktoś będzie w lokalu objętym usługą.
+             b.  Pole na załączenie zdjęcia do zamówienia obszaru objętego usługą przez
+                 użytkownika
+
+
+Profil ogłoszeniowy - Moduł zamówień (zawsze taki sam)
+Ten moduł jest dostępny tylko i wyłącznie po zalogowaniu na Portal
+Clingo
+Formularz w trzech krokach:
+    1.  Wybierz termin
+             a.  Kalendarz miesięczny z zaznaczonymi dniami
+                    i.    Zielony kolor oznacza, że dzień jest dostępny do złożenia zamówienia
+                    ii.   Czerwony kolor oznacza, że nie ma możliwości złożenia zamówienia,
+                          ponieważ wszystkie terminy są zajęte
+             b.  Po wybraniu dnia  wyświetlają się godziny z możliwością wyboru co 15min.
+                    i.    Godziny, które są już zajęte, bądź nie wchodzą w czas pracy
+                          Wykonawcy wyświetlają się na szaro
+    2.  Dane do zamówienia
+             a.  Pełny adres obiektu w którym będzie wykonywana usługa
+                    i.    Miasto, kod pocztowy, ulica, nr domu (Sztywne wg wpisanego
+                          wcześniej)
+                    ii.   Nr mieszkania  (Do wpisania jak to jest mieszkanie - jak nie to jest
+                          wcześniej wypełnione w dokładnym adresie)
+             b.  Dane kontaktowe
+                    i.    Imię nazwisko
+                    ii.   Numer telefonu
+             c.  Możliwość zaznaczenia opcji “Faktura”
+                    i.    Nazwa Firmy
+                    ii.   NIP
+                   iii.   Adres Firmy
+                   iv.    Miasto i kod pocztowy
+
+
+
+
+=== STRONA 17 ===
+    3.  Płatność - Użytkownik nie płaci za usługę na portalu, wszystkie płatności pomiędzy
+        Klientem, a Wykonawcą są dokonywane bezpośrednio między stronami.
+    4.  Podsumowanie
+             a.  Okno z wszystkimi szczegółami zamówienia
+    5.  Gotowe (potwierdzenie zamówienia)
+
+
+
+
+
+
+Użytkownik - perspektywa
+
+
+
+
+Rejestracja
+
+    1.  Użytkownik klika w “Moje konto” w nagłówku, następnie w popupie klika “Zarejestruj
+        się”
+    2.  Otwiera się panel logowania nr 1:
+             a.  Mail i opcje logowanie Google, FB itd.
+    3.  po kliknięciu zaloguj się, otwiera się panel nr 2 z wpisaniem hasła, akceptacją
+        regulaminów
+    4.  Po kliknięciu Utwórz konto, otwiera się panel nr 3 z potwierdzeniem maila i opcją
+        wyślij nowy link. Puszcza dopiero jak się go potwierdzi.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=== STRONA 18 ===
+Logowanie
+    1.  Otwiera się Panel logowania nr 1
+    2.  Po wpisaniu maila otwiera się Panel logowania nr 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+             a.  WAŻNE - Opcja z kodem jednorazowym na maila zamiast hasła
+
+Moje konto - Użytkownik (Dashboard - widok główny)
+
+    1.  W lewym górnym rogu znajduję się kafelek z danymi profilowymi użytkownika
+             a.  Zdjęcie profilowe - opcjonalne
+             b.  Imię i Nazwisko
+             c.  Numer telefonu
+        Użytkownik ma możliwość edycji zdjęcia profilowego po kliknięciu na nie
+    2.  Pod spodem znajduję się lista z możliwością podglądu
+             a.  Zamówienia - Użytkownik widzi wszystkie zamówienia jakich dokonał na
+                 portalu
+                    i.    Nadchodzące zlecenia - podgląd na aktywne zlecenia, które są do
+                          realizacji w formie kafelków z informacjami dotyczącymi zlecenia
+                              1.   Status zlecenia (Nadchodzące zlecenie, w trakcie
+                                   wykonywania)
+                              2.   Rodzaj zlecenia - system kwalifikuje zlecenie jako
+                                       a.  Zlecenie zwykłe (jednosesyjne) - brak informacji na
+                                           kafelku
+                                       b.  Zlecenie wielosesyjne - informacja wyświetlana obok
+                                           statusu
+                              3.   Osoba/Firma wykonująca zlecenie
+                                       a.  Nazwa
+                                       b.  Rodzaj wykonywanych usług
+                                       c.  Lokalizacja obiektu objętego usługą
+                              4.   Zakres czasowy w którym będzie wykonywana usługa( Od Do,
+                                   z pełną datą)
+
+
+
+
+
+
+=== STRONA 19 ===
+                               5.   Kafelek “ Szczegóły zamówienia” - możliwość podglądu
+                                    zamówienia
+                                        a.    Zamówienie zwykłe (jednosesyjne) informacje
+                                                i.    Status zamówienia (Nadchodzące zamówienie)
+                                               ii.    Metraż objęty usługą
+                                              iii.    Informacja o regularności zlecenia
+                                              iv.     Dane Osoby/Firmy
+                                                          1.   Imię i Nazwisko/Nazwa firmy
+                                                          2.   Data i godzina wykonywanej usługi
+                                                          3.   Lokalizacja
+                                                          4.   Rodzaj usługi
+                                                          5.   Możliwość kontaktu z Wykonawcą przez
+                                                               czat
+                                                          6.   Numer telefonu do Wykonawcy
+                                               v.     Usługi dodatkowe - informacja jakie usługi
+                                                      dodatkowe są brane pod uwagę w zleceniu i
+                                                      ilość
+                                              vi.     Podsumowanie - składniki zlecenia wraz z
+                                                      cenami
+                                                          1.   Cena za dojazd
+                                                          2.   Powierzchnia
+                                                          3.   Usługi dodatkowe z ilością w sztukach
+                                                          4.   Suma zamówienia
+                                              vii.    Użytkownik ma możliwość przełożenia
+                                                      zamówienia
+                                                          1.   Po kliknięciu w przycisk wyskakuję okno
+                                                               z kalendarzem (widok miesięczny) z
+                                                               dniami do wyboru ze statusem, czy są
+                                                               zajęte, czy nie. ( kolor czerwony zajęty,
+                                                               kolor zielony wolny)
+                                                          2.   Po kliknięciu na dostępny dzień, obok
+                                                               kalendarza pojawia się możliwość
+                                                               wyboru godziny co 15 minut z podziałem
+                                                                   a.   Rano
+                                                                   b.   Południe
+                                                                   c.   Wieczór
+                                                          3.   Przycisk Przełóż zlecenie - system
+                                                               automatycznie przekłada zlecenie na
+                                                               konkretny dzień
+                                                          4.   Nad wyborem godziny znajduje się
+                                                               informacja na temat zlecenia
+                                                                   a.   Imię i Nazwisko/Nazwa
+                                                                        wykonawcy
+                                                                   b.   Rodzaj usługi
+                                                                   c.   Przewidywany czas wykonania
+                                                                        usługi
+                                             viii.    Opcja Odwołania zlecenia - Użytkownik może w
+                                                      każdej chwili odwołać bieżące zlecenie, wtedy
+
+
+
+
+=== STRONA 20 ===
+                                                      system wysyła powiadomienie do Wykonawcy o
+                                                      tych zmianach.
+                                        b.   Zamówienie wielosesyjne
+                                                i.    Status zamówienia (Nadchodzące zamówienie)
+                                               ii.    Informacja, że jest to zamówienie wielosesyjne
+                                               iii.   Metraż objęty usługą
+                                               iv.    Dane Osoby/Firmy
+                                                          1.   Imię i Nazwisko/Nazwa firmy
+                                                          2.   Data i godzina wykonywanej usługi
+                                                          3.   Lokalizacja
+                                                          4.   Rodzaj usługi
+                                                          5.   Możliwość kontaktu z Wykonawcą przez
+                                                               czat
+                                                          6.   Numer telefonu do Wykonawcy
+                                               v.     Harmonogram ustalonych sesji zlecenia z
+                                                      informacją o terminach realizacji
+                                                      poszczególnych z nich
+                                                          1.   Data realizacji sesji
+                                                          2.   Numer sesji
+                                                          3.   Godziny wykonywanej usługi w danej
+                                                               sesji
+                                                          4.   Czas zlecenia wyliczony na podstawie
+                                                               widełek
+                                                          5.   Liczba pracowników przypisanych do
+                                                               sesji
+                                              vi.     Usługi dodatkowe - informacja jakie usługi
+                                                      dodatkowe są brane pod uwagę w zleceniu i
+                                                      ilość
+                                              vii.    Podsumowanie - składniki zlecenia wraz z
+                                                      cenami
+                                                          1.   Cena za dojazd
+                                                          2.   Powierzchnia
+                                                          3.   Usługi dodatkowe z ilością w sztukach
+                                                          4.   Suma zamówienia
+                                             viii.    Użytkownik ma możliwość przełożenia każdej z
+                                                      dostępnych sesji
+                                                          1.   Po kliknięciu w przycisk wyskakuję okno
+                                                               z kalendarzem (widok miesięczny) z
+                                                               dniami do wyboru ze statusem, czy są
+                                                               zajęte, czy nie. ( kolor czerwony zajęty,
+                                                               kolor zielony wolny)
+                                                          2.   Po kliknięciu na dostępny dzień, obok
+                                                               kalendarza pojawia się możliwość
+                                                               wyboru godziny co 15 minut z podziałem
+                                                                   a.   Rano
+                                                                   b.   Południe
+                                                                   c.   Wieczór
+
+
+
+
+
+=== STRONA 21 ===
+                                                          3.  Przycisk Przełóż sesję - system
+                                                              automatycznie przekłada zlecenie na
+                                                              konkretny dzień
+                                                          4.  Nad wyborem godziny znajduje się
+                                                              informacja na temat zlecenia
+                                                                   a.  Imię i Nazwisko/Nazwa
+                                                                       wykonawcy
+                                                                   b.  Rodzaj usługi
+                                                                   c.  Przewidywany czas wykonania
+                                                                       usługi
+                                              ix.    Opcja Odwołania zlecenia - Użytkownik może w
+                                                     każdej chwili odwołać bieżące zlecenie, wtedy
+                                                     system wysyła powiadomienie do Wykonawcy o
+                                                     tych zmianach.
+                    ii.   Zakończone zamówienia
+                               1.  Status zamówienia (wykonane zlecenie)
+                               2.  Rodzaj zlecenia
+                               3.  Osoba/Firma wykonująca zlecenie
+                                        a.  Nazwa
+                                        b.  Rodzaj wykonywanych usług
+                                        c.  Lokalizacja obiektu objętego usługą
+                               4.  Zakres czasowy w którym była wykonywana usługa( Od Do, z
+                                   pełną datą)
+                               5.  Możliwość dodania opinii Wykonawcy
+                                        a.  Po kliknięciu w kafelek wyskakuję okno z opcjami
+                                               i.    Dodaj Opinię( Gwiazdki skala 1-5)
+                                               ii.   Twoja opinia - w formie opisu
+                                              iii.   W prawym górnym rogu możliwość dodania
+                                                     zdjęć z efektów wykonanej usługi
+             b.  Czat - Po kliknięciu wyświetla się panel
+                    i.    Okno chatu z konkretnym wykonawcą
+                    ii.   po prawej stronie od okna czatu, lista kontaktów z wyszukiwarką
+                          konkretnych wykonawców nad nią
+             c.  Ulubione - zakładka, gdzie Użytkownik ma listę ulubionych Wykonawców
+                    i.    Proponowane
+                               1.  Kafelek z danymi Wykonawcy
+                                        a.  Imię i Nazwisko/ Nazwa firmy
+                                        b.  Ilość wykonanych usług na portalu
+                                        c.  Ocena ( gwiazdki skala 1-5) z ilością ocen
+                                        d.  Doświadczenie
+                                        e.  Możliwość zamówienia usługi u danego Wykonawcy-
+                                            po kliknięciu przenosi Użytkownika na Profil
+                                            ogłoszeniowy Wykonawcy
+                    ii.   Ulubione
+                               1.  Kafelek z danymi Wykonawcy
+                                        a.  Imię i Nazwisko/ Nazwa firmy
+                                        b.  Ilość wykonanych usług na portalu
+                                        c.  Ocena ( gwiazdki skala 1-5) z ilością ocen
+
+
+
+
+=== STRONA 22 ===
+                                        d.   Doświadczenie
+                                        e.   Możliwość zamówienia usługi u danego Wykonawcy-
+                                             po kliknięciu przenosi Użytkownika na Profil
+                                             ogłoszeniowy Wykonawcy
+                    iii.   Twoje opinie - pogląd na opinie wystawione przez Użytkownika, dla
+                           Wykonawców
+                               1.   Kafelki z informacjami
+                                        a.   Imię i Nazwisko/Nazwa firmy
+                                        b.   Ocena ( gwiazdki w skali 1-5)
+                                        c.   Data wystawienia opinii
+                                        d.   Rodzaj wykonanej usługi
+                                        e.   Opinia w formie opisowej
+                               2.   Użytkownik ma możliwość modyfikacji opinii
+                                        a.   Po kliknięciu w kafelek wyskakuję okno z opcjami
+                                                i.    Dodaj Opinię( Gwiazdki skala 1-5)
+                                               ii.    Twoja opinia - w formie opisu
+                                               iii.   W prawym górnym rogu możliwość dodania
+                                                      zdjęć z efektów wykonanej usługi
+                    iv.    Standardy usług Clingo - po kliknięciu w zakładkę przenosi
+                           Użytkownika do podstrony “Standardy usług Clingo”
+                    v.     Regulamin - po kliknięciu przenosi Użytkownika do podstrony z
+                           regulaminami portalu Clingo
+                   vi.     Ustawienia - ustawienia i edycja profilu Użytkownika
+                               1.   Imię i Nazwisko
+                               2.   Data urodzenia
+                               3.   Adres e-mail
+                               4.   Numer telefonu
+                               5.   Adres
+                                        a.   Numer mieszkania
+                                        b.   Ulica
+                                        c.   Miasto
+                                        d.   Kod pocztowy
+                               6.   Możliwość zmiany hasła
+                                        a.   Nowe hasło
+                                        b.   Potwierdź hasło
+                               7.   Powiadomienia - możliwość zaznaczenia chęci przyjmowania
+                                    powiadomień
+                                        a.   Przesyłaj powiadomienia e-mail o zmianach w statusie
+                                             zamówienia.
+                                        b.   Przesyłaj powiadomienia SMS o zmianach w statusie
+                                             zamówienia.
+                               8.   Opcja połączenia konta z
+                                        a.   Kontem Google
+                                        b.   Kontem Facebook
+                                        c.   Kontem Apple
+             d.   Pomoc - po kliknięciu przenosi Użytkownika do podstrony “Jak to działa?”
+             e.   Wyloguj się
+
+
+
+
+
+=== STRONA 23 ===
+Wykonawca - perspektywa
+
+
+
+
+Rejestracja (Zostanie wykonawcą Clingo)
+    1.   Wykonawca klika “Dla Wykonawców”  następnie klika w przycisk “Zostań
+         wykonawcą” w nagłówku.
+    2.   Otwierają się plany subskrypcyjne do wyboru
+              a.   Podstawowy - 49,99 zł
+                       i.    Elementy personalizacji
+                      ii.    1x podbicie w miesiącu
+                     iii.    Do 100km
+              b.   Standardowy - 99.99 zł
+                       i.    Elementy personalizacji
+                      ii.    3x podbicie w miesiącu
+                     iii.    Do 200km
+              c.   Wyróżniony - 149,99 zł
+                       i.    Elementy personalizacji
+                      ii.    4x podbicie w miesiącu
+                     iii.    Do 300km
+
+
+    3.   Panel rejestracji
+              a.   Krok 1 - Dane administracyjne
+                   Jeżeli wykonawca wyjdzie z procesu rejestracji na tym etapie nic się nie dzieje, klasycznie
+                   rozpoczyna rejestrację od początku.
+                       i.    Pełna nazwa działalności / firmy
+                      ii.    NIP
+                     iii.    Nr telefonu
+              b.   Krok 1 - Dane osoby kontaktowej
+                   Jeżeli wykonawca wyjdzie z procesu rejestracji na tym etapie nic się nie dzieje, klasycznie
+                   rozpoczyna rejestrację od początku.
+                       i.    Imię i Nazwisko
+                      ii.    Adres e- mail
+                     iii.    Numer telefonu
+              c.   Krok 2 - Tworzenie konta wykonawcy
+                   Jeżeli wykonawca wyjdzie z procesu rejestracji na tym etapie nic się nie dzieje, klasycznie
+                   rozpoczyna rejestrację od początku. (Przed kliknięciem “Kontynuuj”)
+                       i.    Adres e-mail
+                      ii.    Hasło
+                     iii.    Potwierdź hasło
+              d.   Krok 3 - Aktywuj konto z linku
+                   Jeżeli wykonawca wyjdzie z procesu rejestracji na tym etapie konto się i tak utworzy. Przy
+                   próbie ponownej rejestracji sczytuje na podstawie adresu e-mail że konto istnieje i wyskakuje
+                   okno z informacją że konto jest już utworzone, zaloguj się. Po zalogowaniu wykonawca
+
+
+
+
+
+
+=== STRONA 24 ===
+                  automatycznie widzi krok 3, wiadomość z linkiem aktywacyjnym ponownie jest wysyłana i musi
+                  on aktywować konto.
+             e.   Krok 4 -Płatności za subskrypcję
+                  Jeżeli wykonawca wyjdzie z procesu rejestracji na tym etapie to przy próbie ponownej
+                  rejestracji sczytuje na podstawie adresu e-mail że konto istnieje i wyskakuje okno z informacją
+                  że konto jest już utworzone, zaloguj się. Po zalogowaniu wykonawca automatycznie widzi krok
+                  4 i musi podpiąć kartę, aby rozpocząć członkostwo.
+                     i.     Dodaj kartę debetową/kredytową
+                                1.  Numer karty
+                                2.  Data ważności
+                                3.  Numer CVV
+                                4.  Imię i nazwisko na karcie
+                                5.  Pole z wybranym planem z możliwością jego zmiany
+                     ii.   Blik powtarzalny
+                                1.  Możliwość zapłacenia kodem blik, który jest zapisywany i
+                                    ściąga co miesiąc opłatę z subskrypcje
+                    iii.   Możliwość zmiany planu subskrypcyjnego
+
+Podstawowa konfiguracja konta po rejestracji
+    1.   Adres lokalizacji + zasięg oferowania usług
+    2.   Godziny i dni pracy (Kiedy klienci mogą tworzyć zamówienia)
+    3.   Wyświetlana nazwa firmy/działalności + Ustawienie profilowego
+    4.   Płatności:
+             a.   Użytkownik nie płaci za usługę na portalu, wszystkie płatności pomiędzy
+                  Klientem, a Wykonawcą są dokonywane bezpośrednio między stronami.
+
+
+(Wykonawca dostaje się do Moje Konto za pierwszym razem po rejestracji, każdy kolejny
+poprzez moje konto - system automatycznie odczytuje, czy to konto użytkownika czy
+wykonawcy.)
+
+
+Konfiguracja ogłoszeń
+
+    1.   Sprzątanie mieszkań i domów - konfiguracja usługi
+             a.   Ustawienie wydajności 1 pracownika na 100 m2
+                     i.    Określenie ile czasu potrzeba na wykonanie danej usługi przez
+                           jednego pracownika na 100 m2
+             b.   Ustawienie widełek metrażowych
+                     i.    Wykonawca ustawia przedziały widełek do konkretnego metrażu
+                     ii.   Minimalny metraż - Wykonawca sam ustala minimalny metraż jaki
+                           chce obsługiwać, nie musi zaczynać się od 1m2
+                           (Jeśli wykonawca ustawi np. 15 m2 wyskakuje informacja, że nie
+                           będzie widoczny, dla zleceń poniżej 15m2)
+                    iii.   Maksymalny metraż - Wykonawca sam ustala, ma do wyboru 3 opcje
+                                1.  Wybiera wartość z listy (np. z listy co 50 m²),
+
+
+
+
+
+=== STRONA 25 ===
+                               2.  Wpisuję wartość ręcznie
+                               3.  Ustawia maksymalny metraż ustalony systemowo do
+                                   konkretnej usługi
+             c.  Ustawienie ceny za 1m2 jaką oferuję za wykonanie usługi według “Standardu
+                 sprzątania”
+             d.  Ustawienie ceny dojazdu do klienta za 1km
+                    i.    Wykonawca nie musi dawać stawki za dojazd, może być to w cenie.
+             e.  Bufor między zleceniami - Wykonawca może ustalić czas między zleceniami,
+                 tak aby miał czas np. na dojazd do następnego zlecenia, albo na przerwę.
+                    i.    Wykonawca wybiera z listy co 5 minut ustalony czas
+                    ii.   Wykonawca nie ma obowiązku ustawiania bufora, może go
+                          aktywować, albo nie.
+             f.  Wyprzedzenie zamówienia - służy do ustalenia z jakim wyprzedzeniem
+                 Użytkownik może składać zamówienia u danego Wykonawcy
+                    i.    Wykonawca ustala czas np. 24h. Oznacza to że Użytkownik może
+                          złożyć zamówienie u danego Wykonawcy maksymalnie 24h przed
+                          terminem rozpoczęcia zlecenia.
+             g.  Możliwość wyboru, czy Wykonawca oferuję swój odkurzacz w ramach usługi
+                    i.    Wykonawca może aktywować opcję i wtedy ustala, czy będzie
+                          pobierał za to dodatkową opłatę, czy nie.
+                    ii.   Jeśli Wykonawca nie aktywował to opcja ta na profilu ogłoszeniowym
+                          oznaczona jest jako niedostępna
+             h.  Częstotliwość sprzątania - Wykonawca ustala, czy chce oferować usługi
+                 cykliczne, czy nie.
+                    i.    Jeśli nie zaznaczy usług cyklicznych nie będzie możliwości
+                          zamówienia usługi regularnej na jego profilu.
+                    ii.   Jeśli zaznaczy może, ale nie musi ustalić rabat na zlecenia cykliczne
+                               1.  Jednorazowe - Domyślnie, stale 0%
+                               2.  Raz w miesiącu - do wpisania % rabatu
+                               3.  Raz na 2 tygodnie - do wpisania % rabatu
+                               4.  Raz w tygodniu - do wpisania % rabatu
+             i.  Usługi dodatkowe
+                    i.    Wykonawca zaznacza jakie usługi dodatkowe wykonuję w danym
+                          rodzaju usług. Usługi dodatkowe do każdego rodzaju są z góry
+                          ustalone, nie można dodawać swoich
+                    ii.   Wykonawca ustala ceny usług dodatkowych
+             j.  Opis “O mnie” dla ogłoszenia sprzątania mieszkań i domów
+             k.  Doświadczenie dla ogłoszenia sprzątania mieszkań i domów
+                    i.    Wybór ilość lat doświadczenia
+                    ii.   Opis doświadczenia (nieobowiązkowe - jak się nie da to się nie
+                          wyświetla)
+             l.  Baner - Wykonawca może wrzucić swój szyld firmowy
+             m.  Akceptacja regulaminu standardu wykonywanej usługi.
+    2.  Sprzątanie biur i lokali użytkowych - konfiguracja usługi
+             a.  Ustawienie wydajności 1 pracownika na 100 m2
+                    i.    Określenie ile czasu potrzeba na wykonanie danej usługi przez
+                          jednego pracownika
+             b.  Ustawienie widełek metrażowych
+
+
+
+
+=== STRONA 26 ===
+                    i.    Wykonawca ustawia przedziały widełek do konkretnego metrażu
+                    ii.   Minimalny metraż - Wykonawca sam ustala minimalny metraż jaki
+                          chce obsługiwać, nie musi zaczynać się od 1m2
+                   iii.   Maksymalny metraż - Wykonawca sam ustala, ma do wyboru 3 opcje
+                               1.  Wybiera wartość z listy (np. z listy co 50 m²)
+                               2.  Wpisuję wartość ręcznie
+                               3.  Ustawia maksymalny metraż ustalony systemowo do
+                                   konkretnej usługi
+             c.  Ustawienie ceny za 1m2 jaką oferuję za wykonanie usługi według “Standardu
+                 sprzątania”
+             d.  Ustawienie ceny dojazdu do klienta za 1km
+                    i.    Wykonawca nie musi dawać stawki za dojazd, może być to w cenie.
+             e.  Bufor między zleceniami - Wykonawca może ustalić czas między zleceniami,
+                 tak aby miał czas np. na dojazd do następnego zlecenia, albo na przerwę.
+                    i.    Wykonawca wybiera z listy co 5 minut ustalony czas
+                    ii.   Wykonawca nie ma obowiązku ustawiania bufora, może go
+                          aktywować, albo nie.
+             f.  Wyprzedzenie zamówienia - służy do ustalenia z jakim wyprzedzeniem
+                 Użytkownik może składać zamówienia u danego Wykonawcy
+                    i.    Wykonawca ustala czas np. 24h. Oznacza to że Użytkownik może
+                          złożyć zamówienie u danego Wykonawcy maksymalnie 24h przed
+                          terminem rozpoczęcia zlecenia.
+             g.  Możliwość wyboru, czy Wykonawca oferuję swój odkurzacz w ramach usługi
+                    i.    Wykonawca może aktywować opcję i wtedy ustala, czy będzie
+                          pobierał za to dodatkową opłatę, czy nie.
+                    ii.   Jeśli Wykonawca nie aktywował to opcja ta na profilu ogłoszeniowym
+                          oznaczona jest jako niedostępna
+             h.  Częstotliwość sprzątania - Wykonawca ustala, czy chce oferować usługi
+                 cykliczne, czy nie.
+                    i.    Jeśli nie zaznaczy usług cyklicznych nie będzie możliwości
+                          zamówienia usługi regularnej na jego profilu.
+                    ii.   Jeśli zaznaczy może, ale nie musi ustalić rabat na zlecenia cykliczne
+                               1.  Jednorazowe - Domyślnie, stale 0%
+                               2.  Raz w miesiącu - do wpisania % rabatu
+                               3.  Raz na 2 tygodnie - do wpisania % rabatu
+                               4.  Raz w tygodniu - do wpisania % rabatu
+             i.  Usługi dodatkowe
+                    i.    Wykonawca zaznacza jakie usługi dodatkowe wykonuję w danym
+                          rodzaju usług. Usługi dodatkowe do każdego rodzaju są z góry
+                          ustalone, nie można dodawać swoich
+                    ii.   Wykonawca ustala ceny usług dodatkowych
+             j.  Opis “O mnie” dla ogłoszenia sprzątania mieszkań i domów
+             k.  Doświadczenie dla ogłoszenia sprzątania mieszkań i domów
+                    i.    Wybór ilość lat doświadczenia
+                    ii.   Opis doświadczenia (nieobowiązkowe - jak się nie da to się nie
+                          wyświetla)
+             l.  Baner - Wykonawca może wrzucić swój szyld firmowy
+             m.  Akceptacja regulaminu standardu wykonywanej usługi.
+
+
+
+
+=== STRONA 27 ===
+    3.  Mycie kostki brukowej - konfiguracja usługi
+             a.  Ustawienie wydajności 1 pracownika na 100 m2
+                    i.    Określenie ile czasu potrzeba na wykonanie danej usługi przez
+                          jednego pracownika
+             b.  Ustawienie widełek metrażowych
+                    i.    Wykonawca ustawia przedziały widełek do konkretnego metrażu
+                    ii.   Minimalny metraż - Wykonawca sam ustala minimalny metraż jaki
+                          chce obsługiwać, nie musi zaczynać się od 1m2
+                   iii.   Maksymalny metraż - Wykonawca sam ustala, ma do wyboru 3 opcje
+                               1.  Wybiera wartość z listy (np. z listy co 50 m²)
+                               2.  Wpisuję wartość ręcznie
+                               3.  Ustawia maksymalny metraż ustalony systemowo do
+                                   konkretnej usługi
+             c.  Ustawienie ceny za 1m2 jaką oferuję za wykonanie usługi według “Standardu
+                 sprzątania”
+             d.  Ustawienie ceny dojazdu do klienta za 1km
+                    i.    Wykonawca nie musi dawać stawki za dojazd, może być to w cenie.
+             e.  Bufor między zleceniami - Wykonawca może ustalić czas między zleceniami,
+                 tak aby miał czas np. na dojazd do następnego zlecenia, albo na przerwę.
+                    i.    Wykonawca wybiera z listy co 5 minut ustalony czas
+                    ii.   Wykonawca nie ma obowiązku ustawiania bufora, może go
+                          aktywować, albo nie.
+             f.  Wyprzedzenie zamówienia - służy do ustalenia z jakim wyprzedzeniem
+                 Użytkownik może składać zamówienia u danego Wykonawcy
+                    i.    Wykonawca ustala czas np. 24h. Oznacza to że Użytkownik może
+                          złożyć zamówienie u danego Wykonawcy maksymalnie 24h przed
+                          terminem rozpoczęcia zlecenia.
+             g.  Usługi dodatkowe
+                    i.    Wykonawca zaznacza jakie usługi dodatkowe wykonuję w danym
+                          rodzaju usług. Usługi dodatkowe do każdego rodzaju są z góry
+                          ustalone, nie można dodawać swoich
+                    ii.   Wykonawca ustala ceny usług dodatkowych
+             h.  Opis “O mnie” dla ogłoszenia biur i lokali użytkowych
+             i.  Doświadczenie dla ogłoszenia Mycia kostki brukowej
+                    i.    Wybór ilość lat doświadczenia
+                    ii.   Opis doświadczenia (nieobowiązkowe - jak się nie da to się nie
+                          wyświetla)
+             j.  Akceptacja regulaminu standardu wykonywanej usługi.
+
+
+Strona główna
+
+
+
+Na stronie głównej wyświetla się kalendarz (domyślnie widok dzienny) aktywnych zleceń
+
+
+
+
+
+
+=== STRONA 28 ===
+Lewy Bar
+
+Kalendarz
+    1.   Kalendarz (opisany wyżej jako odstępny moduł)
+             a.   Wybór miesiąca (aktualny i następny)
+             b.   Wybór widoku (Miesiąc, tydzień, dzień)
+             c.   Wybór rodzaju usług jakie ma pokazywać (Wszystkie/konkretne z
+                  wykonywanych)
+             d.   Przycisk “dodaj zdarzenie”, po kliknięciu są do wyboru dwie opcje:
+                     i.    Dodaj zewnętrzne zlecenie
+                               1.   Przewidywany czas trwania realizacji
+                               2.   Czy zablokować zewnętrzny termin ?
+                                    (Klienci nie będą mogli wybrać terminu tego zlecenia )
+                               3.   Zleceniodawca
+                               4.   Lokalizacja objęta usługą
+                               5.   Rodzaj usługi
+                               6.   Dodatkowe informacje(opis)
+                    ii.    Nieobecność “Zablokuj termin”
+                               1.   Dodaj nieobecność(Zablokuj termin)
+                                        a.   Wybór rodzaju usługi, której ma dotyczyć nieobecność
+                                        b.   Wybór daty (Kalendarz)
+
+
+
+
+
+
+
+                               2.   Zarządzaj nieobecnościami
+
+
+
+
+
+=== STRONA 29 ===
+                                        a.   Wykonawca może usuwać potwierdzone nieobecności
+                                             jak i te trwające
+                               3.   Historia nieobecności
+                                        a.   Wykonawca może wyszukiwać nieobecność po
+                                             numerze, albo dacie
+
+
+    2.   Domyślnie widok danego tygodnia aczkolwiek z możliwością zmiany na dzień lub
+         miesiąc
+    3.   Wykonawca widzi wszystkie zamówienia w postaci kafelek na kalendarzu.
+    4.   Zamówienia dodają się automatycznie na podstawie mechanik systemowych
+    5.   Informacje na kafelku (miniaturce):
+             a.   Dzień
+                     i.    Zakres godzinowy zlecenia
+                    ii.    Imię i nazwisko zamawiającego
+                    iii.   Rodzaj usługi
+                    iv.    Lokalizacja
+                    v.     Ilość dodatkowych usług
+                   vi.     Cena zlecenia
+             b.   Tydzień - po najechaniu na kafelek wyświetla się lokalizacja zlecenia
+                     i.    Zakres godzinowy zlecenia
+                    ii.    Imię i nazwisko zamawiającego
+                    iii.   Rodzaj usługi
+             c.   Miesiąc
+                     i.    Rodzaj usługi
+                               1.   W widoku miesięcznym po najechaniu na kafelek wyświetlają
+                                    się informacje:
+                                        a.   Zakres godzinowy zlecenia
+                                        b.   Imię i nazwisko zamawiającego
+                                        c.   Rodzaj usługi
+                                        d.   Lokalizacja
+                                        e.   Ilość dodatkowych usług
+
+
+    6.   Są dwa rodzaje zamówień w kalendarzu
+             a.   Wykonane - po kliknięciu wyświetla się podsumowanie zlecenia
+                     i.    Numer zamówienia
+                    ii.    Szczegóły
+                               1.   Imię i Nazwisko klienta
+                               2.   Czat do klienta w celu ewentualnego kontaktu
+                               3.   Powierzchnia/sztuki
+                               4.   Termin realizacji zlecenia
+                               5.   Lokalizacja
+                               6.    Podsumowanie wyceny zlecenia
+                               7.   Rozliczenie
+                                        a.   Po kliknięciu przenosi Wykonawcę  do okna gdzie
+                                             może:
+
+
+
+
+
+=== STRONA 30 ===
+                                                i.    Dodać rabat, dla klienta wtedy system
+                                                      automatycznie przelicza sumę
+                                               ii.    Wygenerować Fakturę Vat/ Pro forma
+                   iii.    Usługi dodatkowe
+                               1.   Imię i Nazwisko klienta
+                               2.   Czat do klienta w celu ewentualnego kontaktu
+                               3.   Lista usług dodatkowych wybranych do tego zamówienia
+                               4.   Podsumowanie cenowe zlecenia
+                               5.   Rozlicz
+                                        a.   Po kliknięciu przenosi Wykonawcę  do okna gdzie
+                                             może:
+                                                i.    Dodać rabat, dla klienta wtedy system
+                                                      automatycznie przelicza sumę
+                                               ii.    Wygenerować Fakturę Vat/ Pro forma
+             b.   Zaplanowane
+                     i.    Po kliknięciu wyświetla się  opcja odwołania zlecenia
+                               1.   Możliwość napisania wiadomości do klienta(Opis)
+                                        a.   Informacja, że przed odwołaniem zlecenia zaleca się
+                                             poinformować klienta przez czat lub telefonicznie
+                                        b.   Odwołanie zamówienia spowoduje przesłanie do
+                                             klienta wiadomości email oraz SMS z informacją o
+                                             odwołaniu
+                               2.   Odwołaj - Wykonawca może bezpośrednio odwołać zlecenie
+                    ii.    Przełóż dzień
+                               1.   Po kliknięciu wyświetla się  możliwość napisania wiadomości
+                                    do klienta(Opis)
+                                        a.   Informacja, że przed przełożeniem zlecenia zaleca się
+                                             poinformować klienta przez czat lub telefonicznie
+                                        b.   Przełożenie zamówienia spowoduje przesłanie do
+                                             klienta wiadomości email oraz SMS z informacją o
+                                             przełożeniu
+                               2.   Kontynuuj
+                                        a.   Wyświetla się kalendarz z wyborem nowego terminu
+                   iii.    Szczegóły
+                               1.   Imię i Nazwisko klienta
+                               2.   Czat do klienta w celu ewentualnego kontaktu
+                               3.   Powierzchnia/sztuki
+                               4.   Częstotliwość zlecenia
+                               5.   Rodzaj usługi i cena zlecenia
+                               6.   Termin realizacji zlecenia
+                               7.   Lokalizacja
+                               8.   Dodaj pracownika
+                                        a.   Wykonawca może zmieniać i dodawać dostępnych
+                                             pracowników
+                               9.    Podsumowanie wyceny zlecenia
+                               10. Historia zmian zamówienia
+                               11. Notatki do zamówienia
+                    iv.    Usługi dodatkowe
+
+
+
+
+=== STRONA 31 ===
+                               1.  Lista z usługami dodatkowymi
+                               2.  Opcja dodania usługi dodatkowej
+                               3.  Możliwość wyceny dodatkowych pozycji niestandardowych
+                                   ustalonych z klientem
+                               4.  Podsumowanie cenowe zlecenia
+                               5.  Rozlicz
+
+
+
+
+
+
+Zamówienia
+    1.  Zakładka, gdzie Wykonawca widzi wszystkie aktualne zlecenia
+    2.  Zakładka składa się z:
+             a.  Kalendarza, gdzie Wykonawca może wybrać zakres czasowy w którym chce
+                 podejrzeć aktualne zamówienia.
+             b.  Zakładki projekty wielosesyjne, gdzie Wykonawca widzi zlecenia, które
+                 wpisują się w “projekty wielosesyjne” i po kliknięciu widzi
+
+                     i.   Numer zamówienia
+                    ii.   Dane zamawiającego
+                               1.  Imię i Nazwisko
+                               2.  Numer telefonu
+                               3.  Możliwość kontaktu przez chat
+                   iii.   Zakładka szczegóły zamówienia
+                               1.  Rodzaj wykonywanej usługi
+                               2.  Metraż
+                               3.  Lokalizację obiektu, dla wykonywanej usługi z ceną
+                                        a.  Możliwość wejścia w Google maps do podglądu
+                                            lokalizacji
+                               4.  Cenę usługi z możliwościa rozliczenia
+                                        a.  Po kliknięciu “Rozlicz” wyskakuję okno:
+                                               i.    Imię i Nazwisko zamawiającego
+                                               ii.   Data złożenia zamówienia
+                                              iii.   Numer zamówienia
+                                              iv.    Szczegółowa wycena zamówienia
+                                                          1.  Dojazd
+                                                          2.  Powierzchnia
+                                                          3.  Usługi dodatkowe
+                                               v.    Możliwość dodania rabatu
+                                              vi.    “Dodaj dane do faktury”
+                                             vii.    Wygeneruj fakturę Pro Forma
+                                             viii.   Wygeneruj Fakturę VAT
+                               5.  Możliwość dodania rabatu
+                               6.  Przewidywany czas pracy
+                                        a.  Zaplanowane godziny
+
+
+
+
+
+=== STRONA 32 ===
+                                        b.  Pozostałe godziny do zaplanowania
+                                        c.  Wymagane godziny do realizacji usługi
+                               7.  Przypisani pracownicy
+                   iv.    Zakładka usługi dodatkowe
+                               1.  Lista zaplanowanych usług dodatkowych z ilością liczoną w
+                                   sztukach
+                               2.  Możliwość dodania usługi dodatkowej
+                               3.  Wycena dodatkowych pozycji
+                                        a.  Wykonawca może dodać osobną usługę
+                                               i.    Usługa/m2/szt./inne
+                                               ii.   Ilość
+                                              iii.   Cena
+                               4.  Podsumowanie zamówienia
+                                        a.  Powierzchnia
+                                        b.  Dojazd do lokalizacji
+                                        c.  Usługi dodatkowe
+                               5.  “Rozlicz”
+                                        a.  Imię i Nazwisko zamawiającego
+                                        b.  Data złożenia zamówienia
+                                        c.  Numer zamówienia
+                                        d.  Szczegółowa wycena zamówienia
+                                               i.    Dojazd
+                                               ii.   Powierzchnia
+                                              iii.   Usługi dodatkowe
+                                        e.  Możliwość dodania rabatu
+                                        f.  “Dodaj dane do faktury”
+                                        g.  Wygeneruj fakturę Pro Forma
+                                        h.  Wygeneruj Fakturę VAT
+                    v.    Kalendarz tygodniowy z sesjami projektu i innymi zamówieniami (
+                          domyślnie zakres bieżącego tygodnia)
+                               1.  W prawym górnym rogu Wykonawca ma możliwość
+                                        a.  Odwołania całego zaplanowanego zamówienia
+                                        b.  Zaznaczenia zlecenia jako “Wykonane” - wyskakuję
+                                            okno z podsumowaniem zlecenia i informacja
+                                            “UWAGA!
+                                            Po oznaczeniu zlecenia wielosesyjnego jako
+                                            wykonane, terminy sesji w kalendarzu zostaną
+                                            zwolnione.Pracownicy będą dostępni w czasie, który
+                                            wcześniej był przeznaczony na zlecenie, a klienci będą
+                                            mogli zarezerwować te sloty ponownie.”
+                                        c.  Zapisania zmian, które wprowadził w danym
+                                            zamówieniu
+                               2.  Górny bar
+                                        a.  Miesiąc i dni tygodnia
+                                        b.  Ilość sesji w danym tygodniu
+                                        c.  Sesje danego projektu ( kolor niebieski)
+                                        d.  Inne zamówienia ( kolor szary)
+                                        e.  Historia zmian
+
+
+
+
+=== STRONA 33 ===
+                                                i.    Po kliknięciu Wykonawca widzi wszystkie
+                                                      zmiany, które dokonał w danym zamówieniu
+                                        f.   “Dodaj sesję”
+                                                i.    Wykonawca może dodać kolejną sesję do
+                                                      zamówienia
+                               3.   W kalendarzu znajdują się poszczególne sesje danego
+                                    zamówienia, zaznaczone kolorem niebieskim.Wykonawca
+                                    może kliknąć w kafelek z sesją, wtedy wyskakuje okno ze
+                                    szczegółami
+                                        a.   Termin sesji
+                                                i.    Data
+                                               ii.    Godziny planowanej sesji
+                                        b.   Lista przypisanych pracowników z możliwością dodania
+                                             nowego lub usunięcia przypisanego już pracownika
+                                        c.   Wykonawca ma możliwość usunięcia sesji wtedy
+                                             system zmienia w przewidywanym czasie pracy czas,
+                                             który musi być zaplanowany jeszcze raz.
+
+
+
+
+Chat
+    1.   Okno chatu
+    2.   po prawej stronie od okna czatu, lista kontaktów z wyszukiwarką nad nią
+
+Klienci
+    1.   Lista Klientów
+             a.   Wyszukiwarka
+             b.   Opcja dodania nowego klienta
+                     i.    Po kliknięciu pokazuje się panel z wypełnieniem danych:
+                               1.   Imię i Nazwisko/ Nazwa Firmy
+                               2.   Numer telefonu
+                               3.   Adres e-mail
+                               4.   Miasto
+                               5.   Kod pocztowy
+                               6.   Numer mieszkania
+                               7.   Ulica
+                               8.   “Dodaj dane do faktury”
+                               9.   Możliwość dodania informacji o Kliencie
+                                        a.   Po kliknięciu “Dodaj” otwiera się okno z możliwością
+                                             dodania notatki do klienta
+    2.   Po kliknięciu na klienta pojawiają się informacje:
+             a.   Możliwość edycji danych klienta
+             b.   Informacja, czy to klient zewnętrzny, czy z platformy clingo
+             c.   Imię i nazwisko
+             d.   Możliwość kontaktu przez czat
+             e.   Numer telefonu
+
+
+
+
+=== STRONA 34 ===
+             f.   Adres e-mail
+             g.   Zamówienia złożone przez klienta
+             h.   Nieobecności
+             i.   Odwołane wizyty
+             j.   Przychód z klienta
+             k.   Stały rabat przyznany klientowi
+             l.   data ostatniej wizyty u klienta
+             m.   “Informacje o kliencie”
+                     i.    Możliwość dodania notatki
+                                1.  Tytuł notatki
+                                2.  Treść notatki
+                    ii.    Możliwość edycji lub usunięcia zapisanych notatek
+    3.   Zamówienia klienta
+             a.   Okno z nadchodzącymi i zakończonymi zleceniami danego klienta
+
+Konfiguracja ogłoszeń
+    1.   Okno “Twoje ogłoszenia”
+             a.   Możliwość dodania ogłoszenia, po kliknięciu wysuwa się lista z
+                  poszczególnymi rodzajami usług
+                     i.    Sprzątanie obiektów
+                                1.  Mieszkań i domów
+                                2.  Po remoncie (mieszkań i domów)
+                                3.  Biur i lokali użytkowych
+                    ii.    Mycie ciśnieniowe
+                                1.  Kostki, chodników, tarasów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów skośnych i płaskich
+                    iii.   Malowanie powierzchni
+                                1.  Ścian i sufitów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów blaszanych
+                                4.  Dachówek
+             b.   Kafelki z ogłoszeniami
+                     i.    Podgląd
+                    ii.    Konfiguracja
+                    iii.   Usuń
+    2.   Po kliknięciu w kafelek z daną usługą przenosi Wykonawcę do panelu konfiguracji
+         ogłoszenia opisanego wyżej
+
+
+
+Pracownicy
+
+    1.   Lista pracowników z możliwością:
+             a.   Wyszukania konkretnego pracownika
+             b.   Dodania nowego pracownika, po kliknięciu “Dodaj” otwiera się panel
+                     i.    Możliwość dodania zdjęcia profilowego pracownika
+
+
+
+
+=== STRONA 35 ===
+                    ii.    Imię i nazwisko
+                    iii.   Numer telefonu
+                    iv.    Adres e-mail
+                     v.    Możliwość zaznaczenia opcji “Utwórz konto i prześlij zaproszenie”
+                           “Przypisany zostanie pracownikowi link aktywacyjny do konta”
+                    vi.    Wybór poziomu uprawnień
+                                1.  Pracownik
+                                2.  .
+                                3.  .
+                   vii.    Możliwość zaznaczenia “Pokazuj pracownika w kalendarzu
+                           “Pracownika będzie można przypisać do zlecenia”
+
+             c.   Przypisz usługi - Wykonawca wybiera usługi, które będą realizowane przez
+                  tego pracownika
+                     i.    Wszystkie rodzaje usług
+                    ii.    Sprzątanie obiektów
+                                1.  Mieszkań i domów
+                                2.  Po remoncie (mieszkań i domów)
+                                3.  Biur i lokali użytkowych
+                    iii.   Mycie ciśnieniowe
+                                1.  Kostki, chodników, tarasów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów skośnych i płaskich
+                    iv.    Malowanie powierzchni
+                                1.  Ścian i sufitów
+                                2.  Elewacji zewnętrznych
+                                3.  Dachów blaszanych
+                                4.  Dachówek
+             d.   Ustawienia grafiku pracownika
+                     i.    Zakres od poniedziałku do niedzieli z możliwościa zaznaczenia
+                           konkretnych dni i czasu pracy
+                    ii.    Wyświetla się łączna ilość godzin w tygodniu
+             e.   W prawym górnym rogu opcja “Zapisz”
+
+
+Grafiki pracy
+
+    1.   Po kliknięciu otwiera się panel z listą pracowników i ich godzinami pracy
+             a.   Od lewej strony znajduję się lista pracowników w formie kafelków z
+                  informacjami
+                     i.    Imię i Nazwisko
+                    ii.    Informacja o ilości godzin, które pracownik wykonuje w danym
+                           dniu/tygodniu/miesiącu
+             b.   Z prawej strony jest kalendarz godzinowy z informacją w których godzinach w
+                  danym dniu osoba pracuję.
+                     i.    Możliwość edycji godzin
+             c.   Kalendarz można zmieniać na dzienny i tygodniowy
+
+
+
+
+
+=== STRONA 36 ===
+             d.   Na środku znajduje się opcja zmiany na konkretny dzień
+             e.   Możliwość skopiowania skonfigurowanych godzin na kolejne dni
+             f.   Opcja pobrania grafiku w formie pdf, dla dokumentacji
+             g.   Możliwość edycji dni i godzin pracy poprzez dodanie Nieobecności
+                     i.    Po kliknięciu przycisku otwiera się okno z wyborem
+                               1.   Dodaj nieobecność (zablokuj termin)
+                                        a.   Po wybraniu otwiera się panel z wyborem
+                                                i.    Data początkowa nieobecności
+                                               ii.    Data końcowa nieobecności
+                                              iii.    Wybór powodu nieobecności
+                                                          1.   Urlop na żądanie
+                                                          2.   Urlop wypoczynkowy
+                                                          3.   Szkolenie
+                                                          4.   Choroba ( L4)
+                                               iv.    Wybór pracowników, którzy są objęci
+                                                      nieobecnością
+                                               v.     Komunikat:
+                                                      UWAGA!
+                                                      Zablokowany termin nie powoduje anulowania
+                                                      już istniejących zleceń,Wcześniej utworzone
+                                                      zlecenie należy anulować ręcznie w ich
+                                                      szczegółach.
+                                        b.   Po dodaniu nieobecności w zależności od wybrania
+                                             ilości pracowników podany termin zostaje zablokowany
+                                             przez system i nie ma możliwości rezerwacji zlecenia w
+                                             danym okresie.Jeśli nieobecność dotyczy
+                                             pojedynczych pracowników nie będą oni brani pod
+                                             uwagę w systemie podczas przypisywania
+                                             pracowników do zleceń.
+                               2.   Zarządzaj aktywnymi nieobecnościami
+                                        a.   Po kliknięciu otwiera się lista z wszystkimi
+                                             nieobecnościami (W toku, zapowiedziana).Wykonawca
+                                             może filtrować listę po
+                                                i.    Numerze nieobecności - nadawana jest
+                                                      automatycznie w kolejności przez system
+                                               ii.    według dat - rok, miesiąc
+                                              iii.    Pracownik - wybór konkretnego pracownika
+                                        b.   Lista składa się z (Od lewej)
+                                                i.    Numeru nieobecności
+                                               ii.    Pracowników objętych nieobecnością
+                                              iii.    Terminu początkowego nieobecności
+                                               iv.    Terminu końcowego nieobecności
+                                               v.      Statusu nieobecności ( W toku, zapowiedziana)
+                                              vi.     Działania - możliwość usunięcia nieobecności
+                               3.   Historia nieobecności - lista nieobecności w której Wykonawca
+                                    może zobaczyć pełny wykaz zdarzeń wykonanych
+                                        a.   Po kliknięciu pokazuje się lista z możliwością filtrowania
+                                             po
+
+
+
+
+=== STRONA 37 ===
+                                                i.   Numerze nieobecności - nadawana jest
+                                                     automatycznie w kolejności przez system
+                                               ii.   według dat - rok, miesiąc
+                                              iii.   Pracownik - wybór konkretnego pracownika
+                                        b.  Lista składa się z (Od lewej)
+                                                i.   Numeru nieobecności
+                                               ii.   Pracowników objętych nieobecnością
+                                              iii.   Terminu początkowego nieobecności
+                                              iv.    Terminu końcowego nieobecności
+                                               v.     Statusu nieobecności (Zakończona)
+
+
+
+
+Opinie
+    1.  Górny bar ze statystykami i przyciskami:
+             a.  Wybór zakresu dat
+             b.  Filtrowanie rodzaju usług
+             c.  Filtrowanie opinii/ocen (1-5)
+             d.  Zgłoszone
+             e.  Wyszukiwarka po nazwie użytkownika, lub słowie klucz
+    2.  Lista konkretnych opinii
+
+
+
+Analizy i podsumowania
+    1.  Do opisania po Figmie
+
+Wyloguj i Pomoc
+
+    1.  Popup z przejściem na stronę pomocy technicznej (Jak to działa?) oraz możliwością
+        kontaktu mailowego oraz telefonicznego (można dodać jakieś fb i whatsappy albo
+        podpiąć chat).
+
+
+
+Górny Bar
+
+Powiadomienia
+    1.  Po kliknięciu pojawia się okno z powiadomieniami:
+             a.  Możliwość podglądu zarchiwizowanych powiadomień
+             b.  Możliwość dodania filtrów wyszukiwania
+             c.  Możliwość archiwizowania aktualnych powiadomień
+             d.  Lista z aktualnymi powiadomieniami
+
+
+
+
+
+
+
+=== STRONA 38 ===
+Chat
+    1.   Po kliknięciu pojawia się lista ostatnich czatów z klientami:
+             a.   Wyszukiwarka konkretnych czatów z klientami
+             b.   Przycisk “Przejdź do pełnego chatu”, który przenosi do zakładki chat.
+
+
+Płatności i Plany
+    1.   Obecny aktywny plan z informacjami
+             a.   Ilość dostępnych ogłoszeń
+             b.   Personalizacja
+             c.   Podbicia - ilość podbić w miesiącu według aktualnego planu
+             d.   Zasięg oferowania usług
+             e.   Przycisk zmień plan z przeniesieniem na stronę z planami
+    2.   Okno z informacjami o metodzie płatności
+             a.   aktualnie podpięta karta
+             b.   Przycisk z pop upem “Zmień kartę na inną”
+                     i.    Po kliknięciu pojawia się okno do wpisania danych innej karty
+             c.   Szczegóły aktualnego planu
+                     i.    Możliwość anulowania członkostwa
+                    ii.    Informacja kiedy plan się odnowi
+                    iii.   Cena planu
+                    iv.    Ilość pracowników
+    3.   Faktury
+             a.   Lista faktur
+             b.   Możliwość pobrania każdej faktury
+             c.   Wyszukiwarka po numerze FV
+             d.   Filtr wg daty
+
+Ustawienia
+    1.   Twoje dane
+             a.   Powiadomienia odnośnie zamówień, które można zaznaczyć lub nie
+                     i.    Przesyłam powiadomienie e-mail oraz SMS przy kończącym się czasie
+                           akceptacji projektu wielosesyjnego
+                     ii.   Przesyłam powiadomienie e-mail i SMS przy nowym zamówieniu
+             b.   Zmiana i potwierdzenie adresu e-mail
+             c.   Zmiana i potwierdzenie numeru telefonu
+             d.   Zmiana hasła
+             e.   Zmiana nazwy Firmy/Działalności
+             f.   Usuń konto
+                     i.    Przycisk - Pobierz kopie swoich danych
+    2.   Lokalizacja i zasięg
+             a.   Zmiana adresu lokalizacji
+             b.   Zmiana zasięgu oferowania usług
+    3.   Kalendarz
+             a.   Wypełnienie dni i godzin pracy (Kiedy klienci mogą tworzyć zamówienia)
+    4.   Weryfikacja konta
+             a.   Do rozkminienia przez MT
+
+
+
+
+=== STRONA 39 ===
+Samouczek po założeniu konta
+    1.  Dodanie pierwszego ogłoszenia
+    2.  Pokazanie gdzie można zmienić główną  opcje dotyczące ogłoszeń:
+            a.   Adres lokalizacji
+            b.   Zasięg oferowanych usług
+            c.   Godziny i dni pracy (Kiedy klienci mogą tworzyć zamówienia)
+            d.   Zmiana nazwy firmy
+            e.   Zmiana zdjęcia profilowego
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

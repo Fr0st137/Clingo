@@ -7,6 +7,8 @@ import Image from "next/image";
 import { useState } from "react";
 
 export interface BoardListingData {
+  service?: string;
+  areaPricing?: import("../../api/src/dashboard/area-pricing").AreaPricing | null;
   addOns?: Array<{ id: string; label: string }>;
   id: string;
   provider: string;
@@ -68,7 +70,7 @@ export function BoardListingCard({ listing, request = {} }: { listing: BoardList
 
   return (
     <article
-      className="flex h-[172px] w-[1075px] flex-col items-start overflow-hidden rounded-[20px] border border-[#e6edf3] bg-white shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+      className="flex min-h-[172px] w-[1075px] flex-col items-start overflow-hidden rounded-[20px] border border-[#e6edf3] bg-white shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
       data-name="Ogłoszenie na tablicy"
     >
       <div className="flex w-full items-start gap-[40px] overflow-hidden p-[15px]">
@@ -77,9 +79,10 @@ export function BoardListingCard({ listing, request = {} }: { listing: BoardList
         </Link>
 
         <div className="flex w-[541px] shrink-0 flex-col items-start gap-[10px] overflow-hidden pt-[5px]">
-          <h3 className="m-0 h-[24px] w-[541px] whitespace-nowrap text-[20px] font-semibold leading-normal text-[#2e3b4c]">
+          <h3 className="m-0 h-[24px] w-[541px] truncate text-[20px] font-semibold leading-normal text-[#2e3b4c]" title={listing.service ? `${listing.provider} — ${listing.service}` : listing.provider}>
             <Link href={withRequest(`/wykonawcy/${listing.id}`, request)}>{listing.provider}</Link>
           </h3>
+          {listing.id.startsWith("service-") && listing.service && <p className="m-0 w-full truncate text-[13px] text-[#536479]">{listing.service}</p>}
           <Rating rating={listing.rating} reviews={listing.reviews} experience={listing.experience} />
           <div className="flex items-start gap-[15px] overflow-hidden">
             <span className={`flex items-center rounded-[9999px] px-[10px] py-[4px] text-[14px] font-normal leading-normal ${modeClasses}`}>

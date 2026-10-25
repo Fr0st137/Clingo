@@ -63,6 +63,8 @@ export function bookingJobs(order: OrderEntity) {
       clientEmail: order.userEmail ?? "", address: order.address, serviceTitle: order.serviceType,
       sessionIndex: index + 1, sessionCount: sessions.length, multiOrderId: null,
       summary: order.summary, addOns: order.selectedOptions?.addOns ?? [], invoice: order.selectedOptions?.invoice ?? null,
+      frequencyLabel: order.selectedOptions?.frequencyLabel ?? null,
+      providerMessages: order.selectedOptions?.providerMessages ?? [],
       startsAt: session.startsAt.toISOString(), endsAt: session.endsAt.toISOString() };
   });
 }

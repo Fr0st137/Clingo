@@ -7,6 +7,7 @@ export const offerCategories = [
 export type OfferAreaTier = { minSquareMeters: number; maxSquareMeters: number | null; workers: number };
 export type OfferAddOn = { id: string; title: string; priceMinor: number; billingUnit: "piece" | "halfHour" };
 export type OfferConfiguration = {
+  presentation?: { banner: string | null; gallery: string[] };
   ratePerSquareMeterMinor: number;
   travelRatePerKmMinor: number;
   durationPer100SquareMetersMinutes: number;

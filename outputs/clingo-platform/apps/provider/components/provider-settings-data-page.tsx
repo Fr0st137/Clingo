@@ -57,7 +57,7 @@ function CompanyForm() {
       <SettingsInput label="Adres e-mail do logowania" type="email" value={resource.data?.loginEmail ?? ""} readOnly autoComplete="username" />
     </SettingsSection>
     <SettingsSection title="Publiczny profil Clingo" description="Rezerwacje z połączonych profili pojawiają się na liście zleceń i w kalendarzu.">
-      {publicProfiles.loading ? <p>Wczytywanie profili…</p> : publicProfiles.error ? <p role="alert">{publicProfiles.error}</p> : publicProfiles.data?.length ? publicProfiles.data.map(profile => <p key={profile.id}><a target="_blank" rel="noreferrer" href={`${process.env.NEXT_PUBLIC_CUSTOMER_URL ?? "http://localhost:3000"}/wykonawcy/${encodeURIComponent(profile.id)}`}>{profile.provider} — otwórz profil dla klientów</a></p>) : <p className="team-help">Brak połączonego profilu. Skontaktuj się z administratorem Clingo, aby potwierdzić własność profilu i połączyć go z działalnością.</p>}
+      {publicProfiles.loading ? <p>Wczytywanie profili…</p> : publicProfiles.error ? <p role="alert">{publicProfiles.error}</p> : publicProfiles.data?.length ? publicProfiles.data.map(profile => <p key={profile.id}><a target="_blank" rel="noreferrer" href={`${process.env.NEXT_PUBLIC_CUSTOMER_URL ?? "http://localhost:3000"}/wykonawcy/${encodeURIComponent(profile.id)}`}>{profile.provider} — otwórz profil dla klientów</a></p>) : <p className="team-help">Brak publicznych ogłoszeń. Przejdź do Twoich usług, uzupełnij szkic i wybierz Opublikuj. Ogłoszenie i rezerwacje zostaną automatycznie połączone z działalnością.</p>}
     </SettingsSection>
   </form>;
 }

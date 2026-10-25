@@ -1,0 +1,71 @@
+const assert = require('node:assert/strict');
+const { chromium } = require('C:/Users/pc/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { defaultOfferConfiguration } = require('../outputs/clingo-platform/apps/api/dist/provider/provider-offers.input');
+(async () => {
+  const browser = await chromium.launch({ headless: true, channel: 'chrome' });
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1000 } });
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  let offer = { id: '00000000-0000-4000-8000-000000000001', title: 'Sprzątanie obiektów', category: 'homes', description: '', priceMinor: 15000, durationMinutes: 180, status: 'draft', revision: 1, configuration: { ...defaultOfferConfiguration(), leadTimeEnabled: false, bufferEnabled: false, vacuumIncluded: false, requiresClientPhotos: false, recurringEnabled: false } };
+  await page.route('**/api/provider/**', async route => {
+    const request = route.request(), path = new URL(request.url()).pathname;
+    if (path.endsWith('/me')) return route.fulfill({ json: { user: { name: 'Test', email: 'test@example.test' }, account: { id: 'qa', name: 'Firma testowa', role: 'owner' } } });
+    if (path.includes('/services/')) {
+      if (request.method() === 'PUT') offer = { ...offer, ...request.postDataJSON(), revision: offer.revision + 1 };
+      return route.fulfill({ json: offer });
+    }
+    return route.fulfill({ json: path.endsWith('/services') ? [offer] : [] });
+  });
+  await page.goto('http://127.0.0.1:3108/services/' + offer.id);
+  await page.getByLabel('Stawka za metr kwadratowy').waitFor();
+  await page.locator('.offer-config-page').screenshot({ path: 'tmp/service-editor-design.png' });
+  await page.locator('.offer-options-card').first().scrollIntoViewIfNeeded();
+  await page.locator('.offer-config-page').screenshot({ path: 'tmp/service-editor-options.png' });
+  await page.locator('.offer-presentation-card').scrollIntoViewIfNeeded();
+  await page.locator('.offer-config-page').screenshot({ path: 'tmp/service-editor-presentation.png' });
+  const failed = await page.locator('.offer-config-page img').evaluateAll(images => images.filter(img => !img.complete || !img.naturalWidth).map(img => img.src));
+  assert.deepEqual(failed, []);
+  const geometry = await page.locator('.offer-config-page img').evaluateAll(images => images.map(img => ({ name: img.getAttribute('src').split('/').pop(), w: img.getBoundingClientRect().width, h: img.getBoundingClientRect().height })));
+  for (const img of geometry) {
+    const expected = img.name.endsWith('.svg') ? img.name.startsWith('switch-') ? [50,24] : img.name === 'back.svg' ? [15,16] : img.name === 'add-tier.svg' ? [Math.sqrt(392),Math.sqrt(392)] : ['bold.svg','italic.svg','underline.svg','strike.svg','paint.svg','list.svg','smile.svg','check.svg'].includes(img.name) ? [16,16] : img.name === 'remove.svg' ? [18,18] : img.name === 'image.svg' ? [22,14] : [14,14] : img.name === 'cleaning.png' ? [90,90] : [40,40];
+    assert(Math.abs(img.w - expected[0]) < .1 && Math.abs(img.h - expected[1]) < .1, JSON.stringify(img));
+  }
+  await page.locator('.offer-addons-card').evaluate(el => el.parentElement.scrollTop = el.offsetTop - el.parentElement.offsetTop);
+  await page.locator('.offer-config-page').screenshot({ path: 'tmp/service-editor-addons.png' });
+  await page.getByRole('switch', { name: 'Wyprzedzenie zamówienia', exact: true }).click();
+  await page.getByLabel('Wyprzedzenie w godzinach').fill('48');
+  await page.getByLabel('Czas wykonania w godzinach').fill('3.5');
+  await page.getByLabel('Stawka za metr kwadratowy').fill('2,75');
+  await page.getByRole('button', { name: 'Dodaj przedział', exact: true }).click();
+  assert.equal(await page.locator('.offer-tier-row').count(), 4);
+  await page.getByRole('button', { name: 'Usuń przedział 4', exact: true }).click();
+  await page.getByRole('button', { name: 'Usuń Mycie okien', exact: true }).click();
+  await page.getByRole('button', { name: 'Dodaj usługę dodatkową', exact: true }).click();
+  await page.getByLabel('Wybierz usługę dodatkową', { exact: true }).selectOption('windows');
+  await page.getByRole('button', { name: 'Dodaj', exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: 'Usuń Mycie okien', exact: true }).count(), 1);
+  await page.getByLabel('Opis ogłoszenia', { exact: true }).fill('Dokładne sprzątanie');
+  await page.getByLabel('Opis ogłoszenia', { exact: true }).evaluate(el => { el.focus(); el.setSelectionRange(0, 8); });
+  await page.getByRole('button', { name: 'Pogrubienie', exact: true }).click();
+  await page.getByRole('button', { name: 'Podgląd', exact: true }).first().click();
+  assert.equal(await page.getByRole('dialog').locator('p strong').innerText(), 'Dokładne');
+  await page.keyboard.press('Escape');
+  await page.getByLabel('Plik banera', { exact: true }).setInputFiles('outputs/clingo-platform/apps/provider/public/figma-assets/services/editor/cleaning.png');
+  await page.getByRole('img', { name: 'Baner ogłoszenia', exact: true }).waitFor();
+  await page.getByLabel('Pliki galerii', { exact: true }).setInputFiles('outputs/clingo-platform/apps/provider/public/figma-assets/services/editor/gallery-example.png');
+  await page.getByRole('img', { name: 'Realizacja 1', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Zapisz jako szkic', exact: true }).first().click();
+  await page.waitForFunction(() => document.querySelector('.offer-config-save-state')?.textContent.includes('Szkic zapisany'));
+  assert.equal(offer.configuration.durationPer100SquareMetersMinutes, 210);
+  assert.equal(offer.configuration.ratePerSquareMeterMinor, 275);
+  assert.equal(offer.configuration.leadHours, 48);
+  assert.equal(offer.configuration.presentation.gallery.length, 1);
+  await page.reload();
+  await page.getByRole('img', { name: 'Baner ogłoszenia', exact: true }).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.offer-config-hero').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'tmp/service-editor-mobile.png' });
+  assert(await page.locator('.offer-config-page').evaluate(el => el.scrollWidth <= el.clientWidth));
+  assert.deepEqual(errors, []);
+  console.log('PASS: assets, tiers, switches, rates, time, formatting preview, banner/gallery, save/reload, mobile.');
+  await browser.close();
+})().catch(error => { console.error(error); process.exit(1); });

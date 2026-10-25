@@ -1,0 +1,154 @@
+.offer-config-page.is-figma { display: flex; flex-direction: column; align-items: center; gap: 10px; height: 835px; min-height: 0; padding: 30px 20px 50px; border: 1px solid #e5e7eb; border-radius: 15px; background: #eef5fd url('/figma-assets/services/editor/background.png') center / cover no-repeat; box-shadow: 0 4px 14px #0000000a; font-size: 14px; line-height: 17px; }
+.is-figma .offer-config-toolbar { flex-shrink: 0; width: min(100%,1088px); min-height: 33px; margin: 0; gap: 20px; }
+.is-figma .offer-config-back { display: inline-flex; align-items: center; gap: 10px; height: 33px; padding: 8px 20px; border: 1px solid #e5e7eb; border-radius: 30px; background: white; font-size: 14px; font-weight: 500; }
+.is-figma .offer-config-back img { transform: rotate(90deg); }
+.is-figma .offer-config-toolbar-actions { gap: 20px; }
+.is-figma .offer-config-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 33px; padding: 7px 20px; border: 1px solid #e5e7eb; border-radius: 30px; background: white; font: inherit; font-weight: 500; line-height: 17px; }
+.is-figma .offer-config-button.is-primary { border-color: #0079de; background: #0079de; color: white; }
+.is-figma .offer-config-button:disabled { opacity: .6; }
+.is-figma .offer-config-scroll { width: min(100%,1088px); flex: 1; min-height: 0; margin: 0; padding: 0 0 2px; overflow: auto; gap: 10px; scrollbar-width: none; }
+.is-figma .offer-config-scroll::-webkit-scrollbar { display: none; }
+.is-figma .offer-config-scroll > * { flex-shrink: 0; }
+.is-figma .offer-config-scroll > .offer-config-toolbar { margin: 0; padding: 0; }
+.is-figma .offer-config-hero, .is-figma .offer-config-card { border: 1px solid #e5e7eb; border-radius: 15px; background: white; box-shadow: 0 4px 7px #0000000a; }
+.is-figma .offer-config-hero { align-items: flex-end; gap: 10px; min-height: 130px; padding: 19px; }
+.is-figma .offer-config-hero > img { width: 90px; height: 90px; border-radius: 10px; background: transparent; object-fit: cover; opacity: .95; }
+.is-figma .offer-config-hero > div { gap: 10px; padding-bottom: 10px; }
+.is-figma .offer-config-hero h1 { margin: 0; font-size: 20px; font-weight: 600; line-height: 20px; }
+.is-figma .offer-config-hero h1 span { display: inline; margin: 0; padding: 0; background: none; color: #7c8691; font-size: 20px; font-weight: 400; }
+.is-figma .offer-config-hero p { color: #7c8691; font-size: 14px; line-height: 20px; }
+.is-figma .offer-config-card { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-height: 0; padding: 19px; }
+.is-figma .offer-config-section-title { display: flex; flex-direction: column; gap: 10px; }
+.is-figma .offer-config-section-title h2, .is-figma .offer-tiers-heading h2, .is-figma .offer-standards h2 { margin: 0; font-size: 14px; font-weight: 500; line-height: 20px; }
+.is-figma .offer-config-section-title p, .is-figma .offer-section-help { max-width: none; margin: 0; color: #7c8691; font-size: 14px; font-weight: 400; line-height: 19px; }
+.is-figma .offer-config-price-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.is-figma .offer-rate-card { min-height: 146px; }
+.is-figma .offer-inline-field { display: flex; align-items: center; gap: 20px; padding-top: 5px; font-size: 14px; font-weight: 500; }
+.is-figma .offer-inline-field > span { color: #2e3b4c; font-size: 14px; }
+.is-figma .offer-value-control { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 5px; width: 121px; height: 47px; min-width: 0; padding: 14px 15px; border: 1px solid #e5e7eb; border-radius: 10px; background: white; color: #2e3b4c; font-size: 14px; font-weight: 400; }
+.is-figma .offer-value-control input { width: 39px; height: auto; min-width: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: #2e3b4c; font: inherit; font-size: 14px; font-weight: 400; text-align: right; outline: 0; }
+.is-figma input[type=number] { appearance: textfield; }
+.is-figma input::-webkit-inner-spin-button, .is-figma input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.is-figma .offer-value-control > span { min-width: 0; color: #2e3b4c; font-size: 14px; }
+.is-figma .offer-value-control > img { margin-left: 10px; flex-shrink: 0; }
+.is-figma .offer-value-control:focus-within, .is-figma .offer-area-control:focus-within { outline: 2px solid #0079de; outline-offset: 2px; }
+.is-figma .offer-value-control input:focus-visible, .is-figma .offer-area-control input:focus-visible { outline: none; }
+.is-figma .offer-duration-card { min-height: 146px; gap: 10px; }
+.is-figma .offer-duration-card .offer-config-section-title p { line-height: 24px; }
+.is-figma .offer-duration-card .offer-inline-field { padding-top: 0; }
+.is-figma .offer-duration-card .offer-value-control { width: 125px; }
+.is-figma .offer-duration-card .offer-value-control input { width: 35px; }
+.is-figma .offer-tiers-card { gap: 20px; }
+.is-figma .offer-tiers-heading { display: flex; align-items: center; gap: 10px; }
+.is-figma .offer-tiers-card > .offer-section-help { margin-top: -10px; line-height: 20px; }
+.is-figma .offer-tier-list { display: flex; flex-direction: column; gap: 20px; padding: 10px 0; border: 0; }
+.is-figma .offer-tier-row { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 15px; min-height: 67px; padding: 10px 20px; border: 0; border-radius: 20px; background: #f4f6f9; }
+.is-figma .offer-tier-fields { display: flex; align-items: center; gap: 15px; font-weight: 500; white-space: nowrap; }
+.is-figma .offer-area-control { display: flex; align-items: center; justify-content: space-between; width: 121px; height: 47px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: white; font-weight: 400; }
+.is-figma .offer-area-control:has(input[readonly]) { background: #e5e7eb; }
+.is-figma .offer-area-control input { width: 76px; height: auto; min-width: 0; padding: 0; border: 0; background: transparent; color: #2e3b4c; font: inherit; text-align: left; outline: 0; }
+.is-figma .offer-area-control input[readonly] { color: #7c8691; background: transparent; }
+.is-figma .offer-area-control > span { color: #7c8691; }
+.is-figma .offer-worker-stepper { display: flex; align-items: center; justify-content: center; gap: 20px; width: 133px; height: 47px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: white; }
+.is-figma .offer-worker-stepper button { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 17px; height: 17px; padding: 0; border: 0; background: none; }
+.is-figma .offer-worker-stepper strong { width: 30px; font-size: 14px; font-weight: 500; text-align: center; }
+.is-figma .offer-tier-remove { position: static; display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; padding: 0; border: 1px solid #e5e7eb; border-radius: 10px; background: white; }
+.is-figma .offer-config-add { display: inline-flex; align-items: center; align-self: flex-start; justify-content: center; gap: 5px; min-height: 20px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: #0079de !important; font-size: 14px !important; font-weight: 400; }
+.is-figma .offer-config-add > img { transform: rotate(45deg); }
+.is-figma .offer-config-info { display: flex; align-items: center; align-self: flex-start; gap: 10px; margin: 0; padding: 10px 15px; border: 1px solid #bfdbfe; border-radius: 10px; background: #eff6ff; color: #2e3b4c; font-size: 14px; line-height: 17px; }
+.is-figma .offer-config-info.is-warning { border-color: #f9eede; background: #fefaed; }
+.is-figma .offer-config-info img { flex-shrink: 0; }
+.is-figma .offer-options-card, .is-figma .offer-presentation-card { gap: 20px; }
+.is-figma .offer-options-card .offer-config-section-title, .is-figma .offer-presentation-card .offer-config-section-title { gap: 6px; padding-bottom: 20px; border-bottom: 1px solid #f3f4f6; }
+.is-figma .offer-options-card .offer-config-section-title p, .is-figma .offer-presentation-card .offer-config-section-title p { color: #6b7280; font-size: 13px; line-height: 16px; }
+.is-figma .offer-config-setting { display: grid; grid-template-columns: 50px minmax(0,1fr) auto; align-items: start; gap: 16px; min-height: 0; padding: 0 0 20px; border-bottom: 1px solid #f3f4f6; }
+.is-figma .offer-config-setting:last-child { padding-bottom: 0; border: 0; }
+.is-figma .offer-config-setting > div { gap: 6px; }
+.is-figma .offer-config-setting strong { font-size: 14px; font-weight: 500; line-height: 17px; }
+.is-figma .offer-config-setting div span { color: #6b7280; font-size: 13px; line-height: 18px; }
+.is-figma .offer-config-setting > .offer-value-control { margin: 0; }
+.is-figma .offer-config-switch { width: 50px; height: 24px; border: 0; border-radius: 0; background: transparent; }
+.is-figma .offer-config-switch[aria-checked=true] { background: transparent; }
+.is-figma .offer-addons-card { gap: 10px; }
+.is-figma .offer-config-section-row { align-items: center; }
+.is-figma .offer-config-section-row .offer-section-help { line-height: 18px; }
+.is-figma .offer-addon-grid { grid-template-columns: repeat(6,minmax(0,1fr)); gap: 15px; margin: 0; padding-top: 10px; }
+.is-figma .offer-addon { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 15px 13px; border: .5px solid #d9d9d9; border-radius: 15px; background: #f4f6f9; box-shadow: 0 2px 1.5px #0000000a; }
+.is-figma .offer-addon-image { display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; padding: 5px; border-radius: 30px; filter: drop-shadow(-1px 2px 2px #00000026); }
+.is-figma .offer-addon-image > img, .is-figma .offer-addon-placeholder { width: 40px; height: 40px; object-fit: cover; }
+.is-figma .offer-addon > strong { display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 36px; font-size: 14px; font-weight: 400; line-height: 17px; text-align: center; }
+.is-figma .offer-addon > label { display: flex; align-items: center; justify-content: center; gap: 3px; width: 102px; min-height: 37px; padding: 10px 8px; border: 1px solid #e5e7eb; border-radius: 10px; background: white; font-weight: 400; letter-spacing: -.7px; }
+.is-figma .offer-addon input { width: 35px; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; color: #2e3b4c; font-size: 14px; font-weight: 400; text-align: right; }
+.is-figma .offer-addon label > span { color: #2e3b4c; font-size: 14px; }
+.is-figma .offer-addon-remove { display: flex; align-items: center; justify-content: center; top: 5px; right: 5px; width: 22px; height: 22px; opacity: 0; }
+.is-figma .offer-addon:hover .offer-addon-remove, .is-figma .offer-addon:focus-within .offer-addon-remove { opacity: 1; }
+.is-figma .offer-description-intro { display: flex; flex-direction: column; gap: 12px; }
+.is-figma .offer-description-intro h3 { margin: 0; font-size: 14px; font-weight: 500; line-height: 17px; }
+.is-figma .offer-description-intro p { margin: 0; color: #7c8691; line-height: 16px; }
+.is-figma .offer-description-editor { display: flex; flex-direction: column; height: 330px; margin: -8px 0 0; border: .5px solid #d9d9d9; border-radius: 15px; box-shadow: 0 2px 6px #0000000f; }
+.is-figma .offer-description-editor textarea { flex: 1; min-height: 0; padding: 20px; resize: none; font-size: 14px; line-height: 16px; }
+.is-figma .offer-description-editor textarea::placeholder { color: #9ca3af; }
+.is-figma .offer-description-toolbar { position: relative; gap: 12px; min-height: 37px; padding: 10px 20px; border-top: 1px solid #d9d9d9; border-bottom: 0; background: #f9fafb; }
+.is-figma .offer-description-toolbar button { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; padding: 0; }
+.is-figma .offer-description-editor small { position: static; margin-left: auto; color: #98a2ad; font-size: 10px; }
+.is-figma .offer-media-grid { display: flex; flex-direction: column; gap: 20px; margin: 0; }
+.is-figma .offer-media-section { display: flex; flex-direction: column; gap: 12px; }
+.is-figma .offer-media-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.is-figma .offer-media-heading h3 { margin: 0 0 4px; font-size: 14px; font-weight: 500; line-height: 17px; }
+.is-figma .offer-media-heading p { margin: 0; color: #7c8691; line-height: 17px; }
+.is-figma .offer-media-heading .offer-config-button { flex-shrink: 0; padding: 7px 15px; }
+.is-figma .offer-banner-wrap { position: relative; }
+.is-figma .offer-media-drop { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 160px; min-height: 160px; gap: 10px; padding: 0; overflow: hidden; border: 1px dashed #e5e7eb; border-radius: 16px; background: white; color: #7c8691; cursor: pointer; }
+.is-figma .offer-media-drop strong { font-size: 16px; font-weight: 500; }
+.is-figma .offer-banner-image { width: 100%; height: 100%; object-fit: cover; }
+.is-figma .offer-gallery-grid { display: flex; flex-wrap: wrap; gap: 12px; min-height: 150px; }
+.is-figma .offer-gallery-photo { position: relative; width: 150px; height: 150px; overflow: hidden; border-radius: 20px; box-shadow: inset 0 2px 4px #00000026; }
+.is-figma .offer-gallery-photo > img { width: 100%; height: 100%; object-fit: cover; }
+.is-figma .offer-photo-remove { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 3px; border: 0; border-radius: 30px; background: white; }
+.is-figma .offer-gallery-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 150px; height: 150px; padding: 15px; border: 1px dashed #e5e7eb; border-radius: 20px; background: white; color: #7c8691; }
+.is-figma .offer-standards { gap: 15px; }
+.is-figma .offer-standards label { position: relative; align-items: flex-start; gap: 12px; min-height: 0; font-size: 14px; line-height: 16px; color: #7c8691; }
+.is-figma .offer-standards input { position: absolute; top: 0; left: 0; z-index: 1; width: 30px; height: 30px; margin: 0; opacity: 0; cursor: pointer; }
+.is-figma .offer-standards-check { display: flex; align-items: center; justify-content: center; flex: 0 0 30px; height: 30px; border: 1px solid #dee4ea; border-radius: 8px; background: white; }
+.is-figma .offer-standards input:focus-visible + .offer-standards-check { outline: 2px solid #0079de; outline-offset: 2px; }
+.is-figma .offer-standards a { color: #0079de; text-decoration: none; }
+.offer-preview-banner { width: 100%; max-height: 180px; margin-bottom: 20px; border-radius: 15px; object-fit: cover; }
+.offer-preview-gallery { display: flex; flex-wrap: wrap; gap: 10px; }
+.offer-preview-gallery img { width: 120px; height: 120px; border-radius: 15px; object-fit: cover; }
+@media (max-width: 1350px) {
+  .is-figma .offer-tier-fields { flex-wrap: wrap; }
+  .is-figma .offer-addon-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (max-width: 800px) {
+  .offer-config-page.is-figma { height: auto; min-height: 835px; padding: 20px 15px; overflow: visible; }
+  .is-figma .offer-config-toolbar { flex-direction: column; align-items: flex-start; }
+  .is-figma .offer-config-toolbar-actions { justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+  .is-figma .offer-config-scroll { flex: none; overflow: visible; }
+  .is-figma .offer-config-hero { align-items: center; }
+  .is-figma .offer-config-hero h1, .is-figma .offer-config-hero h1 span { font-size: 18px; line-height: 24px; }
+  .is-figma .offer-config-price-grid { grid-template-columns: 1fr; }
+  .is-figma .offer-config-setting { grid-template-columns: 50px minmax(0,1fr); }
+  .is-figma .offer-config-setting > .offer-config-switch { grid-column: 1; grid-row: 1; }
+  .is-figma .offer-config-setting > div { grid-column: 2; }
+  .is-figma .offer-config-setting > .offer-value-control { grid-column: 2; }
+  .is-figma .offer-addon-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .is-figma .offer-config-section-row, .is-figma .offer-media-heading { align-items: flex-start; flex-direction: column; }
+  .is-figma .offer-config-info { font-size: 13px; line-height: 18px; }
+}
+@media (max-width: 520px) {
+  .is-figma .offer-config-card { padding: 15px; }
+  .is-figma .offer-config-hero { padding: 15px; gap: 10px; }
+  .is-figma .offer-config-hero > img { width: 60px; height: 60px; flex-basis: 60px; }
+  .is-figma .offer-config-hero > div { padding: 0; }
+  .is-figma .offer-config-hero p { font-size: 12px; line-height: 17px; }
+  .is-figma .offer-inline-field { flex-wrap: wrap; gap: 10px; }
+  .is-figma .offer-tier-row { align-items: flex-start; padding: 15px 10px; gap: 8px; }
+  .is-figma .offer-tier-fields { gap: 10px; white-space: normal; }
+  .is-figma .offer-area-control { width: 105px; }
+  .is-figma .offer-area-control input { width: 60px; }
+  .is-figma .offer-addon-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .is-figma .offer-addon { padding: 15px 5px; }
+  .is-figma .offer-addon-remove { opacity: 1; }
+  .is-figma .offer-description-toolbar { gap: 10px; padding: 10px 12px; }
+  .is-figma .offer-description-editor small { font-size: 9px; }
+}

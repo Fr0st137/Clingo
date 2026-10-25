@@ -54,7 +54,7 @@ export function analyzeJobs(jobs: Job[], filters: AnalyticsFilters) {
     const comparisonEnd = shiftDate(comparisonStart, length - 1);
     return { start, end, comparisonStart, comparisonEnd, current: totals(current.filter(job => job.date >= start && job.date <= end)), previous: totals(previous.filter(job => job.date >= comparisonStart && job.date <= comparisonEnd)) };
   });
-  return { current, previousStart, previousEnd, totals: totals(current), previousTotals: totals(previous), counts, activeClients: activeClients.size, returning, series, services: ranking(current, job => job.offerId, job => job.serviceTitle), employees: ranking(current, employeeKey, employeeLabel) };
+  return { current, previous, previousStart, previousEnd, totals: totals(current), previousTotals: totals(previous), counts, activeClients: activeClients.size, returning, series, services: ranking(current, job => job.offerId, job => job.serviceTitle), employees: ranking(current, employeeKey, employeeLabel) };
 }
 
 export function percentageChange(current: number, previous: number) {

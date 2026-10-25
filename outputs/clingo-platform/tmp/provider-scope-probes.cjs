@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict');const fs=require('node:fs');
+const {defaultOfferConfiguration,offerConfiguration}=require('../apps/api/dist/provider/provider-offers.input');
+const {publishOffer}=require('../apps/api/dist/provider/provider-offer-publication');
+const {areaPricingOption}=require('../apps/api/dist/dashboard/area-pricing');
+const {quoteBooking}=require('../apps/api/dist/dashboard/booking');
+const {locationInput}=require('../apps/api/dist/provider/provider-location.input');
+const {ProviderBookingsService}=require('../apps/api/dist/provider/provider-bookings.service');
+const {ProviderMembershipEntity,ProviderAccountEntity}=require('../apps/api/dist/provider/provider.entity');
+const {ProviderProfileEntity}=require('../apps/api/dist/dashboard/provider-profile.entity');
+const {OrderEntity}=require('../apps/api/dist/dashboard/order.entity');
+(async()=>{const out={};const config=defaultOfferConfiguration();config.standardsAccepted=true;config.areaTiers=[{minSquareMeters:15,maxSquareMeters:1000,workers:2}];let profile;
+const manager={findOneBy:async()=>null,create:(entity,obj)=>obj,save:async(entity,obj)=>{if(entity===ProviderProfileEntity)profile=obj;return obj;}};
+await publishOffer(manager,{id:'audit-offer',status:'published',title:'Test',description:'Testowa usługa sprzątania',configuration:config},{id:'audit-account',name:'Audyt',location:{city:'Warszawa'}});
+const option=areaPricingOption(profile.areaPricing,'area-100');assert.equal(option.duration,'3 godz. 0 min');assert.equal(profile.areaPricing.maximum,400);assert.deepEqual(profile.tags,['Jednosesyjne']);
+out.time={area:100,workersInTier:2,minutesPer100ForOneWorker:180,expectedMinutesByScope:90,actualDuration:option.duration};out.publication={configuredMaxArea:1000,actualMaxArea:profile.areaPricing.maximum,tags:profile.tags,frequencyOptions:profile.frequencies.map(f=>f.id)};
+const oversized=defaultOfferConfiguration();oversized.areaTiers=[{minSquareMeters:1,maxSquareMeters:null,workers:50}];assert.equal(offerConfiguration(oversized).areaTiers[0].workers,50);out.workersValidation='Konfiguracja przyjmuje 50 osób bez przekazania danych lub liczby pracowników konta.';
+const custom=defaultOfferConfiguration();custom.addOns=[{id:'custom',title:'Moja własna usługa',priceMinor:100,billingUnit:'piece'}];assert.equal(offerConfiguration(custom).addOns[0].id,'custom');out.customCatalogueAddon='Własna usługa w konfiguracji ogłoszenia zaakceptowana.';
+custom.addOns[0].priceMinor=0;assert.throws(()=>offerConfiguration(custom));out.freeCatalogueAddon='Cena 0 odrzucona.';
+assert.throws(()=>locationInput({street:'Testowa 1',postalCode:'00-001',city:'Warszawa',radiusKm:200,revision:1}));out.radius='200 km odrzucone; maksimum walidacji 100 km.';
+const order={id:'order',providerId:'profile',userEmail:'a@example.test',revision:1,status:'Zaplanowane zlecenie',endsAt:new Date('2099-01-02T12:00:00Z')};const ownedProfile={id:'profile',accountId:'audit-account'};
+const m={findOneBy:async(entity)=>entity===ProviderMembershipEntity?{accountId:'audit-account',role:'owner'}:entity===ProviderProfileEntity?ownedProfile:entity===OrderEntity?order:null,findOne:async(entity)=>entity===ProviderAccountEntity?{id:'audit-account'}:entity===ProviderProfileEntity?ownedProfile:entity===OrderEntity?order:null};
+const svc=new ProviderBookingsService({sessionUser:async()=>({id:'user'})},{manager:m,transaction:async fn=>fn(m)},{});
+await assert.rejects(()=>svc.update('token','order',{revision:1,status:'completed'}),/po upływie ostatniego/);out.earlyCompletion='Oznaczenie wykonania przed końcem ostatniego terminu odrzucone.';
+const selection={pricingId:'area-100',frequencyId:'once',addOns:[]};assert.equal(quoteBooking(profile,selection).durationMinutes,180);out.quoteDurationMinutes=quoteBooking(profile,selection).durationMinutes;
+fs.writeFileSync('tmp/provider-scope-probes.json',JSON.stringify(out,null,2));console.log(JSON.stringify(out,null,2));})().catch(e=>{console.error(e);process.exitCode=1});
+

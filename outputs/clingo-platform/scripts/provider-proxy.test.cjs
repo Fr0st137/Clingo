@@ -29,7 +29,7 @@ test('proxy requires provider cookie and denies arbitrary upstream routes', asyn
 test('service and location writes forward only to their allowed provider endpoints', async t => {
   let observed;
   t.mock.method(global, 'fetch', async (url, init) => { observed = { url, init }; return Response.json({ revision: 2 }); });
-  for (const path of ['services/11111111-1111-4111-8111-111111111111', 'jobs/11111111-1111-4111-8111-111111111111', 'bookings/11111111-1111-4111-8111-111111111111', 'multi-orders/11111111-1111-4111-8111-111111111111/action', 'settings/location']) {
+  for (const path of ['services/11111111-1111-4111-8111-111111111111', 'jobs/11111111-1111-4111-8111-111111111111', 'bookings/11111111-1111-4111-8111-111111111111', 'bookings/11111111-1111-4111-8111-111111111111/reschedule', 'multi-orders/11111111-1111-4111-8111-111111111111/action', 'settings/location']) {
     assert.equal((await call(path, 'PUT', { token: 'session', body: JSON.stringify({ revision: 1 }) })).status, 200);
     assert.ok(observed.url.endsWith(`/provider/${path}`)); assert.equal(observed.init.headers.Authorization, 'Bearer session');
     assert.equal((await call(path, 'PUT', { token: 'session', headers: { origin: 'https://foreign.test' } })).status, 403);

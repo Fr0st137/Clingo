@@ -138,7 +138,7 @@ export function ProviderProfileView({ profile }: { profile: ProviderProfileData 
           <h2 className="text-[18px] font-bold text-clingo-ink">O wykonawcy</h2>
           <p className="mt-3 text-[14px] leading-7 text-[#34465d]">{profile.description}</p>
           <div className="mt-5 grid gap-3">
-            {providerTrustItems.map(({ id, label, icon: Icon }) => (
+            {providerTrustItems.filter(item => item.id !== "verified" || profile.verified).map(({ id, label, icon: Icon }) => (
               <div className="flex items-center gap-3 rounded-xl bg-[#f7f9fc] p-3" key={id}>
                 <Icon className="h-5 w-5 text-clingo-blue" />
                 <span className="text-[13px] font-semibold text-clingo-ink">{label}</span>

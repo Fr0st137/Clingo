@@ -7,18 +7,27 @@ import { ApiError, providerApi, type Employee } from "../lib/provider-client";
 import { priceMinor, type Offer } from "../lib/provider-offers";
 import { jobDraft, jobStatuses, type Job, type JobDraft } from "../lib/provider-jobs";
 import { ProviderBookingDetails } from "./provider-booking-details";
+import { ProviderOrderDetails } from "./provider-order-details";
+import { ProviderOrderTypeDialog } from "./provider-order-type-dialog";
+import { ProviderSingleOrderEditor } from "./provider-single-order-editor";
 type Client = { id: string; name: string };
-export function ProviderJobEditor({ job, date, onClose, onSaved, onReloaded }: { job?: Job; date: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
-  return job?.source === "booking" ? <ProviderBookingDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} /> : <ManualJobEditor job={job} date={date} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} />;
+export function ProviderJobEditor({ job, date, clientId, onClose, onSaved, onReloaded }: { job?: Job; date: string; clientId?: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [singleOrder, setSingleOrder] = useState(false);
+  if (!job && !singleOrder) return <ProviderOrderTypeDialog onSingle={() => setSingleOrder(true)} onClose={onClose} />;
+  if (!job) return <ProviderSingleOrderEditor date={date} clientId={clientId} onClose={onClose} onSaved={onSaved} />;
+  if (job && !editingJob) return <ProviderOrderDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} onEdit={setEditingJob} />;
+  return job?.source === "booking" ? <ProviderBookingDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} /> : <ManualJobEditor job={editingJob ?? job} date={date} clientId={clientId} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} />;
 }
-function ManualJobEditor({ job, date, onClose, onSaved, onReloaded }: { job?: Job; date: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
+function ManualJobEditor({ job, date, clientId, onClose, onSaved, onReloaded }: { job?: Job; date: string; clientId?: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
   const clients = useSettingsResource<Client[]>("clients"), offers = useSettingsResource<Offer[]>("services"), employees = useSettingsResource<Employee[]>("employees");
   const [original,setOriginal] = useState(job);
-  const [draft,setDraft] = useState(()=>jobDraft(job,date));
+  const initialDraft = () => ({ ...jobDraft(job,date), ...(!job && clientId ? { clientId } : {}) });
+  const [draft,setDraft] = useState(initialDraft);
   const [busy,setBusy] = useState(false), [error,setError] = useState(""), [conflict,setConflict] = useState(false);
   const [confirm,setConfirm] = useState<"close"|"reload"|null>(null);
   const pending = useRef(false);
-  const dirty = JSON.stringify(draft)!==JSON.stringify(jobDraft(original,date));
+  const dirty = JSON.stringify(draft)!==JSON.stringify({ ...jobDraft(original,date), ...(!original && clientId ? { clientId } : {}) });
   useUnsavedSettings(dirty);
   const loading = clients.loading || offers.loading || employees.loading;
   const loadError = clients.error || offers.error || employees.error;
@@ -41,7 +50,7 @@ function ManualJobEditor({ job, date, onClose, onSaved, onReloaded }: { job?: Jo
     try { onSaved(await providerApi<Job>(original?`jobs/${original.id}`:"jobs",original?"PUT":"POST",{clientId:draft.clientId,offerId:draft.offerId,employeeId:draft.employeeId||null,date:draft.date,startMinute,durationMinutes:duration,priceMinor:cents,notes:draft.notes,status:draft.status,...(original?{revision:original.revision}:{})})); }
     catch(error){setError((error as Error).message);setConflict(error instanceof ApiError&&error.status===409);}finally{pending.current=false;setBusy(false);}
   }
-  const availableOffers = (offers.data??[]).filter(offer=>offer.status==="draft"||offer.id===original?.offerId);
+  const availableOffers = (offers.data??[]).filter(offer=>offer.status!=="archived"||offer.id===original?.offerId);
   return <ProviderModal className="client-editor job-editor" titleId="job-editor-title" onClose={close}><h2 id="job-editor-title">{confirm?"Odrzucić zmiany?":original?"Edytuj zlecenie":"Dodaj zlecenie"}</h2>
     {confirm?<><p>{confirm==="reload"?"Formularz zostanie zastąpiony ostatnią zapisaną wersją.":"Niezapisane zmiany zostaną utracone."}</p>{error&&<p role="alert">{error}</p>}<div className="settings-live-actions"><button className="settings-button" disabled={busy} onClick={()=>setConfirm(null)}>Wróć do edycji</button><button className="employee-save-button" disabled={busy} onClick={discard}>{busy?"Wczytywanie…":confirm==="reload"?"Odrzuć zmiany i wczytaj":"Odrzuć zmiany"}</button></div></>:loading||loadError?<div className="provider-state" role={loadError?"alert":"status"}>{loading?"Wczytywanie klientów, usług i pracowników…":<><p>{loadError}</p><button className="settings-button" onClick={()=>{clients.reload();offers.reload();employees.reload();}}>Spróbuj ponownie</button></>}</div>:!clients.data?.length||!availableOffers.length?<div className="provider-state"><p>Do utworzenia zlecenia potrzebujesz klienta i szkicu usługi.</p><Link href="/clients">Dodaj klienta</Link><br/><Link href="/services">Dodaj usługę</Link></div>:<form onSubmit={save}>
       <p>Zlecenie ręczne, widoczne w Twoim panelu. Nie wysyła wiadomości klientowi ani nie pobiera płatności. Terminy według czasu polskiego.</p>

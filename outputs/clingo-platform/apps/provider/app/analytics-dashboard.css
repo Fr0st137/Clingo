@@ -1,0 +1,151 @@
+.analytics-content.analytics-figma { width: 100%; height: 835px; margin-top: 10px; padding: 0; background: #f4f6f9; color: #2e3b4c; font-family: "Inter Services", Inter, sans-serif; font-size: 14px; line-height: 20px; }
+.analytics-figma .analytics-dashboard { width: 100%; min-height: 0; gap: 16px; padding-bottom: 16px; }
+.analytics-figma .analytics-page-header { width: 100%; height: 72px; min-height: 72px; gap: 20px; }
+.analytics-figma .analytics-title { width: auto; min-width: 0; flex-shrink: 0; }
+.analytics-figma .analytics-title h1 { margin: 0; font-size: 20px; font-weight: 500; line-height: 28px; }
+.analytics-figma .analytics-title p { font-size: 14px; }
+.analytics-figma .analytics-filters { width: auto; height: 36px; gap: 8px; flex-shrink: 0; }
+.analytics-figma .analytics-filter { position: relative; display: flex; width: auto; height: 36px; padding: 0; border: 1px solid #e5e7eb; border-radius: 18px; background: white; box-shadow: none; }
+.analytics-figma .analytics-filter select { width: 100%; max-width: 230px; height: 100%; padding: 7px 30px 7px 12px; border: 0; border-radius: inherit; appearance: none; background: transparent; color: #2e3b4c; font: inherit; font-size: 14px; line-height: 20px; cursor: pointer; }
+.analytics-figma .analytics-filter img { position: absolute; right: 9px; pointer-events: none; margin: 0; }
+.analytics-custom-range { display: flex; align-items: center; gap: 15px; }
+.analytics-custom-range label { display: flex; align-items: center; gap: 8px; }
+.analytics-custom-range input { padding: 7px 12px; border: 1px solid #e5e7eb; border-radius: 18px; color: #2e3b4c; font: inherit; }
+.analytics-figma .analytics-kpis { display: grid; width: 100%; height: 112px; flex: 0 0 112px; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 12px; margin: 0; padding: 4px 0; }
+.analytics-figma .analytics-kpi { display: flex; width: auto; height: 104px; min-width: 0; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 13px 13px 11px; border: 1px solid #e5e7eb; border-radius: 15px; background: white; box-shadow: 0 2px 4px #0000000a; }
+.analytics-figma .analytics-kpi > span { font-size: 12px; line-height: 18px; color: #7c8691; }
+.analytics-figma .analytics-kpi > strong { font-size: 20px; font-weight: 500; line-height: 28px; white-space: nowrap; }
+.analytics-figma .analytics-kpi > small { font-size: 12px; line-height: 18px; white-space: nowrap; }
+.analytics-figma .is-positive, .analytics-figma .analytics-kpi .is-positive { color: #25a65b; }
+.analytics-figma .is-negative, .analytics-figma .analytics-kpi .is-negative { color: #d13239; }
+.analytics-figma .is-neutral, .analytics-figma .analytics-kpi .is-neutral { color: #7c8691; }
+.analytics-figma .analytics-wide-row { width: 100%; height: 286px; grid-template-columns: minmax(0,1048fr) minmax(0,484fr); }
+.analytics-figma .analytics-schedule-row { height: 282px; }
+.analytics-figma .analytics-card { min-width: 0; padding: 17px; }
+.analytics-figma .results-card, .analytics-figma .insights-card, .analytics-figma .heatmap-card, .analytics-figma .order-status-card { width: 100%; height: 100%; }
+.analytics-figma .results-header { width: 100%; flex-shrink: 0; }
+.analytics-figma .metric-switcher { width: 400px; flex-shrink: 0; }
+.analytics-figma .metric-switcher button { display: flex; align-items: center; justify-content: center; flex: 1; height: 30px; padding: 0 10px; border: 0; border-radius: 15px; background: none; color: #7c8691; font: inherit; font-size: 12px; cursor: pointer; }
+.analytics-figma .metric-switcher button:first-child { flex: 1.375; }
+.analytics-figma .metric-switcher .is-active { background: white; color: #0079de; font-weight: 500; }
+.analytics-chart-scroller { width: 100%; overflow-x: auto; overflow-y: hidden; }
+.analytics-figma .live-results-chart { position: relative; width: 100%; height: 202px; min-width: 450px; }
+.live-results-chart > svg { position: absolute; inset: 0; width: 100%; height: 202px; }
+.analytics-chart-grid { position: absolute; inset: 0 auto auto 0; width: 1012px; height: 202px; transform-origin: left top; }
+.analytics-chart-grid > img { position: absolute; top: 26px; left: 50px; }
+.analytics-chart-tooltip { position: absolute; top: 4px; right: 20px; display: flex; flex-direction: column; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; box-shadow: 0 2px 4px #0000000a; color: #2e3b4c; font-size: 12px; pointer-events: none; }
+.analytics-chart-tooltip > span { color: #7c8691; }
+.analytics-figma .insights-card > p { width: 100%; height: 64px; min-height: 64px; padding: 8px 10px; font-size: 12px; line-height: 17px; }
+.analytics-figma .insights-card > p button { display: inline; padding: 0; border: 0; background: transparent; color: #0079de; font: inherit; cursor: pointer; }
+.analytics-figma .heatmap-header { width: 100%; flex-shrink: 0; gap: 10px; }
+.analytics-figma .heatmap-header > span { flex-shrink: 0; width: auto; min-width: 190px; padding: 0 12px; }
+.analytics-heatmap-scroller { width: 100%; overflow-x: auto; }
+.analytics-figma .heatmap { width: 100%; min-width: 480px; }
+.analytics-figma .heatmap-time, .analytics-figma .heatmap-row, .analytics-figma .heatmap-legend { width: 100%; }
+.analytics-figma .heatmap-row > button { width: 100%; height: 12px; padding: 0; border: 0; border-radius: 6px; cursor: pointer; }
+.analytics-figma .heatmap-row > button:hover { outline: 2px solid #0080dd; outline-offset: 1px; }
+.analytics-figma .status-visual { width: 100%; gap: 18px; flex-shrink: 0; }
+.analytics-figma .status-donut { flex: 0 0 138px; }
+.analytics-figma .status-donut svg { width: 138px; height: 110px; }
+.analytics-figma .status-legend { flex: 1; min-width: 0; width: auto; gap: 5px; padding-top: 5px; }
+.analytics-figma .status-legend button { display: grid; grid-template-columns: 9px minmax(0,1fr) 45px; align-items: center; gap: 0; width: 100%; height: 25px; flex-shrink: 0; padding: 0; border: 0; background: none; color: #2e3b4c; font: inherit; cursor: pointer; text-align: left; }
+.analytics-figma .status-legend button i { width: 9px; height: 9px; border-radius: 50%; }
+.analytics-figma .status-legend span, .analytics-figma .status-legend strong { font-size: 14px; line-height: 18px; }
+.analytics-figma .cancellation-note { width: 100%; min-height: 48px; height: auto; padding: 12px 14px; line-height: 18px; }
+.analytics-figma .top-services-card { width: 100%; height: 250px; flex: 0 0 250px; }
+.analytics-figma .analytics-services-content { display: grid; grid-template-columns: minmax(0,1056fr) minmax(0,440fr); width: 100%; height: 184px; gap: 16px; }
+.analytics-figma .analytics-table-scroll { width: 100%; min-width: 0; height: 184px; margin: 0; overflow: auto; }
+.analytics-services-table { width: 100%; min-width: 700px; border-collapse: collapse; text-align: left; }
+.analytics-services-table th, .analytics-services-table td { height: 66px; padding: 0 8px; font-size: 14px; font-weight: 400; line-height: 18px; }
+.analytics-services-table th:first-child { width: 37.7%; padding-left: 0; }
+.analytics-services-table thead th { height: 34px; color: #7c8691; font-size: 12px; font-weight: 500; }
+.analytics-services-table tbody tr:nth-child(even) { background: #f9fafc; }
+.analytics-figma .analytics-text-button { color: #2e3b4c; text-decoration: none; }
+.analytics-figma .analytics-text-button:hover { color: #0079de; }
+.analytics-figma .popular-addons { width: 100%; height: 184px; padding: 12px 14px; }
+.analytics-figma .popular-addons h3 { font-size: 14px; line-height: 20px; }
+.analytics-figma .popular-addons > div { width: 100%; flex-shrink: 0; gap: 8px; }
+.analytics-figma .popular-addons > div span { width: auto; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.analytics-figma .popular-addons > div strong { width: auto; flex-shrink: 0; }
+.analytics-figma .analytics-bottom-row { width: 100%; grid-template-columns: minmax(0,600fr) minmax(0,932fr); height: 300px; }
+.analytics-figma .clients-card, .analytics-figma .employee-results-card { width: 100%; height: 300px; }
+.analytics-figma .clients-header, .analytics-figma .client-kpis, .analytics-figma .client-structure, .analytics-figma .employee-results-header, .analytics-figma .employee-ranking { width: 100%; }
+.analytics-figma .clients-header > span, .analytics-figma .employee-results-header > span { width: auto; padding: 0 12px; flex-shrink: 0; }
+.analytics-figma .client-kpis > div { min-width: 0; }
+.analytics-figma .client-kpis span, .analytics-figma .client-kpis small { white-space: normal; }
+.analytics-figma .client-bar, .analytics-figma .client-structure > p { width: 100%; }
+.analytics-figma .client-structure > p { height: auto; min-height: 27px; flex-wrap: wrap; }
+.analytics-figma .client-legend { gap: 24px; }
+.analytics-figma .analytics-employee-scroll { height: 206px; overflow: auto; }
+.analytics-figma .employee-rank-row { width: 100%; min-width: 870px; grid-template-columns: minmax(210px,252fr) 170fr 190fr 95fr 90fr 75fr; }
+.analytics-figma .rank-entry { height: 82px; min-height: 82px; flex-shrink: 0; }
+.analytics-figma .rank-head { min-height: 30px; }
+.analytics-figma .rank-person { justify-content: flex-start; }
+.analytics-figma .rank-person > span { min-width: 0; }
+.analytics-figma .rank-person button { padding: 0; overflow: hidden; border: 0; background: transparent; color: #2e3b4c; font: inherit; font-weight: 500; text-align: left; text-overflow: ellipsis; cursor: pointer; white-space: nowrap; }
+.analytics-figma .utilization { max-width: 150px; width: 80%; }
+.analytics-figma .utilization > i { display: block; height: 6px; border-radius: 3px; background: #0080dd; }
+.analytics-figma .rank-entry.is-second .utilization > i { background: #4cade6; }
+.analytics-figma .rank-entry small { overflow: hidden; text-overflow: ellipsis; }
+.analytics-inline-empty { margin: 5px 0; color: #7c8691; font-size: 12px; line-height: 18px; }
+.analytics-empty-notice { margin: 0; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: white; color: #7c8691; }
+.analytics-empty-notice button { border: 0; background: none; color: #0079de; font: inherit; cursor: pointer; }
+.analytics-report-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #7c8691; font-size: 12px; }
+.analytics-report-footer > div { display: flex; gap: 15px; flex-shrink: 0; }
+.analytics-report-footer button { border: 0; background: none; color: #0079de; font: inherit; cursor: pointer; }
+.provider-modal.analytics-details-modal { width: 1000px; }
+.analytics-details-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.analytics-details-heading h2 { margin: 0; font-size: 20px; font-weight: 500; }
+.analytics-details-modal .analytics-table-scroll { margin-top: 20px; }
+.analytics-details-modal table { width: 100%; min-width: 600px; border-collapse: collapse; font-size: 14px; }
+.analytics-details-modal th, .analytics-details-modal td { padding: 12px 8px; border-bottom: 1px solid #e5e7eb; font-weight: 400; text-align: left; }
+.analytics-details-modal a { color: #0079de; }
+.analytics-figma :is(button,input,select,a):focus-visible, .analytics-figma [role=button]:focus-visible { outline: 2px solid #0079de; outline-offset: 2px; }
+@media (max-width: 1500px) {
+  .analytics-figma .analytics-page-header { height: auto; min-height: 90px; flex-wrap: wrap; align-content: center; gap: 8px; }
+  .analytics-figma .analytics-kpi small span { display: none; }
+  .analytics-figma .heatmap-header > span { min-width: 0; font-size: 11px; }
+  .analytics-figma .metric-switcher { width: 330px; }
+  .analytics-figma .status-donut { flex-basis: 110px; }
+}
+@media (max-width: 1100px) {
+  .analytics-figma .analytics-kpis { height: auto; flex-basis: auto; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .analytics-figma .analytics-wide-row, .analytics-figma .analytics-bottom-row { height: auto; grid-template-columns: minmax(0,1fr); }
+  .analytics-figma .results-card, .analytics-figma .insights-card { height: 286px; }
+  .analytics-figma .heatmap-card, .analytics-figma .order-status-card { height: 282px; }
+  .analytics-figma .top-services-card { height: auto; flex-basis: auto; }
+  .analytics-figma .analytics-services-content { height: auto; grid-template-columns: minmax(0,1fr); }
+  .analytics-figma .analytics-filters { flex-wrap: wrap; height: auto; }
+  .analytics-figma .analytics-filter select { max-width: 210px; }
+  .analytics-figma .status-donut { flex-basis: 138px; }
+}
+@media (max-width: 600px) {
+  .analytics-content.analytics-figma { height: auto; overflow: visible; }
+  .analytics-figma .analytics-dashboard { gap: 12px; }
+  .analytics-figma .analytics-page-header { min-height: 150px; padding: 10px 0; }
+  .analytics-figma .analytics-title { width: 100%; }
+  .analytics-figma .analytics-title p { font-size: 12px; line-height: 18px; }
+  .analytics-figma .analytics-filters { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .analytics-figma .analytics-filter { min-width: 0; }
+  .analytics-figma .analytics-filter select { max-width: none; min-width: 0; font-size: 12px; }
+  .analytics-figma .analytics-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .analytics-figma .analytics-kpi { padding: 12px; }
+  .analytics-figma .analytics-kpi > span { min-height: 36px; line-height: 16px; }
+  .analytics-figma .analytics-kpi > strong { font-size: 18px; line-height: 22px; }
+  .analytics-figma .analytics-kpi > small { font-size: 11px; line-height: 14px; }
+  .analytics-figma .analytics-card { padding: 14px; }
+  .analytics-figma .results-header { height: auto; gap: 10px; align-items: flex-start; flex-direction: column; }
+  .analytics-figma .metric-switcher { width: 100%; }
+  .analytics-figma .metric-switcher button { padding: 0 5px; font-size: 11px; }
+  .analytics-figma .results-card { height: 320px; }
+  .analytics-figma .heatmap-header { height: auto; flex-wrap: wrap; }
+  .analytics-figma .heatmap-card { height: 320px; }
+  .analytics-figma .clients-card { height: 330px; }
+  .analytics-figma .client-structure { height: 135px; }
+  .analytics-figma .client-legend { gap: 12px; }
+  .analytics-figma .client-legend span { font-size: 11px; }
+  .analytics-figma .employee-results-header { height: auto; flex-wrap: wrap; gap: 10px; }
+  .analytics-figma .analytics-report-footer { align-items: flex-start; flex-direction: column; }
+  .analytics-custom-range { align-items: flex-start; flex-direction: column; }
+  .analytics-details-heading { align-items: flex-start; flex-direction: column; }
+}

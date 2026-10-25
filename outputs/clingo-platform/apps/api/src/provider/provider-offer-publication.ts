@@ -33,7 +33,10 @@ export async function publishOffer(manager: EntityManager, offer: ProviderOfferE
     rating: old?.rating ?? 0, reviewsCount: old?.reviewsCount ?? 0, experience: old?.experience ?? "Nie podano", completedOrders: old?.completedOrders ?? 0,
     priceFrom: `${money(config.ratePerSquareMeterMinor / 100)} / m²`, tags: ["Jednosesyjne"], description: offer.description,
     metrics: [{ id: "location", label: "Obsługiwany obszar", value: account.location.city }],
-    gallery: old?.gallery ?? [], reviews: old?.reviews ?? [], pricing: [pricing], frequencies,
+    gallery: old?.gallery ?? [], photos: config.presentation ? [
+      ...(config.presentation.banner ? [{ id: "banner", label: "Baner ogłoszenia", image: config.presentation.banner, gradient: "" }] : []),
+      ...config.presentation.gallery.map((image, index) => ({ id: `gallery-${index}`, label: `Realizacja ${index + 1}`, image, gradient: "" }))
+    ] : old?.photos ?? [], reviews: old?.reviews ?? [], pricing: [pricing], frequencies,
     addOns: config.addOns.map(addOn => ({ id: addOn.id, label: addOn.title, description: addOn.billingUnit === "halfHour" ? "Cena za 30 minut" : "Cena za sztukę",
       priceValue: addOn.priceMinor / 100, price: money(addOn.priceMinor / 100), durationMinutes: addOn.billingUnit === "halfHour" ? 30 : 0 })),
     standards: ["Usługa zgodna z opisem i zaakceptowanym standardem.", config.vacuumIncluded ? "Wykonawca przywozi odkurzacz." : "Odkurzacz zapewnia klient.",
@@ -44,5 +47,5 @@ export async function publishOffer(manager: EntityManager, offer: ProviderOfferE
   await manager.save(ProviderProfileEntity, profile);
   await manager.save(BoardListingEntity, manager.create(BoardListingEntity, { id, provider: account.name, rating: profile.rating, reviews: profile.reviewsCount,
     experience: profile.experience, price: profile.priceFrom, completedOrders: profile.completedOrders, mode: "Jednosesyjne", modeTone: "blue",
-    image: "/clingo-homepage/assets/images/logo-clingo-color-new.png", imageFit: "contain", imageScale: null, orderIndex: -1 }));
+    image: config.presentation?.banner ?? "/clingo-homepage/assets/images/logo-clingo-color-new.png", imageFit: config.presentation?.banner ? "cover" : "contain", imageScale: null, orderIndex: -1 }));
 }

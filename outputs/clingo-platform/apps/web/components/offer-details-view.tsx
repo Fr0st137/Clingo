@@ -1,5 +1,6 @@
 "use client";
 import { ReviewPhotos } from "./review-photos";
+import { ProviderOfferDescription } from "../../provider/components/provider-offer-description";
 
 
 import Link from "next/link";
@@ -158,6 +159,7 @@ function RatingStars({ rating }: { rating: number }) {
 }
 
 function profileHeaderImage(id: string) {
+  if (id.startsWith("service-")) return { fit: "object-contain", src: "/clingo-homepage/assets/images/logo-clingo-color-new.png" };
   if (id === "stepapp") {
     return { fit: "object-contain", src: "/figma-assets/board-stepapp-logo.png" };
   }
@@ -468,7 +470,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
 
         <SectionCard title="Opis">
           <div className="mt-[20px] rounded-[20px] bg-[#f9fafb] p-[15px]" data-node-id="6195:11147">
-            <p className="m-0 whitespace-pre-line text-[14px] font-normal leading-[22px] text-[#2e3b4c]">{profile.description}</p>
+            <p className="m-0 whitespace-pre-line text-[14px] font-normal leading-[22px] text-[#2e3b4c]"><ProviderOfferDescription text={profile.description} /></p>
           </div>
           <div className="mt-[20px] flex flex-wrap gap-[10px]">
             {profile.tags.map((tag) => (

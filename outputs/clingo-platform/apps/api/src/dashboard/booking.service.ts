@@ -297,12 +297,14 @@ export class BookingService {
     return { days, today: localDate(now), maxDate: bookingLimit(now), currentStartsAt: target.start.toISOString(), currentEndsAt: target.end.toISOString(), duration: durationLabel(target.duration) };
   }
 
-  async reschedule(id: string, email: string, startsAt: Date, endsAt: Date, sessionIndex?: number) {
+  async reschedule(id: string, email: string, startsAt: Date, endsAt: Date, sessionIndex?: number, providerAction?: { accountId: string; revision: number; message: string }) {
     return this.db.transaction(async manager => {
       const current = await manager.findOneBy(OrderEntity, { id, userEmail: email });
       if (!current || !current.providerId) throw new NotFoundException("Nie znaleziono rezerwacji.");
       const offer = await this.offer({ providerId: current.providerId }, manager, true);
+      if (providerAction && offer.accountId !== providerAction.accountId) throw new NotFoundException("Nie znaleziono rezerwacji.");
       const order = await manager.findOneOrFail(OrderEntity, { where: { id, userEmail: email }, lock: { mode: "pessimistic_write" } });
+      if (providerAction && order.revision !== providerAction.revision) throw new ConflictException("Rezerwacja zmieniła się. Wczytaj aktualne dane.");
       const { duration } = this.rescheduleTarget(order, sessionIndex);
       if (endsAt.getTime() - startsAt.getTime() !== duration * 60_000) throw new BadRequestException("Przełożenie nie może zmienić czasu trwania usługi.");
       const slot = (await this.rescheduleSlots(order, localDate(startsAt), duration, offer.bookingSettings ?? defaultWorkingHours, manager, sessionIndex)).find(s => s.startsAt === startsAt.toISOString());
@@ -316,6 +318,10 @@ export class BookingService {
         order.startsAt = startsAt; order.endsAt = endsAt;
       }
       order.revision += 1;
+      if (providerAction?.message) {
+        order.selectedOptions ??= { addOns: [], frequencyId: "", pricingId: "" };
+        order.selectedOptions.providerMessages = [...(order.selectedOptions.providerMessages ?? []), { type: "rescheduled" as const, message: providerAction.message, createdAt: new Date().toISOString() }].slice(-100);
+      }
       await manager.save(order);
     });
   }

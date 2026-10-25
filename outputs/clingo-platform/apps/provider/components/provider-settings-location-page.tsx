@@ -25,7 +25,7 @@ function LocationForm() {
     finally { pending.current = false; setBusy(false); }
   }
   if (resource.loading || resource.error || !draft) return <SettingsLoadState loading={resource.loading || (!resource.error && !draft)} error={resource.error} retry={resource.reload} />;
-  return <form className="settings-live-form" onSubmit={save}><h1>Lokalizacja i zasięg</h1><p className="provider-feedback">Zapisz bazę dojazdu i planowany obszar obsługi w Polsce. Ustawienia nie zmieniają jeszcze wyników wyszukiwania ani dostępności rezerwacji.</p>
+  return <form className="settings-live-form" onSubmit={save}><h1>Lokalizacja i zasięg</h1><p className="provider-feedback">Zapisz bazę dojazdu i planowany obszar obsługi w Polsce. Miejscowość określa obszar rezerwacji w opublikowanych ogłoszeniach. Zapisany promień nie rozszerza jeszcze tego obszaru na sąsiednie miejscowości.</p>
     <section className="settings-section" aria-label="Adres działalności"><h2>Adres wyjściowy</h2><fieldset disabled={busy} className="settings-live-fields">
       <SettingsInput label="Ulica i numer" required maxLength={240} autoComplete="street-address" value={draft.street} onChange={e => change("street", e.target.value)} />
       <SettingsInput label="Kod pocztowy" required maxLength={6} pattern="[0-9]{2}-[0-9]{3}" placeholder="00-000" autoComplete="postal-code" value={draft.postalCode} onChange={e => change("postalCode", e.target.value)} />

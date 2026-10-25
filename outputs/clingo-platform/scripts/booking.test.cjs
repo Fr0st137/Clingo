@@ -2,6 +2,15 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { quoteBooking, daySlots, warsawDate, bookingLimit, localDate, addLocalDays, multiSessionDurations } = require('../apps/api/dist/dashboard/booking');
 const { BookingService } = require('../apps/api/dist/dashboard/booking.service');
+const { bookingJobs } = require('../apps/api/dist/dashboard/booking-bridge');
+
+test('provider details retain the booking frequency snapshot, extras, notes and session identity', () => {
+  const rows = bookingJobs({ id:'booking-id',userEmail:'customer@example.test',providerId:'profile-id',status:'Zaplanowane',mode:'Jednorazowe',serviceType:'Sprzątanie',address:'Adres',startsAt:new Date('2026-10-26T11:30:00Z'),endsAt:new Date('2026-10-26T14:45:00Z'),revision:7,summary:{total:'165,00 zł',duration:'3h 15min',lines:[]},selectedOptions:{frequencyLabel:'Co tydzień',contactName:'Klient',contactPhone:'',notes:'Uwagi klienta',addOns:[{id:'oven',label:'Piekarnik',quantity:2}]} });
+  assert.equal(rows[0].frequencyLabel,'Co tydzień');
+  assert.equal(rows[0].bookingId,'booking-id');assert.equal(rows[0].revision,7);
+  assert.equal(rows[0].notes,'Uwagi klienta');assert.equal(rows[0].addOns[0].quantity,2);
+  assert.equal(rows[0].priceMinor,16500);assert.equal(rows[0].durationMinutes,195);
+});
 
 const offer = { pricing: [{ id: 'base', label: 'Sprzątanie', priceValue: 165, duration: '3 godziny 15 minut' }],
   frequencies: [{ id: 'once', label: 'Jednorazowo', discount: '0%' }, { id: 'weekly', label: 'Co tydzień', discount: '-8%' }],

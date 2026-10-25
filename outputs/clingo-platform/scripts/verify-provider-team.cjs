@@ -38,7 +38,7 @@ async function main() {
     source = new DataSource({ ...options, entities: [...authEntities, ProviderAccountEntity, ProviderProfileEntity, OrderEntity], synchronize: true });
     await source.initialize(); await source.destroy();
     await db.query(`SET search_path TO "${schema}"`);
-    for (const file of ['20260924-provider-team.sql', '20260925-provider-settings.sql', '20260925-provider-clients.sql', '20260928-provider-offers-location.sql', '20260929-provider-jobs.sql', '20261003-provider-offer-configuration.sql', '20261003-provider-reviews.sql', '20261003-provider-multi-orders.sql', '20261017-customer-provider-bookings.sql']) {
+    for (const file of ['20260924-provider-team.sql', '20260925-provider-settings.sql', '20260925-provider-clients.sql', '20260928-provider-offers-location.sql', '20260929-provider-jobs.sql', '20261003-provider-offer-configuration.sql', '20261003-provider-reviews.sql', '20261003-provider-multi-orders.sql', '20261017-customer-provider-bookings.sql', '20261023-provider-publication.sql']) {
       const migration = readFileSync(resolve(__dirname, '../apps/api/src/database/migrations', file), 'utf8');
       await db.query(migration); await db.query(migration);
     }

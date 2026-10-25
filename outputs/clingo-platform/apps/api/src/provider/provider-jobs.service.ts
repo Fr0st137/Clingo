@@ -61,14 +61,14 @@ export class ProviderJobsService {
         const reservations = (await accountBookings(manager, accountId)).flatMap(bookingJobs);
         if (reservations.some(booking => booking.status === "scheduled" && booking.date === input.date && input.startMinute < booking.startMinute + booking.durationMinutes && booking.startMinute < input.startMinute + input.durationMinutes)) throw new BadRequestException("Termin jest zajęty przez rezerwację klienta. Wybierz inny termin.");
       }
-      if (employee && input.status !== "cancelled") {
+      if (employee && input.status === "scheduled") {
         const sameDay = await manager.find(ProviderJobEntity, { where: { accountId, employeeId: employee.id, date: input.date } });
-        if (sameDay.some(job => job.id !== id && job.status !== "cancelled" && input.startMinute < job.startMinute + job.durationMinutes && job.startMinute < input.startMinute + input.durationMinutes)) throw new BadRequestException("Pracownik ma już zlecenie w tym czasie. Zmień godzinę lub przypisanie.");
+        if (sameDay.some(job => job.id !== id && job.status === "scheduled" && input.startMinute < job.startMinute + job.durationMinutes && job.startMinute < input.startMinute + input.durationMinutes)) throw new BadRequestException("Pracownik ma już zlecenie w tym czasie. Zmień godzinę lub przypisanie.");
       }
       const sameClient = existing?.clientId === client.id;
       const row = manager.create(ProviderJobEntity, { ...(existing ?? {}), ...input, accountId,
         clientName: sameClient ? existing!.clientName : client.name, clientPhone: sameClient ? existing!.clientPhone : client.phone, clientEmail: sameClient ? existing!.clientEmail : client.email,
-        address: sameClient ? existing!.address : [client.street, [client.postalCode, client.city].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+        address: input.address ?? (sameClient ? existing!.address : [client.street, [client.postalCode, client.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")),
         serviceTitle: existing?.offerId === offer.id ? existing.serviceTitle : offer.title,
         employeeName: employee?.name ?? (existing?.employeeId === null && input.employeeId === null ? existing.employeeName : ""), revision: existing ? existing.revision + 1 : 1 });
       return jobView(await manager.save(ProviderJobEntity, row));

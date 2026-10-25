@@ -23,6 +23,7 @@ function setup(role = 'owner') {
     async update(where, input) { const row = rows.get(where.id); if (!row || !matches(row, where)) return { affected: 0 }; rows.set(where.id, { ...row, ...input }); return { affected: 1 }; }
   };
   const employees = { async find({ where }) { return where.accountId === 'a' ? [{ id: 'employee-a', name: 'Pracownik A', accountId: 'a', email: 'worker@example.test', phone: '', services: ['homes'], schedule: [], showInCalendar: true, secret: 'never-export' }] : []; } };
+  accounts.manager = { transaction: callback => callback({ findOne: (_entity, { where }) => accounts.findOneBy(where), update: (_entity, where, input) => accounts.update(where, input), find: async () => [] }) };
   return { service: new ProviderSettingsService(auth, memberships, accounts, employees), rows, calls };
 }
 test('profile validation normalizes contacts, allows clearing optional fields and rejects forged properties', () => {

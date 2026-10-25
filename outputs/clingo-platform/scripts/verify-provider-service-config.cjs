@@ -35,12 +35,12 @@ const db = new Client({ host: '127.0.0.1', port: 55432, database: 'clingo', user
     await page.getByLabel('Stawka za metr kwadratowy').fill('2,75');
     await page.getByLabel('Stawka za kilometr').fill('0,80');
     await page.getByRole('switch', { name: 'Wyprzedzenie zamówienia' }).click();
-    await page.getByLabel('Czas wykonania w minutach').fill('210');
+    await page.getByLabel('Czas wykonania w godzinach').fill('3.5');
     await page.getByRole('button', { name: 'Zapisz jako szkic' }).first().click();
     await page.waitForTimeout(1200);
     const feedback = await page.locator('.provider-feedback').allTextContents();
     assert.deepEqual(feedback, [], `Save feedback: ${feedback.join(' | ')}`);
-    assert.ok((await page.locator('.offer-config-save-state').allTextContents()).includes('Szkic zapisany'), 'Missing save confirmation');
+    assert.ok((await page.locator('.offer-config-save-state').allTextContents()).some(text => text.startsWith('Szkic zapisany')), 'Missing save confirmation');
 
     await page.reload();
     assert.equal(await page.getByLabel('Stawka za metr kwadratowy').inputValue(), '2,75');
@@ -52,14 +52,39 @@ const db = new Client({ host: '127.0.0.1', port: 55432, database: 'clingo', user
     assert.equal(sql.configuration.durationPer100SquareMetersMinutes, 210);
     assert.equal(sql.configuration.leadTimeEnabled, true);
     assert.equal(sql.revision, 2);
+    await page.getByLabel('Opis ogłoszenia').fill('**Dokładne sprzątanie** mieszkań i domów.');
+    await page.getByLabel('Plik banera', { exact: true }).setInputFiles(resolve(__dirname, '../apps/provider/public/figma-assets/services/editor/cleaning.png'));
+    await page.getByRole('img', { name: 'Baner ogłoszenia', exact: true }).waitFor();
+    await page.getByLabel('Pliki galerii', { exact: true }).setInputFiles(resolve(__dirname, '../apps/provider/public/figma-assets/services/editor/gallery-example.png'));
+    await page.getByRole('img', { name: 'Realizacja 1', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Zapisz jako szkic', exact: true }).first().click();
+    await page.waitForFunction(() => document.querySelector('.offer-config-save-state')?.textContent.includes('Szkic zapisany'));
+    await page.reload();
+    await page.getByRole('img', { name: 'Baner ogłoszenia', exact: true }).waitFor();
+    assert.equal(await page.getByRole('img', { name: 'Realizacja 1', exact: true }).count(), 1);
+    const mediaSql = (await db.query('SELECT configuration FROM provider_offers WHERE id=$1', [offer.id])).rows[0].configuration;
+    assert.ok(mediaSql.presentation.banner.startsWith('data:image/jpeg;base64,'));
+    assert.equal(mediaSql.presentation.gallery.length, 1);
+    await request('settings/location', 'PUT', { street: 'Testowa 10', postalCode: '00-001', city: 'Warszawa', radiusKm: 25, revision: 1 });
+    await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: 'Opublikuj', exact: true }).first().click();
+    await page.waitForFunction(() => document.querySelector('.offer-config-save-state')?.textContent === 'Ogłoszenie opublikowane');
+    const publicProfile = await (await context.request.get(`http://localhost:4000/dashboard/provider-profiles/service-${offer.id}`)).json();
+    assert.equal(publicProfile.photos.length, 2);
+    assert.equal(publicProfile.photos[0].image, mediaSql.presentation.banner);
+    assert.equal(publicProfile.description, '**Dokładne sprzątanie** mieszkań i domów.');
     assert.deepEqual(errors, []);
-    console.log('PASS: list navigation, configuration save, reload and PostgreSQL JSONB persistence.');
+    console.log('PASS: list navigation, configuration save, reload, banner/gallery in PostgreSQL, publication with media and formatted description.');
   } finally {
     await browser.close();
     const user = (await db.query('SELECT id FROM users WHERE email=$1', [email])).rows[0];
     if (user) {
       const membership = (await db.query('SELECT account_id FROM provider_memberships WHERE user_id=$1', [user.id])).rows[0];
-      if (membership) await db.query('DELETE FROM provider_accounts WHERE id=$1', [membership.account_id]);
+      if (membership) {
+        const ids = (await db.query('SELECT id FROM provider_profiles WHERE account_id=$1', [membership.account_id])).rows.map(row => row.id);
+        if (ids.length) { await db.query('DELETE FROM board_listings WHERE id=ANY($1)', [ids]); await db.query('DELETE FROM provider_profiles WHERE id=ANY($1)', [ids]); }
+        await db.query('DELETE FROM provider_accounts WHERE id=$1', [membership.account_id]);
+      }
       await db.query('DELETE FROM auth_sessions WHERE email=$1', [email]);
       await db.query('DELETE FROM users WHERE id=$1', [user.id]);
     }

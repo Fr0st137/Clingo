@@ -70,5 +70,6 @@ export class OrderEntity {
     sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
     requestId?: string;
     requestHash?: string;
+    providerMessages?: Array<{ type: "cancelled" | "rescheduled"; message: string; createdAt: string }>;
   } | null;
 }

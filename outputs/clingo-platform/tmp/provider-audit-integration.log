@@ -1,0 +1,1 @@
+PASS: additive migrations, real auth, concurrent onboarding, ownership/roles, validation, competing edits, PostgreSQL persistence, settings, export, password rotation, delete and logout.

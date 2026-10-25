@@ -450,7 +450,7 @@ export class DashboardService implements OnModuleInit {
       this.boardSearchFieldsRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardFiltersRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardListingsRepository.find({ order: { orderIndex: "ASC" } }),
-      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "addOns"] })
+      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "addOns", "service", "areaPricing"] })
     ]);
     const profilesById = new Map(providerProfiles.map((profile) => [profile.id, profile]));
 
@@ -460,6 +460,8 @@ export class DashboardService implements OnModuleInit {
       searchFields: searchFields.map(({ id, label, value }) => ({ id, label, value })),
       filters: filters.map(({ id, title, options }) => ({ id, title, options })),
       listings: listings.filter((listing) => profilesById.has(listing.id)).map((listing) => ({
+        service: profilesById.get(listing.id)?.service,
+        areaPricing: profilesById.get(listing.id)?.areaPricing,
         addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label }) => ({ id, label })) ?? [],
         id: listing.id,
         provider: listing.provider,

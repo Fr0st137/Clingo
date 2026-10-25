@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ChangeEventHandler, ReactNode } from "react";
 import { ProviderToggle } from "./provider-toggle";
 
 export const settingsAsset = (name: string) => `/figma-assets/settings/${name}`;
@@ -17,7 +17,7 @@ export function SettingsSection({ title, description, children, className = "" }
   );
 }
 
-export function SettingsField({ label, value, action, verified = false, password = false, compact = false, className = "", placeholder, prefix, suffix, labelAdornment, readOnly, inputMode, autoComplete, autoFocus, maxLength, type = "text" }: {
+export function SettingsField({ label, value, action, verified = false, password = false, compact = false, className = "", placeholder, prefix, suffix, labelAdornment, readOnly, inputMode, autoComplete, autoFocus, maxLength, onChange, required, type = "text" }: {
   label: string;
   value?: string;
   action?: "Edytuj" | "Skopiuj";
@@ -34,6 +34,8 @@ export function SettingsField({ label, value, action, verified = false, password
   autoComplete?: string;
   autoFocus?: boolean;
   maxLength?: number;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+  required?: boolean;
   type?: "text" | "tel" | "email";
 }) {
   return (
@@ -41,7 +43,7 @@ export function SettingsField({ label, value, action, verified = false, password
       <label className={`settings-field${password ? " is-password" : ""}`}>
         <span className="settings-field-label">{label}{labelAdornment}</span>
         {prefix}
-        <input aria-label={label} type={password ? "password" : type} defaultValue={value ?? ""} placeholder={placeholder} readOnly={readOnly ?? !password} inputMode={inputMode} autoComplete={autoComplete ?? (password ? "off" : undefined)} autoFocus={autoFocus} maxLength={maxLength} />
+        <input aria-label={label} type={password ? "password" : type} value={onChange ? value : undefined} defaultValue={onChange ? undefined : value ?? ""} onChange={onChange} required={required} placeholder={placeholder} readOnly={readOnly ?? (!password && !onChange)} inputMode={inputMode} autoComplete={autoComplete ?? (password ? "off" : undefined)} autoFocus={autoFocus} maxLength={maxLength} />
         {suffix}
         {action ? <button type="button" className="settings-field-action" aria-label={`${action}: ${label}`}>{action}</button> : null}
       </label>

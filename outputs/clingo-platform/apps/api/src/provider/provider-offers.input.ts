@@ -5,6 +5,7 @@ import { revisionInput, textInput } from "./provider.input";
 export type OfferAreaTier = { minSquareMeters: number; maxSquareMeters: number | null; workers: number };
 export type OfferAddOn = { id: string; title: string; priceMinor: number; billingUnit: "piece" | "halfHour" };
 export type OfferConfiguration = {
+  presentation?: { banner: string | null; gallery: string[] };
   ratePerSquareMeterMinor: number;
   travelRatePerKmMinor: number;
   durationPer100SquareMetersMinutes: number;
@@ -70,7 +71,7 @@ export function offerConfiguration(value: unknown): OfferConfiguration {
   if (value === undefined) return defaultOfferConfiguration();
   const input = objectInput(value);
   const keys = ["ratePerSquareMeterMinor", "travelRatePerKmMinor", "durationPer100SquareMetersMinutes", "areaTiers", "leadTimeEnabled", "leadHours", "bufferEnabled", "bufferMinutes", "vacuumIncluded", "requiresClientPhotos", "recurringEnabled", "recurringDiscountPercent", "addOns", "standardsAccepted"];
-  exactKeys(input, keys);
+  exactKeys(input, [...keys, "presentation"]);
   if (keys.some(key => !(key in input))) throw new BadRequestException("Konfiguracja usługi jest niekompletna.");
   if (!Array.isArray(input.areaTiers) || input.areaTiers.length < 1 || input.areaTiers.length > 12) throw new BadRequestException("Dodaj od 1 do 12 przedziałów powierzchni.");
   let previousMaximum: number | null = null;
@@ -97,7 +98,19 @@ export function offerConfiguration(value: unknown): OfferConfiguration {
     const billingUnit: OfferAddOn["billingUnit"] = addOn.billingUnit;
     return { id, title: textInput(addOn.title, "nazwa usługi dodatkowej", 100, true), priceMinor: integer(addOn.priceMinor, "Cena usługi dodatkowej", 1, 10000000), billingUnit };
   });
+  let presentation: OfferConfiguration["presentation"];
+  if (input.presentation !== undefined) {
+    const media = objectInput(input.presentation);
+    exactKeys(media, ["banner", "gallery"]);
+    const image = (value: unknown): string => {
+      if (typeof value !== "string" || value.length > 220000 || !/^data:image\/(?:jpeg|webp|png);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)) throw new BadRequestException("Nieprawidłowe zdjęcie. Dodaj plik JPG, PNG lub WebP.");
+      return value;
+    };
+    if (!Array.isArray(media.gallery) || media.gallery.length > 10) throw new BadRequestException("Galeria może zawierać maksymalnie 10 zdjęć.");
+    presentation = { banner: media.banner === null ? null : image(media.banner), gallery: media.gallery.map(image) };
+  }
   return {
+    ...(presentation ? { presentation } : {}),
     ratePerSquareMeterMinor: integer(input.ratePerSquareMeterMinor, "Stawka za metr kwadratowy", 1, 100000),
     travelRatePerKmMinor: integer(input.travelRatePerKmMinor, "Stawka za dojazd", 0, 100000),
     durationPer100SquareMetersMinutes: integer(input.durationPer100SquareMetersMinutes, "Czas wykonania", 15, 1440),
@@ -123,5 +136,5 @@ export function offerInput(value: unknown, updating = false): OfferInput & { rev
   if (!Number.isSafeInteger(input.priceMinor) || (input.priceMinor as number) < 1 || (input.priceMinor as number) > 10000000) throw new BadRequestException("Cena musi wynosić od 0,01 do 100 000 zł.");
   if (!Number.isInteger(input.durationMinutes) || (input.durationMinutes as number) < 15 || (input.durationMinutes as number) > 1440) throw new BadRequestException("Czas usługi musi wynosić od 15 do 1440 minut.");
   if (input.status !== "draft" && !(updating && ["archived", "published"].includes(input.status as string))) throw new BadRequestException("Nieprawidłowy status usługi.");
-  return { title, category: input.category, description: input.description.trim(), priceMinor: input.priceMinor as number, durationMinutes: input.durationMinutes as number, status: input.status, configuration: offerConfiguration(input.configuration), ...(updating ? { revision: revisionInput(input.revision) } : {}) };
+  return { title, category: input.category, description: input.description.trim(), priceMinor: input.priceMinor as number, durationMinutes: input.durationMinutes as number, status: input.status as OfferInput["status"], configuration: offerConfiguration(input.configuration), ...(updating ? { revision: revisionInput(input.revision) } : {}) };
 }

@@ -84,6 +84,7 @@ const location = () => ({street:'Testowa 12',postalCode:'00-001',city:'Warszawa'
 function locations(role='owner') {
   const rows=new Map(['a','b'].map(id=>[id,{id,location:{street:'',postalCode:'',city:'',radiusKm:0},locationRevision:1,profileRevision:7,notificationsRevision:4}]));
   const service=new ProviderSettingsService({async sessionUser(token){if(!token)throw new UnauthorizedException();return{id:token};}}, {async findOneBy({userId}){return userId==='none'?null:{accountId:userId,role};}}, {async findOneBy({id}){return structuredClone(rows.get(id));},async update(where,input){const row=rows.get(where.id);if(!row||!Object.entries(where).every(([k,v])=>row[k]===v))return{affected:0};rows.set(where.id,{...row,...input});return{affected:1};}},{});
+  service.accounts.manager = { transaction: callback => callback({ findOne: (_entity, { where }) => service.accounts.findOneBy(where), update: (_entity, where, input) => service.accounts.update(where, input), find: async () => [] }) };
   return {service,rows};
 }
 test('location validates a complete address, postal code and bounded integer radius', () => {

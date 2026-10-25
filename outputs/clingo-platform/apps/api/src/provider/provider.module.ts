@@ -1,4 +1,7 @@
 import { ProviderJobEntity } from "./provider-jobs.entity";
+import { ProviderAbsencesController } from "./provider-absences.controller";
+import { ProviderAbsencesService } from "./provider-absences.service";
+import { BookingService } from "../dashboard/booking.service";
 import { ProviderBookingsService } from "./provider-bookings.service";
 import { ProviderBookingsController } from "./provider-bookings.controller";
 import { ProviderJobsService } from "./provider-jobs.service";
@@ -24,6 +27,6 @@ import { ProviderMultiOrderEntity } from "./provider-multi-orders.entity";
 import { ProviderMultiOrdersService } from "./provider-multi-orders.service";
 import { ProviderMultiOrdersController } from "./provider-multi-orders.controller";
 
-@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderBookingsController, ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderBookingsService, ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
+@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderAbsencesController, ProviderBookingsController, ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderAbsencesService, BookingService, ProviderBookingsService, ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
 export class ProviderModule {}
 

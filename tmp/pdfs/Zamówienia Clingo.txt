@@ -1,0 +1,386 @@
+=== STRONA 1 ===
+Zamówienia Clingo – nowy model
+działania
+
+1. Założenia ogólne
+
+System zamówień Clingo opiera się na:
+
+   ●   widełkach metrażowych (m² → liczba pracowników),
+   ●   wydajności 1 pracownika (m²/h),
+   ●   automatycznym planowaniu harmonogramu,
+   ●   możliwości edycji po stronie Wykonawcy,
+   ●   braku płatności na platformie (rozliczenie bezpośrednio między Klientem a
+       Wykonawcą).
+   ●   W kalendarzu można dokonywać rezerwacji na 6 mies. do przodu.
+
+System rozróżnia dwa typy zamówień:
+
+   1.  Zamówienie zwykłe (jednosesyjne)
+   2.  Zamówienie wielosesyjne
+
+
+
+2. Ograniczenia wyszukiwania
+
+2.1 Maksymalny metraż
+
+Dla każdego typu usługi ustawiony jest:
+
+   ●   globalny maksymalny limit m² (konfiguracja systemowa),
+   ●   dodatkowe filtrowanie przez widełki wykonawcy.
+
+System działa w następującej kolejności:
+
+   1.  Weryfikuje, czy podany metraż mieści się w globalnym limicie dla danej usługi.
+   2.  Filtruje wykonawców na podstawie ich widełek metrażowych.
+   3.  Wyświetla tylko tych wykonawców, którzy obsługują podany zakres m².
+
+
+
+3. Logika czasu realizacji
+
+=== STRONA 2 ===
+3.1 Definicje systemowe
+
+    ●   Wydajność 1 pracownika – określona w m²/h.
+
+    ●   k_est – liczba pracowników wynikająca z widełek.
+
+    ●   Zaplanowane godziny – suma godzin wszystkich zaplanowanych sesji w kalendarzu
+        (z uwzględnieniem liczby przypisanych pracowników).
+            ○   Przykład: sesja 4h × 3 osoby = 12 roboczogodzin zaplanowane
+
+    ●   Pozostało – różnica pomiędzy Wymaganymi godzinami a Zaplanowanymi godzinami.
+
+    ●   Wymagane - suma godzin, które system obliczył na podstawie podanego przez
+        klienta metrażu oraz wydajności 1 pracownika jako czas na realizację usługi.
+            ○   Przykład: 150 m² / 10 m²/h = 15 roboczogodzin
+
+
+
+4. Zamówienie zwykłe (jednosesyjne)
+
+4.1 Proces po stronie Klienta
+
+    1.  Klient podaje metraż, wybiera usługę i podaje lokalizację.
+    2.  Klient przechodzi na tablice ogłoszeń
+            ○   System oblicza - wycenę na każdym ogłoszeniu
+    3.  Klient przechodzi do profilu Wykonawcy
+            ○   system oblicza - szacowany czas realizacji.
+    4.  Klient wypełnia wymagane (dla Sprzątanie obiektów - Mieszkań i domów, biur i lokali
+        użytkowych)
+            ○   Częstotliwość sprzątania
+            ○   Sposób udostępnienia lokalu
+    5.  Klika „Przejdź do zamówienia”.
+    6.  Po zalogowaniu przechodzi do kalendarza.
+    7.  Wybiera dostępny termin (data i godzina).
+    8.  Przechodzi do podsumowania zamówienia.
+    9.  Klika “Potwierdź i zamów”
+
+4.2 Automatyczne przypisywanie pracowników
+
+Po zatwierdzeniu terminu:
+
+    ●   System automatycznie przypisuje pracowników zgodnie z:
+            ○   liczbą wynikającą z widełek (k_est),
+            ○   dostępnością pracowników w wybranym slocie.
+
+=== STRONA 3 ===
+    ●   Algorytm przypisania powinien uwzględniać rotację, najmniejsze obciążenie itp., aby
+        nie przypisywał jednego pracownika do zamówień (szczegóły do doprecyzowania na
+        etapie końcowym).
+
+Wykonawca może później edytować przypisanie pracowników.
+
+4.3 Zamówienia zwykłe po stronie Wykonawcy
+W panelu Wykonawca może:
+    1.  Odwołać zamówienie
+             a.  Warning że sugeruje się poinformować klienta przed odwołaniem
+    2.  Przełożyć zamówienie na inny dzień
+             a.  Warning że sugeruje się poinformować klienta przed przełożeniem
+             b.  Panelu wyboru nowego dnia i godziny (tylko dostępne)
+    3.  Zmienić godzinę początku zlecenia
+             a.  jeżeli zmiana powoduje konflikt z innym zleceniem przypisanym do
+                 któregokolwiek z przypisanych pracowników, system blokuje możliwość.
+             b.  Jeżeli dojdzie do zablokowania możliwości zmiany to warnig że się nie da i
+                 trzeba ręcznie edytować blokujące zlecenie w celu dokonania tej zmiany.
+    4.  Zmienić godzinę końca zamówienia
+             a.  jeżeli zmiana powoduje konflikt z innym zleceniem przypisanym do
+                 któregokolwiek z przypisanych pracowników, system blokuje możliwość.
+             b.  Jeżeli dojdzie do zablokowania możliwości zmiany to warnig że się nie da i
+                 trzeba ręcznie edytować blokujące zlecenie w celu dokonania tej zmiany.
+    5.  Edytować powierzchnię
+             a.  po edycji popup z pytaniem, czy zaktualizować cenę zlecenia
+    6.  Zmienić częstotliwość usługi
+             a.  Jednorazowa
+             b.  Raz w miesiącu
+             c.  Raz na 2 tygodnie
+             d.  Raz w tygodniu
+    7.  Rozliczyć zamówienie - otwiera się popup z możliwością:
+             a.  Dodania rabatu
+             b.  Wystawienie faktury
+             c.  Wystawienie faktury Pro forma
+    8.  Zamienić pracownika
+             a.  Pokazuje tylko dostępnych pracowników w czasie trwania zlecenia
+    9.  Usunąć pracownika (min. 1 przypisany)
+             a.  Warning że zamówienie zostało przewidziane na x pracowników i czy
+                 Wykonawca jest pewien że wykona zamówienie z mniejszą ilością
+                 pracowników.
+    10. Dodać pracownika
+             a.  Pokazuje tylko dostępnych pracowników w czasie trwania zlecenia
+    11. Możliwość dodawania notatek własnych
+    12. Podgląd historii zmian w zamówieniu
+    13. Przycisk przejścia do chatu z klientem
+    14. Możliwość dodania usługi dodatkowej
+             a.  Automatycznie dolicza się do ceny zamówienia
+
+=== STRONA 4 ===
+    15. Możliwość dodania usługi własnej
+            a.  Automatycznie dolicza się do ceny zamówienia
+
+
+5. Zamówienie wielosesyjne
+
+5.1 Proces po stronie Klienta
+
+    1.  Klient podaje metraż, wybiera usługę i podaje lokalizację.
+    2.  Klient przechodzi na tablice ogłoszeń
+            ○   System oblicza - wycenę na każdym ogłoszeniu
+    3.  Klient przechodzi do profilu Wykonawcy
+            ○   system oblicza - szacowany czas realizacji.
+    4.  Klient wypełnia wymagane (brak pola “Częstotliwość sprzątania”)
+            ○   Sposób udostępnienia lokalu
+    5.  Klika „Przejdź do zamówienia”.
+    6.  Po zalogowaniu przechodzi do kalendarza.
+
+5.2 Wybór pierwszej sesji
+
+    ●   Klient wybiera dostępną w kalendarzu datę i godzinę.
+    ●   Dostępność zależy od wolnych slotów w kalendarzu.
+
+5.3 Automatyczne planowanie harmonogramu
+
+Po wyborze pierwszej sesji przez Klienta system automatycznie tworzy pełny harmonogram
+realizacji.
+
+Proces wygląda następująco:
+
+    1.  System oblicza wymagany czas na podstawie:
+
+            ○   metrażu,
+
+            ○   wydajności 1 pracownika,
+
+    2.  System sprawdza dostępność pracowników w kalendarzu Wykonawcy.
+
+    3.  Harmonogram tworzony jest wyłącznie w takich slotach, w których:
+
+            ○   dostępnych jest co najmniej k_est pracowników,
+                    i.  Dostępność pracownika liczona jest na podstawie:
+                            1.   nie bycia przypisanym do innych sesji;
+
+=== STRONA 5 ===
+                              2.  byciem dostępnym wg grafika.
+
+             ○   slot spełnia minimalną długość (np. 3 godziny),
+
+             ○   zachowana jest maksymalna przerwa między sesjami (np. 2 dni).
+
+    4.  System:
+
+             ○   przypisuje konkretnych pracowników do każdej sesji (W widoku klienta na
+                 kafelkach sesji widoczna jest jedynie liczba przypisanych pracowników.),
+
+             ○   oblicza Zaplanowane godziny.
+
+Walidacja nr 1 - jeśli w międzyczasie doszło do kolizji (np. inny użytkownik zajął slot):
+
+    ●   system próbuje automatycznie przeliczyć harmonogram na początkowo wybranej
+        dacie i godzinie klienta,
+    ●   jeśli nie jest to możliwe, wyświetla komunikat “Przepraszamy, w międzyczasie inny
+        użytkownik zajął slot zaplanowany w Twoim harmonogramie - wybierz inną datę
+        dostępną w kalendarzu” i wymusza ponowny wybór terminu przez Klienta.
+
+5.4 Edycja po stronie Klienta
+
+Klient może podczas planowania:
+
+    ●   zaznaczyć dany dzień jako niedostępny klikając w przycisk “Inny dzień”
+
+System wtedy:
+
+    ●   tworzy nową sesję w najbliższym dostępnym terminie
+             ○   jeżeli jest potrzeba rozbija sesję na kilka mniejszych, posiadających inną
+                 ilością pracowników oraz godzin, aczkolwiek odpowiadających wymaganiom
+                 godzinowym zamówienia.
+             ○   Rozbite sesje muszą respektować zasadę “zachowana jest maksymalna
+                 przerwa między sesjami (np. 2 dni).”
+
+Edycja jest możliwa wyłącznie przed przejściem do podsumowania.
+
+5.5 Podsumowanie zamówienia
+
+W podsumowaniu Klient widzi:
+
+    ●   Termin realizacji – lista wszystkich zaplanowanych sesji.
+    ●   Adres zamówienia – wraz z numerem mieszkania/lokalu (do uzupełnienia jeśli
+        dotyczy).
+    ●   Szczegóły wyceny:
+             ○   metraż,
+             ○   usługi dodatkowe,
+
+=== STRONA 6 ===
+           ○   dojazd,
+           ○   inne pozycje.
+5.6 Po kliknięciu w przycisk “Potwierdź i zamów” przez
+klienta
+
+Walidacja nr 2 - jeśli w międzyczasie doszło do kolizji (np. inny użytkownik zajął slot):
+
+   ●   System wyświetla komunikat “Przepraszamy, w międzyczasie inny użytkownik zajął
+       slot zaplanowany w Twoim harmonogramie” i przyciskiem “Powrót do
+       harmonogramu”.
+   ●   Po przejściu do harmonogramu:
+           ○   system próbuje automatycznie przeliczyć harmonogram na początkowo
+               wybranej dacie i godzinie klienta,
+           ○   jeśli nie jest to możliwe, wyświetla komunikat “Wybierz inną datę dostępną w
+               kalendarzu” i wymusza ponowny wybór terminu przez Klienta.
+
+Jeżeli wszystko przejdzie pomyślnie to zamówienie zapisuje się na koncie użytkownika.
+Wysyłane są także odpowiednie maile oraz SMSy do Wykonawcy oraz klienta.
+
+
+
+6. Zamówienie wielosesyjne – po stronie
+Wykonawcy
+
+6.1 Automatyczne przypisanie
+
+Po utworzeniu zamówienia:
+
+   ●   Sesje wraz z przypisanymi pracownikami zostają zapisane w kalendarzu.
+
+
+
+7. Edycja przez Wykonawcę
+
+Wykonawca może:
+
+7.1 Edytować pracowników w sesji
+
+Zmiana liczby pracowników wpływa na:
+
+   ●   Zaplanowane godziny,
+
+=== STRONA 7 ===
+    ●   Pozostałe godziny.
+
+Dodanie pracownika:
+
+    ●   czas się dolicza do zaplanowanych godzin,
+    ●   może powodować nadmiar zaplanowanych godzin.
+
+Odjęcie pracownika:
+
+    ●   czas się odejmuje od zaplanowanych godzin,
+    ●   może powodować brakujące godziny.
+
+System/reguły:
+
+    ●   system automatycznie aktualizuje procent realizacji (progress bar).
+    ●   Wykonawca może zatwierdzić mimo nadmiaru godzin.
+    ●   Przy niedoborze godzin pokazuje wyraźny warning.
+    ●   Wykonawca może zatwierdzić mimo brakujących godzin na własne ryzyko
+        (wymagane potwierdzenie).
+
+7.2 Dodawać nowe sesje
+
+Przycisk dodania sesji jest cały czas aktywny.
+(Także na wypadek gdyby Wykonawca chciał dodać sesję bo stwierdził że sie nie wyorbi w
+zaplanowanym czasie.)
+
+Nowa sesja nie musi spełniać minimalnej długości (np. 3h jak w planowaniu klienta).
+Wykonawca może sobie zaplanować o dowolnej długości wg uznania.
+
+Nowe sesje zwiększają Zaplanowane godziny.
+
+    ●   Wykonawca może zatwierdzić mimo nadmiaru godzin.
+            ○    Na pasku postępu jest napisane np. 110% i pod nim w “Zaplanowane” 55h a
+                 w “Wymagane” 50h.
+
+7.3 Edytować godziny sesji
+
+Wykonawca może:
+
+    ●   Zmienić godzinę początku sesji
+    ●   Zmienić godzinę końca sesji
+            ○    Jeżeli czas sesji się skraca, to także odejmuje od zaplanowanych godzin
+            ○    Jeżeli czas sesji się wydłuża, to także dolicza do zaplanowanych godzin
+
+
+
+
+
+
+
+
+=== STRONA 8 ===
+    ●   przenieść sesję na inny dzień.
+            ○   system wyświetla ostrzeżenie o zaleceniu poinformowania Klienta.
+                “UWAGA! Przed przełożeniem zlecenia zaleca się ustalić z klientem przez
+                chat lub telefonicznie szczegóły nowego terminu. Przełożenie zamówienia
+                spowoduje przesłanie do klienta wiadomości email oraz SMS z informacją o
+                przełożeniu.”
+
+Jeżeli sesja się rozpoczęła, to wykonawca może jedynie zmienić godzinę końcową. Nie
+może przenieść sesji na inny dzień oraz zmienić godziny początkowej.
+
+7.4 Zmieniać powierzchni
+
+Wykonawca może:
+
+    ●   edytować powierzchnię objętą usługą
+
+System/reguły:
+
+    ●   System aktualizuje wymagane godziny.
+    ●   system automatycznie aktualizuje procent realizacji (progress bar).
+
+
+
+7.5 Dodać rabat
+
+Wykonawca może:
+
+    ●   dodać rabat do całkowitej kwoty zlecenia.
+
+
+
+7.6 Zakończyć zlecenie
+
+Wykonawca może:
+
+    ●   oznaczyć zlecenie jako wykonane,
+            ○   dezaktywuje to przyszłe sesje (zwolnienie slotów w kalendarzu),
+    ●   rozliczyć zlecenie i wystawić fakturę VAT oraz Pro Formę (W każdym momencie
+        przed, w trakcie i po wykonaniu usługi)
+
+
+
+7.7 Anulować zamówienie
+
+Wykonawca może anulować całe zamówienie.
+
+Powoduje to:
+
+=== STRONA 9 ===
+    ●   Pokazuje się warning wykonawcy do potwierdzenia że rozumie.
+        “UWAGA! Przed odwołaniem zlecenia zaleca się poinformować klientem przez chat
+        lub telefonicznie. Odwołanie zamówienia spowoduje przesłanie do klienta
+        wiadomości email oraz SMS z informacją o odwołaniu.”
+    ●   Zamówienie wielosesyjne znika z kalendarza Wykonawcy i odblokowywuje sloty
+    ●   Zamówienie znika z zamówień aktywnych w panelu użytkownika i wpada do
+        odwołanych.
+    ●   Klient dostaje także email oraz sms z informacją o odwołaniu.
+

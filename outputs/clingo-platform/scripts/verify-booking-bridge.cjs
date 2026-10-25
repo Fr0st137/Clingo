@@ -73,7 +73,25 @@ async function main() {
     assert.match((await request(`/dashboard/orders/${id}`,customer.token)).data.status,/Wykonane/);
     assert.equal((await request(`/dashboard/orders/${id}/cancel`,customer.token,{},'PATCH')).status,400);
     assert.equal((await db.query('SELECT revision FROM orders WHERE id=$1',[id])).rows[0].revision,4);
-    console.log('PASS: customer checkout -> provider orders/calendar, explicit ownership, details/amounts, multi-session projection, rescheduling, shared availability, concurrent manual/customer writes, cancellation, completion and stale revision protection.');
+    const free=(await availability()).data.days.flatMap(day=>day.slots)[0];assert.ok(free);
+    const actionBooking=await request('/dashboard/orders',customer.token,{...draft,startsAt:free.startsAt,requestId:randomUUID()});assert.equal(actionBooking.status,201);
+    const actionId=actionBooking.data.id;
+    const monthInput={month:localDate(new Date(free.startsAt)).slice(0,7)};
+    assert.equal((await request(`/provider/bookings/${actionId}/reschedule-availability`,other.token,monthInput)).status,404);
+    const providerSlots=await request(`/provider/bookings/${actionId}/reschedule-availability`,owner.token,monthInput);assert.equal(providerSlots.status,201);
+    const moved=providerSlots.data.days.flatMap(day=>day.slots).find(slot=>slot.startsAt>free.endsAt);assert.ok(moved);
+    const moveInput={revision:1,startsAt:moved.startsAt,endsAt:moved.endsAt,message:'Nowy termin uzgodniony telefonicznie.'};
+    assert.equal((await request(`/provider/bookings/${actionId}/reschedule`,other.token,moveInput,'PUT')).status,404);
+    assert.equal((await request(`/provider/bookings/${actionId}/reschedule`,owner.token,{...moveInput,message:'x'.repeat(101)},'PUT')).status,400);
+    const moves=await Promise.all([1,2].map(()=>request(`/provider/bookings/${actionId}/reschedule`,owner.token,moveInput,'PUT')));
+    assert.deepEqual(moves.map(row=>row.status).sort(),[200,409]);
+    const movedView=(await request(`/provider/bookings/${actionId}`,owner.token)).data[0];
+    assert.equal(movedView.startsAt,moved.startsAt);assert.equal(movedView.providerMessages[0].message,moveInput.message);
+    assert.equal(movedView.notes,draft.notes);
+    assert.equal((await request(`/provider/bookings/${actionId}`,owner.token,{revision:2,status:'cancelled',message:'Powód odwołania'},'PUT')).status,200);
+    const cancelledView=(await request(`/provider/bookings/${actionId}`,owner.token)).data[0];
+    assert.equal(cancelledView.providerMessages.length,2);assert.equal(cancelledView.status,'cancelled');
+    console.log('PASS: shared orders, provider rescheduling with saved messages, cancellation, completion, ownership, availability and concurrent revision protection.');
   } finally {
     await db.query('DELETE FROM orders WHERE provider_id=ANY($1)',[profiles]);
     await db.query('DELETE FROM provider_profiles WHERE id=ANY($1)',[profiles]);

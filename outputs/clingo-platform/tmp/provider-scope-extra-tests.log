@@ -1,0 +1,166 @@
+TAP version 13
+# Subtest: provider details retain the booking frequency snapshot, extras, notes and session identity
+ok 1 - provider details retain the booking frequency snapshot, extras, notes and session identity
+  ---
+  duration_ms: 2.6571
+  type: 'test'
+  ...
+# Subtest: quote includes selected quantity, service duration and frequency discount
+ok 2 - quote includes selected quantity, service duration and frequency discount
+  ---
+  duration_ms: 3.218
+  type: 'test'
+  ...
+# Subtest: rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+ok 3 - rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+  ---
+  duration_ms: 0.6717
+  type: 'test'
+  ...
+# Subtest: Polish wall time is independent of the server time zone and daylight saving changes
+ok 4 - Polish wall time is independent of the server time zone and daylight saving changes
+  ---
+  duration_ms: 1.6409
+  type: 'test'
+  ...
+# Subtest: availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+ok 5 - availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+  ---
+  duration_ms: 16.9592
+  type: 'test'
+  ...
+# Subtest: buffers, lead time and past hours are enforced
+ok 6 - buffers, lead time and past hours are enforced
+  ---
+  duration_ms: 17.1507
+  type: 'test'
+  ...
+# Subtest: multi-session duration is split into at least two bounded sessions without losing minutes
+ok 7 - multi-session duration is split into at least two bounded sessions without losing minutes
+  ---
+  duration_ms: 0.3191
+  type: 'test'
+  ...
+# Subtest: multi-session generator uses real free slots and returns a complete schedule
+ok 8 - multi-session generator uses real free slots and returns a complete schedule
+  ---
+  duration_ms: 26.1581
+  type: 'test'
+  ...
+# Subtest: confirmed multi-session order is persisted with its schedule and mode
+ok 9 - confirmed multi-session order is persisted with its schedule and mode
+  ---
+  duration_ms: 27.2749
+  type: 'test'
+  ...
+# Subtest: utilization uses the union of bookings and subtracts employee absences without double counting
+ok 10 - utilization uses the union of bookings and subtracts employee absences without double counting
+  ---
+  duration_ms: 4.5239
+  type: 'test'
+  ...
+# Subtest: missing schedules, unassigned jobs and full-day absence never fabricate utilization
+ok 11 - missing schedules, unassigned jobs and full-day absence never fabricate utilization
+  ---
+  duration_ms: 0.3163
+  type: 'test'
+  ...
+# Subtest: dashboard separates statuses, compares actual periods and counts ordered extras once per order
+ok 12 - dashboard separates statuses, compares actual periods and counts ordered extras once per order
+  ---
+  duration_ms: 7.7238
+  type: 'test'
+  ...
+# Subtest: inclusive date windows handle leap years, DST and invalid input
+ok 13 - inclusive date windows handle leap years, DST and invalid input
+  ---
+  duration_ms: 2.1292
+  type: 'test'
+  ...
+# Subtest: totals exclude cancelled and scheduled jobs and preserve integer cents
+ok 14 - totals exclude cancelled and scheduled jobs and preserve integer cents
+  ---
+  duration_ms: 7.5587
+  type: 'test'
+  ...
+# Subtest: service and employee filters apply to both periods and rankings use IDs
+ok 15 - service and employee filters apply to both periods and rankings use IDs
+  ---
+  duration_ms: 0.5649
+  type: 'test'
+  ...
+# Subtest: returning clients count prior or same-period completions, never future or cancelled work
+ok 16 - returning clients count prior or same-period completions, never future or cancelled work
+  ---
+  duration_ms: 5.5221
+  type: 'test'
+  ...
+# Subtest: CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+ok 17 - CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+  ---
+  duration_ms: 0.5217
+  type: 'test'
+  ...
+# Subtest: presentation rejects remote URLs, executable formats, excessive photos and oversized image payloads
+ok 18 - presentation rejects remote URLs, executable formats, excessive photos and oversized image payloads
+  ---
+  duration_ms: 2.1517
+  type: 'test'
+  ...
+# Subtest: image save decodes the file, rejects corrupt bytes and retains valid photographs
+ok 19 - image save decodes the file, rejects corrupt bytes and retains valid photographs
+  ---
+  duration_ms: 9.0413
+  type: 'test'
+  ...
+# Subtest: search ignores case, Polish diacritics and punctuation
+ok 20 - search ignores case, Polish diacritics and punctuation
+  ---
+  duration_ms: 1.8503
+  type: 'test'
+  ...
+# Subtest: all query words must occur in the provider name in any order
+ok 21 - all query words must occur in the provider name in any order
+  ---
+  duration_ms: 0.2796
+  type: 'test'
+  ...
+# Subtest: exact and prefix matches rank ahead of embedded matches
+ok 22 - exact and prefix matches rank ahead of embedded matches
+  ---
+  duration_ms: 0.1605
+  type: 'test'
+  ...
+# Subtest: quote includes catalogue extras and custom positions exactly once before applying a rounded discount
+ok 23 - quote includes catalogue extras and custom positions exactly once before applying a rounded discount
+  ---
+  duration_ms: 1.7124
+  type: 'test'
+  ...
+# Subtest: amount discounts and fractional percentages keep amounts in whole grosze
+ok 24 - amount discounts and fractional percentages keep amounts in whole grosze
+  ---
+  duration_ms: 0.241
+  type: 'test'
+  ...
+# Subtest: blank rows are skipped but partially filled or oversized custom items are rejected
+ok 25 - blank rows are skipped but partially filled or oversized custom items are rejected
+  ---
+  duration_ms: 0.9405
+  type: 'test'
+  ...
+# Subtest: discounts cannot create negative, zero or oversized saved totals
+ok 26 - discounts cannot create negative, zero or oversized saved totals
+  ---
+  duration_ms: 0.3111
+  type: 'test'
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2132.8778

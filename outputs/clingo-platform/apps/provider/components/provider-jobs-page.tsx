@@ -1,17 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ProviderShell } from "./provider-shell";
 import { ProviderJobEditor } from "./provider-job-editor";
 import { ProviderCalendarToolbar } from "./provider-calendar-toolbar";
+import { ProviderAbsenceDialog } from "./provider-absence-dialog";
+import type { CalendarColors } from "./provider-calendar-options";
+import { useProvider } from "./provider-session";
 import { useSettingsResource } from "./provider-settings-state";
 import { normalized } from "../lib/provider-client";
-import { offerPrice } from "../lib/provider-offers";
+import { offerPrice, type Offer } from "../lib/provider-offers";
 import { parseDay, warsawToday } from "../lib/provider-schedule";
 import { calendarDates, shiftCalendar, jobStatuses, timeLabel, type CalendarView, type Job } from "../lib/provider-jobs";
 
 const weekdays = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+const CalendarColorsContext = createContext<Record<string, string>>({});
+function eventColorStyle(job: Job, colors: Record<string, string>): CSSProperties {
+  const color = colors[job.offerId];
+  return color && job.status === "scheduled" ? { background: `color-mix(in srgb, ${color} 35%, white)`, borderColor: color, color: `color-mix(in srgb, ${color} 35%, #2e3b4c)` } : {};
+}
 const dateLabel = (date: string) => new Intl.DateTimeFormat("pl-PL", { weekday: "short", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(parseDay(date));
 const capitalize = (value: string) => value.charAt(0).toLocaleUpperCase("pl-PL") + value.slice(1);
 function periodLabel(date: string, view: CalendarView) {
@@ -30,7 +38,7 @@ const orderCountLabel = (count: number) => count === 1 ? "zlecenie" : count >= 2
 const weekOrderCountLabel = (count: number) => count === 1 ? "1 zamówienie" : `${count} ${count >= 2 && count <= 4 ? "zamówienia" : "zamówień"}`;
 
 function JobCard({ job, edit, compact = false }: { job: Job; edit: () => void; compact?: boolean }) {
-  return <article className={`job-card is-${job.status}${compact ? " is-compact" : ""}`}><div className="job-card-top"><strong>{timeLabel(job.startMinute)}–{timeLabel(job.startMinute + job.durationMinutes)}</strong><span>{jobStatuses[job.status]}</span></div><h3>{job.serviceTitle}</h3><p>{job.clientName}</p><p className="team-help">{job.employeeId ? job.employeeName : "Bez przypisania pracownika"}</p>{!compact && <><p>{job.address || "Nie podano adresu klienta."}</p><div className="job-contacts">{job.clientPhone && <a href={`tel:${job.clientPhone.replace(/[^+\d]/g, "")}`}>{job.clientPhone}</a>}{job.clientEmail && <a href={`mailto:${job.clientEmail}`}>{job.clientEmail}</a>}</div>{job.notes && <p className="job-notes">{job.notes}</p>}<p><strong>{offerPrice(job.priceMinor)}</strong> · {job.durationMinutes} min</p></>}<button className="settings-button" onClick={edit}>Edytuj zlecenie<span className="sr-only"> — {job.clientName}, {job.date}, {timeLabel(job.startMinute)}</span></button></article>;
+  return <article className={`job-card is-${job.status}${compact ? " is-compact" : ""}`}><div className="job-card-top"><strong>{timeLabel(job.startMinute)}–{timeLabel(job.startMinute + job.durationMinutes)}</strong><span>{jobStatuses[job.status]}</span></div><h3>{job.serviceTitle}</h3><p>{job.clientName}</p><p className="team-help">{job.employeeId ? job.employeeName : "Bez przypisania pracownika"}</p>{!compact && <><p>{job.address || "Nie podano adresu klienta."}</p><div className="job-contacts">{job.clientPhone && <a href={`tel:${job.clientPhone.replace(/[^+\d]/g, "")}`}>{job.clientPhone}</a>}{job.clientEmail && <a href={`mailto:${job.clientEmail}`}>{job.clientEmail}</a>}</div>{job.notes && <p className="job-notes">{job.notes}</p>}<p><strong>{offerPrice(job.priceMinor)}</strong> · {job.durationMinutes} min</p></>}<button className="settings-button" onClick={edit}>Szczegóły zamówienia<span className="sr-only"> — {job.clientName}, {job.date}, {timeLabel(job.startMinute)}</span></button></article>;
 }
 
 function MonthCalendar({ dates, month, jobs, today, onAdd, onEdit, onShowDay }: {
@@ -42,6 +50,7 @@ function MonthCalendar({ dates, month, jobs, today, onAdd, onEdit, onShowDay }: 
   onEdit: (job: Job) => void;
   onShowDay: (date: string) => void;
 }) {
+  const colors = useContext(CalendarColorsContext);
   return (
     <div className="month-calendar">
       <div className="weekday-row" role="row">{weekdays.map(day => <div role="columnheader" key={day}>{day}</div>)}</div>
@@ -58,7 +67,7 @@ function MonthCalendar({ dates, month, jobs, today, onAdd, onEdit, onShowDay }: 
                 <div className="day-labels">{isToday && <span className="today-label">Dzisiaj</span>}{entries.length > 0 && <span className="day-status">{entries.length} {orderCountLabel(entries.length)}</span>}</div>
               </div>
               <div className="day-events">
-                {visible.map(job => <button type="button" className={`calendar-event${job.status === "cancelled" ? " is-warning" : job.status === "completed" ? " is-muted" : ""}`} onClick={() => onEdit(job)} title={`${job.clientName} — ${job.serviceTitle}`} key={job.id}>{timeLabel(job.startMinute)} · {job.serviceTitle}</button>)}
+                {visible.map(job => <button type="button" className={`calendar-event${job.status === "cancelled" ? " is-warning" : job.status === "completed" ? " is-muted" : ""}`} style={eventColorStyle(job, colors)} onClick={() => onEdit(job)} title={`${job.clientName} — ${job.serviceTitle}`} key={job.id}>{timeLabel(job.startMinute)} · {job.serviceTitle}</button>)}
                 {entries.length > visible.length && <button type="button" className="more-events" onClick={() => onShowDay(day)}>+{entries.length - visible.length} {orderCountLabel(entries.length - visible.length)}</button>}
               </div>
             </div>
@@ -70,6 +79,7 @@ function MonthCalendar({ dates, month, jobs, today, onAdd, onEdit, onShowDay }: 
 }
 
 function WeekAppointment({ job, onEdit }: { job: Job; onEdit: () => void }) {
+  const colors = useContext(CalendarColorsContext);
   const rangeStart = Math.max(480, job.startMinute);
   const rangeEnd = Math.min(1200, job.startMinute + job.durationMinutes);
   if (rangeEnd <= rangeStart) return null;
@@ -77,7 +87,7 @@ function WeekAppointment({ job, onEdit }: { job: Job; onEdit: () => void }) {
   const height = Math.max(29, (rangeEnd - rangeStart) * 58 / 60);
   const compact = job.durationMinutes <= 30 ? "30" : job.durationMinutes <= 45 ? "45" : job.durationMinutes <= 60 ? "60" : "";
   const muted = job.status === "completed";
-  return <button type="button" className={`calendar-appointment calendar-live-appointment${muted ? " is-muted" : ""}${job.status === "cancelled" ? " is-warning" : ""}${compact ? ` is-compact-${compact}` : ""}`} style={{ top, height }} onClick={onEdit} aria-label={`Edytuj zlecenie: ${job.clientName}, ${timeLabel(job.startMinute)}–${timeLabel(job.startMinute + job.durationMinutes)}`}>
+  return <button type="button" className={`calendar-appointment calendar-live-appointment${muted ? " is-muted" : ""}${job.status === "cancelled" ? " is-warning" : ""}${compact ? ` is-compact-${compact}` : ""}`} style={{ top, height, ...eventColorStyle(job, colors) }} onClick={onEdit} aria-label={`Szczegóły zamówienia: ${job.clientName}, ${timeLabel(job.startMinute)}–${timeLabel(job.startMinute + job.durationMinutes)}`}>
     <span className="calendar-appointment-copy">
       <span className="calendar-appointment-time"><span>{timeLabel(job.startMinute)}</span><img className="calendar-appointment-arrow" src="/figma-assets/calendar/week/time-arrow.svg" alt="do" /><span>{timeLabel(job.startMinute + job.durationMinutes)}</span><span className="calendar-appointment-status"><img src={`/figma-assets/calendar/week/${muted ? "status-muted.svg" : "status.svg"}`} alt="" /></span></span>
       {compact !== "30" && <span className="calendar-appointment-client">{job.clientName}</span>}
@@ -106,6 +116,7 @@ function WeekCalendar({ dates, jobs, today, onEdit }: { dates: string[]; jobs: J
 }
 
 function DayAppointment({ job, onEdit }: { job: Job; onEdit: () => void }) {
+  const colors = useContext(CalendarColorsContext);
   const rangeStart = Math.max(480, job.startMinute);
   const rangeEnd = Math.min(1260, job.startMinute + job.durationMinutes);
   if (rangeEnd <= rangeStart) return null;
@@ -113,7 +124,7 @@ function DayAppointment({ job, onEdit }: { job: Job; onEdit: () => void }) {
   const height = Math.max(29, (rangeEnd - rangeStart) * 58 / 60);
   const compact = height < 55;
   const muted = job.status === "completed";
-  return <button type="button" className={`calendar-appointment calendar-live-appointment is-day${muted ? " is-day-muted" : ""}${job.status === "cancelled" ? " is-warning" : ""}${compact ? " is-day-compact" : ""}`} style={{ top, height }} onClick={onEdit} aria-label={`Edytuj zlecenie: ${job.clientName}, ${timeLabel(job.startMinute)}–${timeLabel(job.startMinute + job.durationMinutes)}`}>
+  return <button type="button" className={`calendar-appointment calendar-live-appointment is-day${muted ? " is-day-muted" : ""}${job.status === "cancelled" ? " is-warning" : ""}${compact ? " is-day-compact" : ""}`} style={{ top, height, ...eventColorStyle(job, colors) }} onClick={onEdit} aria-label={`Szczegóły zamówienia: ${job.clientName}, ${timeLabel(job.startMinute)}–${timeLabel(job.startMinute + job.durationMinutes)}`}>
     <span className="day-appointment-header">
       <span className="calendar-appointment-time"><span>{timeLabel(job.startMinute)}</span><img className="calendar-appointment-arrow" src="/figma-assets/calendar/day/time-arrow.svg" alt="do" /><span>{timeLabel(job.startMinute + job.durationMinutes)}</span>{job.status === "scheduled" && <img className="day-appointment-pending" src="/figma-assets/calendar/day/pending.svg" alt="Zaplanowane" />}</span>
       {job.employeeId && <img className="day-appointment-avatar" src="/figma-assets/calendar/day/avatar.png" alt={job.employeeName} />}
@@ -150,10 +161,34 @@ function DayCalendar({ date, jobs, today, onEdit }: { date: string; jobs: Job[];
 
 function JobsContent({ calendar, initialView = "month", history = false, initialEditId }: { calendar?: boolean; initialView?: CalendarView; history?: boolean; initialEditId?: string }) {
   const resource = useSettingsResource<Job[]>("jobs");
+  const offers = useSettingsResource<Offer[]>("services");
+  const account = useProvider()?.account?.id;
+  const preferencesKey = account ? `clingo-calendar:${account}` : null;
+  const [preferences, setPreferences] = useState<{ view: CalendarView; colors: CalendarColors }>({ view: "day", colors: {} });
+  useEffect(() => {
+    if (!calendar || !preferencesKey) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(preferencesKey) ?? "null");
+      if (!saved || !["day", "week", "month"].includes(saved.view)) return;
+      const colors: CalendarColors = {};
+      for (const key of ["homes", "offices"] as const) if (typeof saved.colors?.[key] === "string" && /^#[0-9a-f]{6}$/i.test(saved.colors[key])) colors[key] = saved.colors[key];
+      setPreferences({ view: saved.view, colors });
+      if (initialView === "month") setView(saved.view);
+    } catch { /* Keep defaults if browser storage is unavailable. */ }
+  }, [calendar, preferencesKey, initialView]);
+  function savePreferences(next: typeof preferences) {
+    setPreferences(next);
+    if (preferencesKey) try { localStorage.setItem(preferencesKey, JSON.stringify(next)); } catch { /* Settings still apply for this visit. */ }
+  }
+  const eventColors = Object.fromEntries((offers.data ?? []).flatMap(offer => {
+    const color = preferences.colors[offer.category as keyof CalendarColors];
+    return color ? [[offer.id, color]] : [];
+  }));
   const [date, setDate] = useState(warsawToday), [view, setView] = useState<CalendarView>(initialView);
   const [query, setQuery] = useState(""), [employee, setEmployee] = useState(""), [service, setService] = useState(""), [status, setStatus] = useState(history ? "history" : calendar ? "all" : "scheduled");
   const [editor, setEditor] = useState<{ job?: Job; date: string } | null>(null), [message, setMessage] = useState(""), [editError, setEditError] = useState("");
   const opened = useRef(false);
+  const [absenceOpen, setAbsenceOpen] = useState(false);
   useEffect(() => { if (!resource.data || opened.current) return; opened.current = true; const id = initialEditId ?? new URLSearchParams(window.location.search).get("edit"); if (id) { const job = resource.data.find(row => row.id === id); if (job) setEditor({ job, date: job.date }); else setEditError("Nie znaleziono zlecenia w Twojej działalności."); } }, [resource.data, initialEditId]);
   const jobs = resource.data ?? [];
   const employees = Array.from(new Map(jobs.filter(job => job.employeeId).map(job => [job.employeeId!, job.employeeName])).entries()).sort((a, b) => a[1].localeCompare(b[1], "pl"));
@@ -166,12 +201,13 @@ function JobsContent({ calendar, initialView = "month", history = false, initial
 
   if (resource.loading || resource.error) return <div className="provider-state" role={resource.error ? "alert" : "status"}>{resource.loading ? "Wczytywanie zleceń…" : <><p>{resource.error}</p><button className="settings-button" onClick={resource.reload}>Spróbuj ponownie</button></>}</div>;
 
-  if (calendar) return <section className={`${view === "week" ? "calendar-week-content" : view === "day" ? "calendar-day-content" : "calendar-content"} jobs-calendar-live`}>
-    <ProviderCalendarToolbar view={view} periodLabel={periodLabel(date, view)} services={services} service={service} onViewChange={setView} onPrevious={() => setDate(shiftCalendar(date, view, -1))} onNext={() => setDate(shiftCalendar(date, view, 1))} onServiceChange={setService} onAdd={() => { setMessage(""); setEditor({ date }); }} onRefresh={() => { setMessage(""); resource.reload(); }} />
+  if (calendar) return <CalendarColorsContext.Provider value={eventColors}><section className={`${view === "week" ? "calendar-week-content" : view === "day" ? "calendar-day-content" : "calendar-content"} jobs-calendar-live`}>
+    <ProviderCalendarToolbar view={view} periodLabel={periodLabel(date, view)} services={services} service={service} onViewChange={setView} onPrevious={() => setDate(shiftCalendar(date, view, -1))} onNext={() => setDate(shiftCalendar(date, view, 1))} onServiceChange={setService} onAdd={() => { setMessage(""); setEditor({ date }); }} onAbsence={() => setAbsenceOpen(true)} defaultView={preferences.view} colors={preferences.colors} onDefaultView={view => { savePreferences({ ...preferences, view }); setView(view); }} onColor={(category, color) => savePreferences({ ...preferences, colors: { ...preferences.colors, [category]: color } })} />
     {view === "month" ? <MonthCalendar dates={dates} month={date} jobs={filtered} today={warsawToday()} onAdd={day => setEditor({ date: day })} onEdit={openEditor} onShowDay={day => { setDate(day); setView("day"); }} /> : view === "week" ? <WeekCalendar dates={dates} jobs={filtered} today={warsawToday()} onEdit={openEditor} /> : <DayCalendar date={date} jobs={filtered} today={warsawToday()} onEdit={openEditor} />}
     {message && <p role="status" className="sr-only">{message}</p>}{editError && <p role="alert" className="provider-feedback is-error calendar-error">{editError}</p>}
+    {absenceOpen && <ProviderAbsenceDialog date={date} onClose={() => setAbsenceOpen(false)} />}
     {editor && <ProviderJobEditor job={editor.job} date={editor.date} onClose={() => setEditor(null)} onReloaded={merge} onSaved={job => { merge(job); setEditor(null); setDate(job.date); setStatus("all"); setService(""); setMessage("Zlecenie zostało zapisane."); }} />}
-  </section>;
+  </section></CalendarColorsContext.Provider>;
 
   return <section className="jobs-live"><div className="jobs-heading"><h1>{title}</h1><div><Link className="settings-button" href={history ? "/orders" : "/orders/history"}>{history ? "Zaplanowane zlecenia" : "Historia"}</Link><button className="employee-save-button" onClick={() => { setMessage(""); setEditor({ date }); }}>Dodaj zlecenie</button></div></div>
     <p className="provider-feedback">Rezerwacje klientów ze strony Clingo i zlecenia wpisane ręcznie. Lista odświeża się co 15 sekund. Kwoty zleceń nie potwierdzają otrzymania płatności.</p>

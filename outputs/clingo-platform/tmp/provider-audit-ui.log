@@ -1,0 +1,5 @@
+Potwierdzone: poprawny formularz nieobecności nie zapisuje i pokazuje komunikat niedostępności.
+Potwierdzone: czat i globalne Szukaj bez pola do wpisania tekstu; ekran oznaczony podglądem.
+Potwierdzone: Zmień plan bez reakcji; okno zmiany karty otwiera się, lecz Zapisz jest nieaktywny.
+Potwierdzone: osobna strona ustawień kalendarza ma nieaktywne sterowanie widokiem i kolorami.
+Brak błędów JavaScript w sprawdzonych czterech widokach. Test z kontrolowanymi odpowiedziami API; nie potwierdza danych rzeczywistego konta.

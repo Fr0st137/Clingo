@@ -17,7 +17,7 @@ const monthName = (date: string) => {
 };
 
 function OrderCard({ job, onEdit }: { job: Job; onEdit: () => void }) {
-  return <button type="button" className={`orders-figma-card is-${job.status}`} onClick={onEdit} aria-label={`Edytuj zlecenie ${job.clientName}, ${job.date}, ${timeLabel(job.startMinute)}`}>
+  return <button type="button" className={`orders-figma-card is-${job.status}`} onClick={onEdit} aria-label={`Szczegóły zamówienia ${job.clientName}, ${job.date}, ${timeLabel(job.startMinute)}`}>
     <span className="orders-figma-customer"><span>{timeLabel(job.startMinute)} <span aria-hidden="true">→</span> {timeLabel(job.startMinute + job.durationMinutes)}</span><span>{job.clientName}</span></span>
     <span className="orders-figma-accent" aria-hidden="true" />
     <span className="orders-figma-service"><span>{job.serviceTitle}</span><span className="orders-figma-chips"><span>{job.durationMinutes} min</span>{job.source === "booking" && <span>Rezerwacja Clingo</span>}{(job.sessionCount ?? 0) > 1 && <span>Sesja {job.sessionIndex}/{job.sessionCount}</span>}{job.employeeName && <span>{job.employeeName}</span>}{job.status !== "scheduled" && <span className={`is-${job.status}`}>{job.status === "cancelled" ? "Odwołane" : "Zakończone"}</span>}</span></span>
@@ -37,10 +37,11 @@ function OrdersContent() {
   const openedBooking = useRef(false);
   useEffect(() => {
     if (!resource.data || openedBooking.current) return;
-    const id = new URLSearchParams(window.location.search).get("booking");
-    if (!id) return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("booking"), editId = params.get("edit");
+    if (!id && !editId) return;
     openedBooking.current = true;
-    const job = resource.data.find(job => job.bookingId === id);
+    const job = resource.data.find(job => editId ? job.id === editId : job.bookingId === id);
     if (job) { setMonth(job.date); setEditor({ job, date: job.date }); }
     else setMessage("Nie znaleziono rezerwacji w Twojej działalności.");
   }, [resource.data]);

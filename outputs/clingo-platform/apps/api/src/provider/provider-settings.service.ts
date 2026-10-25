@@ -5,6 +5,9 @@ import { AuthService } from "../auth/auth.service";
 import { ProviderAccountEntity, ProviderEmployeeEntity, ProviderMembershipEntity } from "./provider.entity";
 import { contactInput, notificationsInput } from "./provider-settings.input";
 import { locationInput } from "./provider-location.input";
+import { ProviderProfileEntity } from "../dashboard/provider-profile.entity";
+import { BoardListingEntity } from "../dashboard/board-listing.entity";
+import type { ProviderLocation } from "./provider-location.input";
 
 function profile(account: ProviderAccountEntity) {
   return { name: account.name, legalName: account.legalName, phone: account.phone,
@@ -25,6 +28,28 @@ export class ProviderSettingsService {
     if (!account) throw new NotFoundException("Nie znaleziono działalności.");
     return { account, user };
   }
+  private async savePublicAccount(where: { id: string; profileRevision?: number; locationRevision?: number }, input: Partial<ProviderAccountEntity>) {
+    return this.accounts.manager.transaction(async manager => {
+      await manager.findOne(ProviderAccountEntity, { where: { id: where.id }, lock: { mode: "pessimistic_write" } });
+      const result = await manager.update(ProviderAccountEntity, where, input);
+      if (result.affected !== 1) return result;
+      const profiles = await manager.find(ProviderProfileEntity, { where: { accountId: where.id } });
+      for (const profile of profiles.filter(row => row.id.startsWith("service-"))) {
+        const patch: Partial<ProviderProfileEntity> = {};
+        if (input.name !== undefined) {
+          patch.provider = input.name;
+          await manager.update(BoardListingEntity, { id: profile.id }, { provider: input.name });
+        }
+        if (input.location) {
+          const location = input.location as ProviderLocation;
+          patch.location = location.city;
+          patch.metrics = profile.metrics.map(metric => metric.id === "location" ? { ...metric, value: location.city } : metric);
+        }
+        await manager.update(ProviderProfileEntity, { id: profile.id, accountId: where.id }, patch);
+      }
+      return result;
+    });
+  }
   async getProfile(authorization?: string) {
     const { account, user } = await this.account(authorization);
     return { profile: profile(account), loginEmail: user.email };
@@ -32,7 +57,7 @@ export class ProviderSettingsService {
   async saveProfile(authorization: string | undefined, value: unknown) {
     const { account, user } = await this.account(authorization);
     const { revision, ...input } = contactInput(value);
-    const result = await this.accounts.update({ id: account.id, profileRevision: revision }, { ...input, profileRevision: revision + 1 });
+    const result = await this.savePublicAccount({ id: account.id, profileRevision: revision }, { ...input, profileRevision: revision + 1 });
     if (result.affected !== 1) throw new ConflictException("Dane działalności zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
     return { profile: { ...input, revision: revision + 1 }, loginEmail: user.email };
   }
@@ -58,7 +83,7 @@ export class ProviderSettingsService {
   async saveLocation(authorization: string | undefined, value: unknown) {
     const { account } = await this.account(authorization);
     const { revision, ...location } = locationInput(value);
-    const result = await this.accounts.update({ id: account.id, locationRevision: revision }, { location, locationRevision: revision + 1 });
+    const result = await this.savePublicAccount({ id: account.id, locationRevision: revision }, { location, locationRevision: revision + 1 });
     if (result.affected !== 1) throw new ConflictException("Lokalizacja zmieniła się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
     return { ...location, revision: revision + 1 };
   }

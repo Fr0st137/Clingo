@@ -125,6 +125,8 @@ export type FilterGroup = {
 };
 
 export type BoardListing = {
+  service?: string;
+  areaPricing?: import("./area-pricing").AreaPricing | null;
   addOns?: Array<{ id: string; label: string }>;
   id: string;
   provider: string;
@@ -147,6 +149,7 @@ export type BoardPayload = {
 };
 
 export type ProviderProfile = {
+  areaPricing?: import("./area-pricing").AreaPricing | null;
   id: string;
   provider: string;
   verified: boolean;

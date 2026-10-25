@@ -16,14 +16,28 @@ function loadSource(path, dependencies = {}) {
   return context.exports;
 }
 const coverage = loadSource('../apps/api/src/dashboard/service-area.ts');
-const { offerRequestState, offerAddOnQuantities, pricingArea, requestPricing } = loadSource('../apps/web/lib/offer-request.ts', {
-  '../../api/src/dashboard/service-area': coverage
+const { offerRequestState, offerAddOnQuantities, pricingArea, requestPricing, profilePricing } = loadSource('../apps/web/lib/offer-request.ts', {
+  '../../api/src/dashboard/service-area': coverage,
+  '../../api/src/dashboard/area-pricing': loadSource('../apps/api/src/dashboard/area-pricing.ts')
 });
 const profile = {
   metrics: [{ id: 'location', label: 'Obsługiwany obszar', value: 'Warszawa' }],
   pricing: [{ id: 'single-62', label: 'Sprzątanie mieszkania 62m²' }, { id: 'single-80', label: 'Sprzątanie mieszkania 80 m²' }],
   addOns: [{ id: 'oven', selected: true }]
 };
+
+test('published area pricing uses the exact requested area in preview and checkout', () => {
+  const dynamic = { ...profile, areaPricing: { rateMinor: 237, minutesPer100: 180, minimum: 15, maximum: 400 } };
+  const pricing = profilePricing(dynamic, '62,5', 'single-80');
+  assert.equal(pricing.id, 'area-62.5');
+  assert.equal(pricing.priceValue, 148.13);
+  assert.equal(pricing.duration, '2 godz. 0 min');
+  assert.equal(offerRequestState(dynamic, '62,5', 'Warszawa, Testowa 1'), 'ready');
+  for (const area of ['14', '401', '-1', '0', 'NaN', '62.555']) {
+    assert.equal(profilePricing(dynamic, area), undefined);
+    assert.equal(offerRequestState(dynamic, area, 'Warszawa, Testowa 1'), 'missing');
+  }
+});
 
 test('missing or invalid area and either missing field keep checkout unavailable', () => {
   for (const area of ['', ' ', '0', '-2', 'NaN', 'Infinity', 'not-an-area', '81']) {

@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { ProviderShell } from "./provider-shell";
 import { ProviderModal } from "./provider-modal";
 import { SettingsInput, useSettingsResource, useUnsavedSettings } from "./provider-settings-state";
-import { ApiError, normalized, providerApi } from "../lib/provider-client";
+import { ApiError, providerApi } from "../lib/provider-client";
 import { offerCategories, offerDraft, offerPrice, priceMinor, type Offer } from "../lib/provider-offers";
 
 function OfferEditor({ offer, close, saved, refreshed }: { offer?: Offer; close: () => void; saved: (offer: Offer) => void; refreshed: (offer: Offer) => void }) {
@@ -49,7 +49,7 @@ function OfferEditor({ offer, close, saved, refreshed }: { offer?: Offer; close:
         <SettingsInput label="Cena za usługę (zł)" inputMode="decimal" value={draft.price} onChange={e => change("price", e.target.value)} required maxLength={9} placeholder="np. 149,90" />
         <SettingsInput label="Czas trwania (minuty)" type="number" min={15} max={1440} step={1} value={draft.duration} onChange={e => change("duration", e.target.value)} required />
         <label className="settings-live-field client-notes-field"><span>Opis i zakres usługi</span><textarea rows={5} maxLength={2000} value={draft.description} onChange={e => change("description", e.target.value)} /><small>{draft.description.length}/2000 znaków</small></label>
-        {original && <label className="settings-live-field"><span>Status</span><select value={draft.status} onChange={e => change("status", e.target.value)}><option value="draft">Szkic</option><option value="archived">Archiwum</option></select><small>Przeniesienie do archiwum zachowuje dane. Możesz później przywrócić szkic.</small></label>}
+        {original && <label className="settings-live-field"><span>Status</span><select value={draft.status} onChange={e => change("status", e.target.value)}><option value="draft">Szkic</option><option value="published">Opublikowane</option><option value="archived">Archiwum</option></select><small>Przeniesienie do archiwum zachowuje dane. Możesz później przywrócić szkic.</small></label>}
       </fieldset>
       {error && <div className="provider-feedback is-error" role="alert">{error}{conflict && <button type="button" className="settings-button" onClick={() => setConfirm("reload")}>Wczytaj aktualne dane</button>}</div>}
       <div className="settings-live-actions"><button type="button" className="settings-button" disabled={busy} onClick={requestClose}>Anuluj</button><button className="employee-save-button" disabled={busy || conflict || !dirty}>{busy ? "Zapisywanie…" : "Zapisz usługę"}</button></div>
@@ -59,26 +59,23 @@ function OfferEditor({ offer, close, saved, refreshed }: { offer?: Offer; close:
 function Services() {
   const resource = useSettingsResource<Offer[]>("services");
   const [editor, setEditor] = useState<{ offer?: Offer } | null>(null);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"draft" | "archived">("draft");
   const [message, setMessage] = useState("");
   const offers = resource.data ?? [];
-  const filtered = offers.filter(offer => offer.status === filter && normalized(`${offer.title} ${offerCategories.find(category => category.id === offer.category)?.label ?? ""} ${offer.description}`).includes(normalized(query.trim()))).sort((a, b) => offerCategories.findIndex(category => category.id === a.category) - offerCategories.findIndex(category => category.id === b.category) || a.title.localeCompare(b.title, "pl") || a.id.localeCompare(b.id));
+  const sortedOffers = [...offers].sort((a, b) => offerCategories.findIndex(category => category.id === a.category) - offerCategories.findIndex(category => category.id === b.category) || a.title.localeCompare(b.title, "pl") || a.id.localeCompare(b.id));
   function merge(offer: Offer) { resource.setData(previous => [...(previous ?? []).filter(row => row.id !== offer.id), offer].sort((a,b) => a.title.localeCompare(b.title, "pl") || a.id.localeCompare(b.id))); }
   if (resource.loading || resource.error) return <div className="provider-state" role={resource.error ? "alert" : "status"}>{resource.loading ? "Wczytywanie usług…" : <><p>{resource.error}</p><button className="settings-button" onClick={resource.reload}>Spróbuj ponownie</button></>}</div>;
   return <section className="services-content services-live" aria-labelledby="services-title" data-figma-node="3556:5467">
     <img className="services-background" src="/figma-assets/services/background.png" alt="" />
     <div className="services-heading"><h1 id="services-title">Twoje usługi</h1><div><p>Konfiguruj, dodawaj i usuwaj usługi z jakimi chcesz się ogłaszać.</p><button type="button" className="add-service-button" onClick={() => { setMessage(""); setEditor({}); }}>Dodaj ogłoszenie<img src="/figma-assets/services/plus.svg" alt="" /></button></div></div>
     <div className="services-results">
-      <div className="services-grid">{filtered.map(offer => { const category = offerCategories.find(category => category.id === offer.category); return <Link className="service-card" key={offer.id} aria-label={`Edytuj usługę: ${offer.title}, ${category?.detail ?? offer.category}`} title={`${offer.title} · ${offerPrice(offer.priceMinor)} · ${offer.durationMinutes} min`} href={`/services/${offer.id}`}>
+      <div className="services-grid">{sortedOffers.map(offer => { const category = offerCategories.find(category => category.id === offer.category); return <Link className="service-card" key={offer.id} aria-label={`Edytuj usługę: ${offer.title}, ${category?.detail ?? offer.category}`} title={`${offer.title} · ${offerPrice(offer.priceMinor)} · ${offer.durationMinutes} min`} href={`/services/${offer.id}`}>
         {category && <img className="service-image" src={`/figma-assets/services/${category.image}`} alt="" />}
-        <span className="service-card-copy"><span className="service-card-name"><span className="service-status is-draft"><img src="/figma-assets/services/status-draft.svg" alt="" />{offer.status === "draft" ? "Szkic" : "Archiwum"}</span><span className="service-category">{offer.title}</span></span><span className="service-detail">{category?.detail ?? offer.category}</span></span>
+        <span className="service-card-copy"><span className="service-card-name"><span className="service-status is-draft"><img src="/figma-assets/services/status-draft.svg" alt="" />{offer.status === "published" ? "Opublikowane" : offer.status === "draft" ? "Szkic" : "Archiwum"}</span><span className="service-category">{offer.title}</span></span><span className="service-detail">{category?.detail ?? offer.category}</span></span>
       </Link>; })}</div>
-      {!filtered.length && <div className="provider-state" role="status">{query ? "Brak usług pasujących do wyszukiwania." : filter === "archived" ? "Archiwum jest puste." : "Nie masz jeszcze szkiców usług. Dodaj pierwszą usługę."}</div>}
+      {!offers.length && <div className="provider-state" role="status">Nie masz jeszcze usług. Dodaj pierwsze ogłoszenie.</div>}
     </div>
-    <div className="offer-toolbar"><label className="settings-live-field"><span className="sr-only">Szukaj usługi</span><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Szukaj usługi" /></label><div className="offer-tabs" role="group" aria-label="Status usług">{(["draft", "archived"] as const).map(status => <button type="button" key={status} className="settings-button" aria-pressed={filter === status} onClick={() => setFilter(status)}>{status === "draft" ? "Szkice" : "Archiwum"} ({offers.filter(offer => offer.status === status).length})</button>)}</div><button type="button" className="settings-button" onClick={resource.reload}>Odśwież</button></div>
     {message && <p role="status" className="services-save-message">{message}</p>}
-    {editor && <OfferEditor offer={editor.offer} close={() => setEditor(null)} refreshed={merge} saved={offer => { merge(offer); setFilter(offer.status); setQuery(""); setEditor(null); setMessage(offer.status === "archived" ? "Usługa została zapisana w archiwum." : "Szkic usługi został zapisany."); }} />}
+    {editor && <OfferEditor offer={editor.offer} close={() => setEditor(null)} refreshed={merge} saved={offer => { merge(offer); setEditor(null); setMessage(offer.status === "published" ? "Ogłoszenie zostało opublikowane." : offer.status === "archived" ? "Usługa została zapisana w archiwum." : "Szkic usługi został zapisany."); }} />}
   </section>;
 }
 export function ProviderServicesPage() { return <ProviderShell active="Twoje usługi" live><Services /></ProviderShell>; }

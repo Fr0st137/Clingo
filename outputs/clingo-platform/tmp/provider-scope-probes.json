@@ -1,0 +1,26 @@
+{
+  "time": {
+    "area": 100,
+    "workersInTier": 2,
+    "minutesPer100ForOneWorker": 180,
+    "expectedMinutesByScope": 90,
+    "actualDuration": "3 godz. 0 min"
+  },
+  "publication": {
+    "configuredMaxArea": 1000,
+    "actualMaxArea": 400,
+    "tags": [
+      "Jednosesyjne"
+    ],
+    "frequencyOptions": [
+      "once",
+      "weekly"
+    ]
+  },
+  "workersValidation": "Konfiguracja przyjmuje 50 osób bez przekazania danych lub liczby pracowników konta.",
+  "customCatalogueAddon": "Własna usługa w konfiguracji ogłoszenia zaakceptowana.",
+  "freeCatalogueAddon": "Cena 0 odrzucona.",
+  "radius": "200 km odrzucone; maksimum walidacji 100 km.",
+  "earlyCompletion": "Oznaczenie wykonania przed końcem ostatniego terminu odrzucone.",
+  "quoteDurationMinutes": 180
+}

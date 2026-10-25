@@ -48,7 +48,7 @@ function useDraft(props: BookingPageProps) {
 }
 
 function ProviderLine({ profile, size = 41 }: { profile: BookingPageProps["profile"]; size?: 41 | 53 }) {
-  const src = profile.id === "stepapp" ? "/figma-assets/board-stepapp-logo.png" : profile.id === "mobimop" ? "/figma-assets/board-mobimop-logo.png" : "/figma-assets/board-avatar-paulina.png";
+  const src = profile.id.startsWith("service-") ? "/clingo-homepage/assets/images/logo-clingo-color-new.png" : profile.id === "stepapp" ? "/figma-assets/board-stepapp-logo.png" : profile.id === "mobimop" ? "/figma-assets/board-mobimop-logo.png" : "/figma-assets/board-avatar-paulina.png";
   return <div className="flex min-w-0 items-center gap-[10px]">
     <div className="relative shrink-0 overflow-hidden rounded-[30px] shadow-[0_1px_2px_rgba(0,0,0,0.16)]" style={{ height: size, width: size }}><Image width={size} height={size} sizes={`${size}px`} alt="" className="h-full w-full object-contain" src={src} /></div>
     <div className="min-w-0"><p className="m-0 truncate text-[14px] font-medium leading-5 text-[#2e3b4c]">{profile.provider}</p><p className="m-0 truncate text-[14px] leading-5 text-[#7c8691]">{profile.service}</p></div>
