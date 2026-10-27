@@ -1,9 +1,12 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { AuthService, objectInput } from "../auth/auth.service";
 import { ProviderAccountEntity, ProviderEmployeeEntity, ProviderMembershipEntity } from "./provider.entity";
 import { employeeInput, revisionInput, textInput } from "./provider.input";
+import { accountBookings, bookingJobs } from "../dashboard/booking-bridge";
+import { ProviderJobEntity } from "./provider-jobs.entity";
+import { assertStaffingReduction } from "./provider-staffing";
 
 @Injectable()
 export class ProviderService {
@@ -52,21 +55,40 @@ export class ProviderService {
   }
   async create(authorization: string | undefined, value: unknown) {
     const accountId = await this.manage(authorization);
-    return this.employees.save(this.employees.create({ ...employeeInput(value), accountId }));
+    const input = employeeInput(value);
+    return this.employees.manager.transaction(async manager => {
+      const account = await manager.findOneOrFail(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
+      const employees = await manager.find(ProviderEmployeeEntity, { where: { accountId } });
+      if (account.staffingMode === "solo" && employees.length >= 1) throw new BadRequestException("Przy pracy samodzielnej możesz dodać tylko jedną osobę. Aby powiększyć zespół, zmień sposób pracy w ustawieniach obsady.");
+      if (account.declaredStaff && employees.length >= account.declaredStaff) throw new BadRequestException("Osiągnięto zadeklarowaną obsadę. Najpierw zwiększ ją w ustawieniach działalności.");
+      return manager.save(ProviderEmployeeEntity, manager.create(ProviderEmployeeEntity, { ...input, accountId }));
+    });
   }
   async update(authorization: string | undefined, id: string, value: unknown) {
     const employee = await this.get(authorization, id);
     const revision = revisionInput(objectInput(value).revision);
     const input = employeeInput(value);
-    const result = await this.employees.update({ id, accountId: employee.accountId, revision }, { ...input, revision: revision + 1 });
+    return this.employees.manager.transaction(async manager => {
+    await manager.findOneOrFail(ProviderAccountEntity, { where: { id: employee.accountId }, lock: { mode: "pessimistic_write" } });
+    const result = await manager.update(ProviderEmployeeEntity, { id, accountId: employee.accountId, revision }, { ...input, revision: revision + 1 });
     if (result.affected !== 1) throw new ConflictException("Dane zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
     return { ...employee, ...input, revision: revision + 1 };
+    });
   }
   async remove(authorization: string | undefined, id: string, value: unknown) {
     const employee = await this.get(authorization, id);
     const revision = revisionInput(objectInput(value).revision);
-    const result = await this.employees.delete({ id, accountId: employee.accountId, revision });
+    return this.employees.manager.transaction(async manager => {
+    const account = await manager.findOneOrFail(ProviderAccountEntity, { where: { id: employee.accountId }, lock: { mode: "pessimistic_write" } });
+    const bookings = (await accountBookings(manager, employee.accountId)).flatMap(bookingJobs);
+    const jobs = await manager.find(ProviderJobEntity, { where: { accountId: employee.accountId, status: "scheduled" } });
+    const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    if (bookings.some(row => row.status === "scheduled" && row.employeeIds.includes(id) && Date.parse(row.endsAt) > Date.now()) || jobs.some(row => (row.employeeId===id||row.employees?.some(employee=>employee.id===id))&&row.date >= today)) throw new ConflictException("Pracownik ma aktywne zlecenia. Najpierw zmień ich obsadę lub odwołaj zlecenia.");
+    const employees = await manager.find(ProviderEmployeeEntity, { where: { accountId: employee.accountId } });
+    await assertStaffingReduction(manager, account, employees.length - 1);
+    const result = await manager.delete(ProviderEmployeeEntity, { id, accountId: employee.accountId, revision });
     if (result.affected !== 1) throw new ConflictException("Dane zmieniły się w innym oknie. Wczytaj aktualną wersję przed usunięciem.");
     return { deleted: true };
+    });
   }
 }

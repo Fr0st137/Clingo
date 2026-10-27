@@ -6,6 +6,7 @@ import { defaultWorkingHours, money } from "../dashboard/booking";
 import { ProviderProfileEntity } from "../dashboard/provider-profile.entity";
 import { ProviderAccountEntity } from "./provider.entity";
 import { ProviderOfferEntity } from "./provider-offers.entity";
+import { bookingMode, sessionCapacity } from "../dashboard/booking-policy";
 
 export const publicOfferId = (id: string) => `service-${id}`;
 
@@ -22,16 +23,16 @@ export async function publishOffer(manager: EntityManager, offer: ProviderOfferE
   if (!config.standardsAccepted) throw new BadRequestException("Przed publikacją zaakceptuj standard wykonania usługi.");
   if (!account.location?.city?.trim()) throw new BadRequestException("Przed publikacją uzupełnij miejscowość w ustawieniach lokalizacji działalności.");
   const minimum = config.areaTiers[0].minSquareMeters;
-  const maximum = Math.min(config.areaTiers.at(-1)!.maxSquareMeters ?? 10000, Math.floor(720 * 100 / config.durationPer100SquareMetersMinutes));
-  if (minimum > maximum) throw new BadRequestException("Minimalna powierzchnia przekracza czas dostępny na jedną wizytę (12 godzin).");
-  const areaPricing = { rateMinor: config.ratePerSquareMeterMinor, minutesPer100: config.durationPer100SquareMetersMinutes, minimum, maximum };
+  const maximum = config.areaTiers.at(-1)!.maxSquareMeters ?? 10000;
+  const areaPricing = { rateMinor: config.ratePerSquareMeterMinor, minutesPer100: config.durationPer100SquareMetersMinutes, minimum, maximum, workerTiers: config.areaTiers, maxSessionMinutes: sessionCapacity() };
   const pricing = areaPricingOption(areaPricing, `area-${minimum}`)!;
+  const mode = bookingMode(config.durationPer100SquareMetersMinutes * minimum / 100 / pricing.estimatedWorkers, { areaPricing }) === "multi" ? "Wielosesyjne" : "Jednosesyjne";
   const frequencies = [{ id: "once", label: "Jednorazowo", discount: "0%", description: "Jedna wizyta." },
     ...(config.recurringEnabled ? [{ id: "weekly", label: "Co tydzień", discount: `-${config.recurringDiscountPercent}%`, description: "Preferencja częstotliwości i rabat na tę wizytę. Kolejne wizyty rezerwujesz osobno." }] : [])];
   const profile = manager.create(ProviderProfileEntity, { ...(old ?? {}), id, accountId: account.id, published: true, areaPricing,
     provider: account.name, verified: old?.verified ?? false, service: offer.title, location: account.location.city,
     rating: old?.rating ?? 0, reviewsCount: old?.reviewsCount ?? 0, experience: old?.experience ?? "Nie podano", completedOrders: old?.completedOrders ?? 0,
-    priceFrom: `${money(config.ratePerSquareMeterMinor / 100)} / m²`, tags: ["Jednosesyjne"], description: offer.description,
+    priceFrom: `${money(config.ratePerSquareMeterMinor / 100)} / m²`, tags: [mode], description: offer.description,
     metrics: [{ id: "location", label: "Obsługiwany obszar", value: account.location.city }],
     gallery: old?.gallery ?? [], photos: config.presentation ? [
       ...(config.presentation.banner ? [{ id: "banner", label: "Baner ogłoszenia", image: config.presentation.banner, gradient: "" }] : []),
@@ -46,6 +47,6 @@ export async function publishOffer(manager: EntityManager, offer: ProviderOfferE
   });
   await manager.save(ProviderProfileEntity, profile);
   await manager.save(BoardListingEntity, manager.create(BoardListingEntity, { id, provider: account.name, rating: profile.rating, reviews: profile.reviewsCount,
-    experience: profile.experience, price: profile.priceFrom, completedOrders: profile.completedOrders, mode: "Jednosesyjne", modeTone: "blue",
+    experience: profile.experience, price: profile.priceFrom, completedOrders: profile.completedOrders, mode, modeTone: "blue",
     image: config.presentation?.banner ?? "/clingo-homepage/assets/images/logo-clingo-color-new.png", imageFit: config.presentation?.banner ? "cover" : "contain", imageScale: null, orderIndex: -1 }));
 }

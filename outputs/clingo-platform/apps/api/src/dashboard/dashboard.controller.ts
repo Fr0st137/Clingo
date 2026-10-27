@@ -83,7 +83,7 @@ export class DashboardController {
   async rescheduleOrder(
     @Param("id", new ParseUUIDPipe()) id: string,
     @Headers("authorization") authorization: string | undefined,
-    @Body() body: { endsAt?: string; startsAt?: string; sessionIndex?: number }
+    @Body() body: { endsAt?: string; startsAt?: string; sessionIndex?: number; revision?: number }
   ): Promise<DashboardOrder> {
     const parseTerm = (value?: string) => value && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)
       ? warsawDate(value.slice(0, 10), value.slice(11)) : value ? new Date(value) : null;
@@ -99,7 +99,7 @@ export class DashboardController {
     }
 
     const email = await this.auth.sessionEmail(authorization);
-    await this.booking.reschedule(id, email, startsAt, endsAt, body.sessionIndex);
+    await this.booking.reschedule(id, email, startsAt, endsAt, body.sessionIndex, undefined, body.revision);
     await this.dashboardService.clearDashboardCache(email);
     const order = await this.dashboardService.getOrder(id, email);
 

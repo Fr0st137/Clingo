@@ -1,0 +1,340 @@
+
+> clingo-platform@0.1.0 test:provider-team
+> npm run build:api && node --test scripts/provider-team.test.cjs scripts/provider-proxy.test.cjs scripts/provider-settings.test.cjs scripts/provider-clients.test.cjs scripts/provider-offers.test.cjs scripts/provider-jobs.test.cjs scripts/provider-reviews.test.cjs scripts/provider-multi-orders.test.cjs
+
+
+> clingo-platform@0.1.0 build:api
+> npm --workspace apps/api run build
+
+
+> @clingo/api@0.1.0 build
+> nest build
+
+TAP version 13
+# Subtest: client validation accepts multiline notes and clears optional fields without trusting account or revision on creation
+ok 1 - client validation accepts multiline notes and clears optional fields without trusting account or revision on creation
+  ---
+  duration_ms: 1.5053
+  type: 'test'
+  ...
+# Subtest: every client operation requires session and provider owner/admin role
+ok 2 - every client operation requires session and provider owner/admin role
+  ---
+  duration_ms: 1.3329
+  type: 'test'
+  ...
+# Subtest: client reads and writes are isolated by membership, with no foreign account fields returned
+ok 3 - client reads and writes are isolated by membership, with no foreign account fields returned
+  ---
+  duration_ms: 1.4242
+  type: 'test'
+  ...
+# Subtest: concurrent client edits cannot silently overwrite contact details or notes
+ok 4 - concurrent client edits cannot silently overwrite contact details or notes
+  ---
+  duration_ms: 0.7965
+  type: 'test'
+  ...
+# Subtest: job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+ok 5 - job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+  ---
+  duration_ms: 2.4197
+  type: 'test'
+  ...
+# Subtest: all job operations require an authenticated managing member
+ok 6 - all job operations require an authenticated managing member
+  ---
+  duration_ms: 6.0349
+  type: 'test'
+  ...
+# Subtest: foreign jobs and references cannot be read, reassigned or attached to this account
+ok 7 - foreign jobs and references cannot be read, reassigned or attached to this account
+  ---
+  duration_ms: 2.7381
+  type: 'test'
+  ...
+# Subtest: client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+ok 8 - client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+  ---
+  duration_ms: 3.5541
+  type: 'test'
+  ...
+# Subtest: manual order location can differ from the client address and survives later edits
+ok 9 - manual order location can differ from the client address and survives later edits
+  ---
+  duration_ms: 3.1663
+  type: 'test'
+  ...
+# Subtest: same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+ok 10 - same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+  ---
+  duration_ms: 9.9804
+  type: 'test'
+  ...
+# Subtest: cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+ok 11 - cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+  ---
+  duration_ms: 4.7537
+  type: 'test'
+  ...
+# Subtest: archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+ok 12 - archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+  ---
+  duration_ms: 2.1856
+  type: 'test'
+  ...
+# Subtest: action messages preserve notes and reject overflow instead of truncating saved data
+ok 13 - action messages preserve notes and reject overflow instead of truncating saved data
+  ---
+  duration_ms: 0.9128
+  type: 'test'
+  ...
+# Subtest: completing a job releases the employee slot without removing the finished record
+ok 14 - completing a job releases the employee slot without removing the finished record
+  ---
+  duration_ms: 4.8281
+  type: 'test'
+  ...
+# Subtest: order detail actions send valid revisioned updates without changing saved client, service, time or price
+ok 15 - order detail actions send valid revisioned updates without changing saved client, service, time or price
+  ---
+  duration_ms: 3.9761
+  type: 'test'
+  ...
+# Subtest: calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+ok 16 - calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+  ---
+  duration_ms: 0.4344
+  type: 'test'
+  ...
+# Subtest: multi-session decisions accept only an explicit action and revision
+ok 17 - multi-session decisions accept only an explicit action and revision
+  ---
+  duration_ms: 1.4127
+  type: 'test'
+  ...
+# Subtest: offer prices use exact minor units and reject ambiguous, fractional or out-of-range inputs
+ok 18 - offer prices use exact minor units and reject ambiguous, fractional or out-of-range inputs
+  ---
+  duration_ms: 1.8044
+  type: 'test'
+  ...
+# Subtest: offer configuration validates rates, continuous area tiers, toggles and add-ons
+ok 19 - offer configuration validates rates, continuous area tiers, toggles and add-ons
+  ---
+  duration_ms: 0.579
+  type: 'test'
+  ...
+# Subtest: offer actions require a session and management membership
+ok 20 - offer actions require a session and management membership
+  ---
+  duration_ms: 1.3689
+  type: 'test'
+  ...
+# Subtest: offers remain private to the owner account across edits, archive and restore
+ok 21 - offers remain private to the owner account across edits, archive and restore
+  ---
+  duration_ms: 1.1646
+  type: 'test'
+  ...
+# Subtest: competing price or status updates cannot overwrite one another
+ok 22 - competing price or status updates cannot overwrite one another
+  ---
+  duration_ms: 0.7415
+  type: 'test'
+  ...
+# Subtest: location validates a complete address, postal code and bounded integer radius
+ok 23 - location validates a complete address, postal code and bounded integer radius
+  ---
+  duration_ms: 0.312
+  type: 'test'
+  ...
+# Subtest: location reads and edits require management membership and do not alter other accounts or settings revisions
+ok 24 - location reads and edits require management membership and do not alter other accounts or settings revisions
+  ---
+  duration_ms: 0.863
+  type: 'test'
+  ...
+# Subtest: simultaneous location saves accept exactly one revision
+ok 25 - simultaneous location saves accept exactly one revision
+  ---
+  duration_ms: 0.3443
+  type: 'test'
+  ...
+# Subtest: proxy requires provider cookie and denies arbitrary upstream routes
+ok 26 - proxy requires provider cookie and denies arbitrary upstream routes
+  ---
+  duration_ms: 7.0534
+  type: 'test'
+  ...
+# Subtest: service and location writes forward only to their allowed provider endpoints
+ok 27 - service and location writes forward only to their allowed provider endpoints
+  ---
+  duration_ms: 7.5933
+  type: 'test'
+  ...
+# Subtest: staffing and absence mutations require the provider cookie and same origin
+ok 28 - staffing and absence mutations require the provider cookie and same origin
+  ---
+  duration_ms: 2.6625
+  type: 'test'
+  ...
+# Subtest: client proxy permits authenticated reads and edits but rejects unsupported operations
+ok 29 - client proxy permits authenticated reads and edits but rejects unsupported operations
+  ---
+  duration_ms: 1.23
+  type: 'test'
+  ...
+# Subtest: writes reject foreign or missing Origin, cross-site requests and invalid payloads
+ok 30 - writes reject foreign or missing Origin, cross-site requests and invalid payloads
+  ---
+  duration_ms: 1.2731
+  type: 'test'
+  ...
+# Subtest: login sets a separate HttpOnly cookie and never exposes the token in JSON
+ok 31 - login sets a separate HttpOnly cookie and never exposes the token in JSON
+  ---
+  duration_ms: 3.0764
+  type: 'test'
+  ...
+# Subtest: proxy forwards only the provider session, path and validated body
+ok 32 - proxy forwards only the provider session, path and validated body
+  ---
+  duration_ms: 1.2642
+  type: 'test'
+  ...
+# Subtest: expired sessions clear the cookie; service outages return an explicit error
+ok 33 - expired sessions clear the cookie; service outages return an explicit error
+  ---
+  duration_ms: 1.0374
+  type: 'test'
+  ...
+# Subtest: settings routes are authenticated and password rotation replaces the HttpOnly cookie
+ok 34 - settings routes are authenticated and password rotation replaces the HttpOnly cookie
+  ---
+  duration_ms: 1.4197
+  type: 'test'
+  ...
+# Subtest: review reports accept only a boolean and a positive revision
+ok 35 - review reports accept only a boolean and a positive revision
+  ---
+  duration_ms: 1.6173
+  type: 'test'
+  ...
+# Subtest: reviews are private to one provider account
+ok 36 - reviews are private to one provider account
+  ---
+  duration_ms: 1.006
+  type: 'test'
+  ...
+# Subtest: owners and admins can report a review with optimistic locking
+ok 37 - owners and admins can report a review with optimistic locking
+  ---
+  duration_ms: 0.6428
+  type: 'test'
+  ...
+# Subtest: profile validation normalizes contacts, allows clearing optional fields and rejects forged properties
+ok 38 - profile validation normalizes contacts, allows clearing optional fields and rejects forged properties
+  ---
+  duration_ms: 1.5375
+  type: 'test'
+  ...
+# Subtest: notification input requires explicit booleans for every channel and starts without assumed consent
+ok 39 - notification input requires explicit booleans for every channel and starts without assumed consent
+  ---
+  duration_ms: 0.7382
+  type: 'test'
+  ...
+# Subtest: all settings operations require a valid session and owner/admin membership
+ok 40 - all settings operations require a valid session and owner/admin membership
+  ---
+  duration_ms: 1.4413
+  type: 'test'
+  ...
+# Subtest: profile edits update only the signed-in provider and return the account login email unchanged
+ok 41 - profile edits update only the signed-in provider and return the account login email unchanged
+  ---
+  duration_ms: 0.4247
+  type: 'test'
+  ...
+# Subtest: only one concurrent profile or notification save wins
+ok 42 - only one concurrent profile or notification save wins
+  ---
+  duration_ms: 0.6046
+  type: 'test'
+  ...
+# Subtest: profile and notification revisions are independent and cannot overwrite each other
+ok 43 - profile and notification revisions are independent and cannot overwrite each other
+  ---
+  duration_ms: 0.3818
+  type: 'test'
+  ...
+# Subtest: export is restricted to own saved data and explicitly excludes credentials and extra entity fields
+ok 44 - export is restricted to own saved data and explicitly excludes credentials and extra entity fields
+  ---
+  duration_ms: 0.605
+  type: 'test'
+  ...
+# Subtest: password change uses existing auth rotation only after provider access has been checked
+ok 45 - password change uses existing auth rotation only after provider access has been checked
+  ---
+  duration_ms: 0.315
+  type: 'test'
+  ...
+# Subtest: re-login restores local destinations and rejects external or looping redirects
+ok 46 - re-login restores local destinations and rejects external or looping redirects
+  ---
+  duration_ms: 0.9602
+  type: 'test'
+  ...
+# Subtest: input preserves real contact data and normalizes name/email
+ok 47 - input preserves real contact data and normalizes name/email
+  ---
+  duration_ms: 0.4917
+  type: 'test'
+  ...
+# Subtest: rejects invalid, duplicate, missing or forged schedule fields
+ok 48 - rejects invalid, duplicate, missing or forged schedule fields
+  ---
+  duration_ms: 1.1362
+  type: 'test'
+  ...
+# Subtest: requires a valid login, provider membership and management role
+ok 49 - requires a valid login, provider membership and management role
+  ---
+  duration_ms: 0.9378
+  type: 'test'
+  ...
+# Subtest: isolates all employee operations by provider account
+ok 50 - isolates all employee operations by provider account
+  ---
+  duration_ms: 0.916
+  type: 'test'
+  ...
+# Subtest: only one competing save wins; stale writes and deletes do not discard changes
+ok 51 - only one competing save wins; stale writes and deletes do not discard changes
+  ---
+  duration_ms: 1.4679
+  type: 'test'
+  ...
+# Subtest: schedule totals count minutes, disabled days, actual months and year boundaries
+ok 52 - schedule totals count minutes, disabled days, actual months and year boundaries
+  ---
+  duration_ms: 0.5544
+  type: 'test'
+  ...
+# Subtest: CSV uses actual saved times and neutralizes spreadsheet formulas
+ok 53 - CSV uses actual saved times and neutralizes spreadsheet formulas
+  ---
+  duration_ms: 0.2289
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2805.1507

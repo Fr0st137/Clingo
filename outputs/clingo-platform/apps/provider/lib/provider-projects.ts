@@ -1,0 +1,5 @@
+import type { ProjectBalance, ProjectEstimate } from "../../api/src/provider/project-work";
+export type ProjectSession = { id:string;date:string;startMinute:number;endMinute:number;durationMinutes:number;employeeIds:string[];employees:Array<{id:string;name:string}>;workers:number;priceMinor:number;state:"future"|"ongoing"|"ended"|"released" };
+export type Project = { source:"booking"|"manual";id:string;revision:number;clientName:string;title:string;status:string;priceMinor:number;estimate:ProjectEstimate;balance:ProjectBalance;sessions:ProjectSession[];canEdit:boolean;canComplete:boolean;completion?:{at:string;releasedSessionIds:string[]};hasLongGap:boolean;bufferMinutes:number;history:Array<{at:string;added:string[];removed:string[];changed:string[]}> };
+export const projectHref=(source:Project["source"],id:string)=>`/orders/multi-session?source=${source}&project=${id}`;
+export function workLabel(minutes:number){const hours=Math.floor(minutes/60),rest=Math.round((minutes%60)*10)/10;return `${hours}h${rest?` ${rest}min`:""}`;}

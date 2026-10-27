@@ -1,0 +1,38 @@
+
+> clingo-platform@0.1.0 build:web
+> npm --workspace apps/web run build
+
+
+> @clingo/web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.24
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 11.5s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+Error occurred prerendering page "/regulaminy". Read more: https://nextjs.org/docs/messages/prerender-error
+Error: connect ECONNREFUSED 127.0.0.1:55432
+    at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:55432)
+    at async (C:\Users\pc\Documents\Clingo\outputs\clingo-platform\apps\web\.next-production\server\chunks\927.js:1:1605)
+    at async i (C:\Users\pc\Documents\Clingo\outputs\clingo-platform\apps\web\.next-production\server\app\regulaminy\page.js:2:7810) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 55432,
+  digest: '1854935358'
+}
+Export encountered an error on /regulaminy/page: /regulaminy, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path C:\Users\pc\Documents\Clingo\outputs\clingo-platform\apps\web
+npm error workspace @clingo/web@0.1.0
+npm error location C:\Users\pc\Documents\Clingo\outputs\clingo-platform\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c next build

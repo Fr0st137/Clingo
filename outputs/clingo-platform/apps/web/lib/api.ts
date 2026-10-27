@@ -137,12 +137,12 @@ export async function getRescheduleAvailability(id: string, month: string, sessi
   return data;
 }
 
-export async function rescheduleOrder(id: string, email: string, startsAt: string, endsAt: string, sessionIndex?: number): Promise<OrderCardData> {
+export async function rescheduleOrder(id: string, email: string, startsAt: string, endsAt: string, sessionIndex?: number, revision?: number): Promise<OrderCardData> {
   const baseUrl = apiBaseUrl();
 
   const response = await fetch(`${baseUrl}/dashboard/orders/${id}/reschedule?email=${encodeURIComponent(email)}`, {
     method: "PATCH",
-    body: JSON.stringify({ endsAt, startsAt, sessionIndex }),
+    body: JSON.stringify({ endsAt, startsAt, sessionIndex, revision }),
     cache: "no-store",
     headers: await orderHeaders()
   });
@@ -204,7 +204,7 @@ export async function getBoard(): Promise<BoardPayload> {
   const listings = await Promise.all(board.listings.map(async listing => {
     try {
       const profile = await getProviderProfile(listing.id);
-      return { ...listing, addOns: profile.addOns?.map(({ id, label }) => ({ id, label })) ?? [] };
+      return { ...listing, addOns: profile.addOns?.map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })) ?? [] };
     } catch {
       return { ...listing, addOns: [] };
     }

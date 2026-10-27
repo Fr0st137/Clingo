@@ -24,7 +24,7 @@ export function employeeInput(value: unknown): EmployeeInput {
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException("Wpisz poprawny adres e-mail.");
   if (phone && !/^\+?[\d ()-]{7,40}$/.test(phone)) throw new BadRequestException("Wpisz poprawny numer telefonu.");
   if (typeof input.showInCalendar !== "boolean") throw new BadRequestException("Wybierz widoczność w kalendarzu.");
-  if (!Array.isArray(input.services) || input.services.length > 2 || new Set(input.services).size !== input.services.length || input.services.some(service => !["homes", "offices"].includes(service))) {
+  if (!Array.isArray(input.services) || input.services.length > 4 || new Set(input.services).size !== input.services.length || input.services.some(service => !["homes", "offices", "pressure", "painting"].includes(service))) {
     throw new BadRequestException("Wybierz poprawne rodzaje usług.");
   }
   if (!Array.isArray(input.schedule) || input.schedule.length !== 7) throw new BadRequestException("Grafik musi zawierać siedem dni tygodnia.");

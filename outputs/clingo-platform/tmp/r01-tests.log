@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: R01: workload is divided by the staffing tier, with prices independent of staff count
+ok 1 - R01: workload is divided by the staffing tier, with prices independent of staff count
+  ---
+  duration_ms: 2.9319
+  type: 'test'
+  ...
+# Subtest: R01: fractional area chooses the next whole-metre staffing boundary without changing billed area
+ok 2 - R01: fractional area chooses the next whole-metre staffing boundary without changing billed area
+  ---
+  duration_ms: 0.2399
+  type: 'test'
+  ...
+# Subtest: R01: legacy area profiles without tiers retain the single-worker duration
+ok 3 - R01: legacy area profiles without tiers retain the single-worker duration
+  ---
+  duration_ms: 0.2639
+  type: 'test'
+  ...
+# Subtest: R01: quote and free slots use the same team duration, retaining existing extra duration and prices
+ok 4 - R01: quote and free slots use the same team duration, retaining existing extra duration and prices
+  ---
+  duration_ms: 2.847
+  type: 'test'
+  ...
+# Subtest: R01: publication preserves staffing tiers for every selected area
+ok 5 - R01: publication preserves staffing tiers for every selected area
+  ---
+  duration_ms: 1.1924
+  type: 'test'
+  ...
+# Subtest: R01: reservation persists the duration and staffing estimate, keeping its snapshot after offer changes
+ok 6 - R01: reservation persists the duration and staffing estimate, keeping its snapshot after offer changes
+  ---
+  duration_ms: 18.3613
+  type: 'test'
+  ...
+# Subtest: R01: existing multi-session planning reports the same staffing assumption as the area quote
+ok 7 - R01: existing multi-session planning reports the same staffing assumption as the area quote
+  ---
+  duration_ms: 36.5272
+  type: 'test'
+  ...
+# Subtest: provider details retain the booking frequency snapshot, extras, notes and session identity
+ok 8 - provider details retain the booking frequency snapshot, extras, notes and session identity
+  ---
+  duration_ms: 2.0588
+  type: 'test'
+  ...
+# Subtest: quote includes selected quantity, service duration and frequency discount
+ok 9 - quote includes selected quantity, service duration and frequency discount
+  ---
+  duration_ms: 2.6082
+  type: 'test'
+  ...
+# Subtest: rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+ok 10 - rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+  ---
+  duration_ms: 0.4395
+  type: 'test'
+  ...
+# Subtest: Polish wall time is independent of the server time zone and daylight saving changes
+ok 11 - Polish wall time is independent of the server time zone and daylight saving changes
+  ---
+  duration_ms: 1.2248
+  type: 'test'
+  ...
+# Subtest: availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+ok 12 - availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+  ---
+  duration_ms: 14.8375
+  type: 'test'
+  ...
+# Subtest: buffers, lead time and past hours are enforced
+ok 13 - buffers, lead time and past hours are enforced
+  ---
+  duration_ms: 16.2001
+  type: 'test'
+  ...
+# Subtest: multi-session duration is split into at least two bounded sessions without losing minutes
+ok 14 - multi-session duration is split into at least two bounded sessions without losing minutes
+  ---
+  duration_ms: 0.2578
+  type: 'test'
+  ...
+# Subtest: multi-session generator uses real free slots and returns a complete schedule
+ok 15 - multi-session generator uses real free slots and returns a complete schedule
+  ---
+  duration_ms: 21.7475
+  type: 'test'
+  ...
+# Subtest: confirmed multi-session order is persisted with its schedule and mode
+ok 16 - confirmed multi-session order is persisted with its schedule and mode
+  ---
+  duration_ms: 23.1991
+  type: 'test'
+  ...
+# Subtest: published area pricing uses the exact requested area in preview and checkout
+ok 17 - published area pricing uses the exact requested area in preview and checkout
+  ---
+  duration_ms: 16.5879
+  type: 'test'
+  ...
+# Subtest: missing or invalid area and either missing field keep checkout unavailable
+ok 18 - missing or invalid area and either missing field keep checkout unavailable
+  ---
+  duration_ms: 0.6255
+  type: 'test'
+  ...
+# Subtest: a supported locality restores checkout only with an available pricing area
+ok 19 - a supported locality restores checkout only with an available pricing area
+  ---
+  duration_ms: 0.774
+  type: 'test'
+  ...
+# Subtest: other cities and similarly named streets cannot activate checkout
+ok 20 - other cities and similarly named streets cannot activate checkout
+  ---
+  duration_ms: 0.3253
+  type: 'test'
+  ...
+# Subtest: coverage is provider-specific, accepts Polish names and never falls back to the office address
+ok 21 - coverage is provider-specific, accepts Polish names and never falls back to the office address
+  ---
+  duration_ms: 0.236
+  type: 'test'
+  ...
+# Subtest: only explicit, available add-ons are restored; demo selections do not alter the price
+ok 22 - only explicit, available add-ons are restored; demo selections do not alter the price
+  ---
+  duration_ms: 0.2521
+  type: 'test'
+  ...
+# Subtest: refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+ok 23 - refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+  ---
+  duration_ms: 0.0999
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2006.4127

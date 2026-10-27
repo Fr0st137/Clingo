@@ -36,7 +36,7 @@ export function scheduleUsage(jobs: Job[], employees: Employee[], absences: Anal
     const day = (parseDay(date).getUTCDay() + 6) % 7;
     for (const employee of employees) {
       const work = available(employee, date, absences);
-      const booked = intersection(work, union(jobs.filter(job => job.employeeId === employee.id && job.date === date && job.status !== "cancelled").map(job => [job.startMinute, job.startMinute + job.durationMinutes])));
+      const booked = intersection(work, union(jobs.filter(job => (job.employeeIds?.includes(employee.id) || job.employeeId === employee.id) && job.date === date && job.status !== "cancelled").map(job => [job.startMinute, job.startMinute + job.durationMinutes])));
       const stats = staff.get(employee.id) ?? { available: 0, booked: 0 };
       stats.available += duration(work); stats.booked += duration(booked); staff.set(employee.id, stats);
       totalAvailable += duration(work); totalBooked += duration(booked);

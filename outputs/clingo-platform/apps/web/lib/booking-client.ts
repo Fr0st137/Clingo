@@ -1,8 +1,8 @@
 import type { AccountProfile } from "./account";
 import type { ProviderProfileData } from "../components/provider-profile-view";
 
-export type BookingSelection = { providerId: string; pricingId: string; frequencyId: string; addOns: Array<{ id: string; quantity: number }> };
-export type BookingQuote = { durationMinutes: number; totalValue: number; frequencyLabel: string; summary: { duration: string; total: string; lines: Array<{ id: string; label: string; value: string }> } };
+export type BookingSelection = { providerId: string; pricingId: string; frequencyId: string; addOns: Array<{ id: string; quantity: number }>; splitIntoSessions?: boolean };
+export type BookingQuote = { mode?: "single" | "multi"; durationMinutes: number; estimatedWorkers?: number; totalValue: number; frequencyLabel: string; summary: { duration: string; total: string; lines: Array<{ id: string; label: string; value: string }> } };
 export type BookingSlot = { time: string; startsAt: string; endsAt: string };
 export type BookingAvailability = { days: Array<{ date: string; slots: BookingSlot[] }>; quote: BookingQuote; today: string; maxDate: string };
 export type BookingPageProps = { selection: BookingSelection; query: string; profile: ProviderProfileData; user: AccountProfile; initialAddress: string };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { BookingError, bookingDate, postBooking, type BookingPageProps, type BookingQuote, type BookingSlot } from "../lib/booking-client";
@@ -252,10 +252,10 @@ function ScheduleTile({ session, index, editing, onEdit }: { session: Session; i
 
   return (
     <ScheduleSessionCard title={session.title} duration={session.duration} workers={session.workers} start={session.start} end={session.end} actions={
-      <div className="flex h-[38px] shrink-0 items-center gap-[10px]">
+      <div className="flex min-w-0 flex-wrap items-center gap-[5px] sm:h-[38px] sm:shrink-0 sm:gap-[10px]">
         <button
           aria-pressed={editingDay}
-          className={`h-[38px] rounded-[30px] border border-[#e5e7eb] px-[15px] text-[13px] text-[#7c8691] ${editingDay ? "bg-[#f0f2f4]" : "bg-white"}`}
+          className={`h-[38px] rounded-[30px] border border-[#e5e7eb] px-[10px] text-[13px] text-[#7c8691] sm:px-[15px] ${editingDay ? "bg-[#f0f2f4]" : "bg-white"}`}
           onClick={() => onEdit(index, "day")}
           type="button"
         >
@@ -264,7 +264,7 @@ function ScheduleTile({ session, index, editing, onEdit }: { session: Session; i
         <span aria-hidden="true" className="h-[24px] w-px bg-[#e5e7eb]" />
         <button
           aria-pressed={editingTime}
-          className={`h-[38px] rounded-[30px] border border-[#bfdbfe] px-[15px] text-[13px] text-[#0079de] ${editingTime ? "bg-[#e9f3ff]" : "bg-white"}`}
+          className={`h-[38px] rounded-[30px] border border-[#bfdbfe] px-[10px] text-[13px] text-[#0079de] sm:px-[15px] ${editingTime ? "bg-[#e9f3ff]" : "bg-white"}`}
           onClick={() => onEdit(index, "time")}
           type="button"
         >
@@ -278,10 +278,10 @@ function ScheduleTile({ session, index, editing, onEdit }: { session: Session; i
 function ScheduleBoard({ sessions, editing, onEdit }: { sessions: Session[]; editing: EditTarget; onEdit: (index: number, field: "day" | "time") => void }) {
   return (
     <div className="relative grid gap-[51px]" aria-label="Wygenerowane sesje">
-      <span aria-hidden="true" className="absolute bottom-[30px] left-[91px] top-[19px] w-[2px] bg-[#e5e7eb]" />
+      <span aria-hidden="true" className="absolute bottom-[30px] left-[9px] top-[65px] w-[2px] bg-[#e5e7eb] sm:left-[91px] sm:top-[19px]" />
       {sessions.map((session, index) => (
-        <div className="relative grid min-w-0 grid-cols-[72px_20px_minmax(0,1fr)] gap-[10px]" key={session.id}>
-          <div className="relative mt-[15px] h-[40px]">
+        <div className="relative grid min-w-0 grid-cols-[20px_minmax(0,1fr)] gap-[10px] sm:grid-cols-[72px_20px_minmax(0,1fr)]" key={session.id}>
+          <div className="relative col-span-2 ml-[30px] h-[40px] w-[110px] sm:col-span-1 sm:ml-0 sm:mt-[15px] sm:w-auto">
             {session.newSession ? (
               <span className="absolute -top-[15px] left-0 z-0 whitespace-nowrap rounded-t-[8px] bg-[#dbeafe] px-[6px] pb-[18px] pt-[4px] text-[12px] font-medium leading-normal text-[#0079de]">
                 Nowa sesja
@@ -308,7 +308,9 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
   const [selectedDate, setSelectedDate] = useState(() => bookingDate());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [scheduleState, setScheduleState] = useState<ScheduleState>("empty");
+  const generation = useRef(0);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [excludedDates, setExcludedDates] = useState<string[]>([]);
   const [editing, setEditing] = useState<EditTarget>(null);
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const [availableDays, setAvailableDays] = useState<Set<string>>(() => new Set(["mon", "tue", "wed", "thu", "fri", "sat"]));
@@ -331,9 +333,17 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
   const selectedSlots = availability?.days.find(day => day.date === selectedDate)?.slots ?? [];
 
   useEffect(() => {
+    generation.current++;
+    setSessions([]); setScheduleState("empty"); setExcludedDates([]);
     try {
       const stored = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
       if (!isMultiSessionBookingState(stored)) return;
+      setExcludedDates(stored.excludedDates ?? []);
+      if (stored.availability) {
+        setAvailableDays(new Set(availabilityDays.filter(row => stored.availability!.days.includes(availabilityWeekdays[row.id])).map(row => row.id)));
+        setAvailabilityStart(stored.availability.start ?? "08:00"); setAvailabilityEnd(stored.availability.end ?? "20:00");
+        setAvailabilityRevision(value => value + 1);
+      }
       setSelectedDate(stored.selectedDate);
       setMonth(stored.selectedDate.slice(0, 7));
       setSelectedTime(stored.selectedTime);
@@ -350,7 +360,8 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
       ...props.selection,
       month,
       durationMinutes: editingDuration,
-      availability: availabilityInput
+      availability: availabilityInput,
+      excludedDates
     }, controller.signal).then(result => {
       setAvailability(result);
       setSelectedDate(current => result.days.some(day => day.date === current && day.slots.length)
@@ -364,21 +375,25 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
       if (!controller.signal.aborted) setCalendarLoading(false);
     });
     return () => controller.abort();
-  }, [availabilityRevision, editingDuration, month, selectionKey]);
+  }, [availabilityRevision, editingDuration, month, selectionKey, excludedDates]);
 
-  const generateSchedule = async (startsAt: string) => {
+  const generateSchedule = async (startsAt: string, exclusions = excludedDates) => {
+    const request = ++generation.current;
     setScheduleState("loading");
     setEditing(null);
     setError("");
     setErrorStatus(undefined);
     try {
-      const result = await postBooking<GeneratedSchedule>("multi-schedule", { ...props.selection, startsAt, availability: availabilityInput });
+      const result = await postBooking<GeneratedSchedule>("multi-schedule", { ...props.selection, startsAt, availability: availabilityInput, excludedDates: exclusions });
+      if (request !== generation.current) return;
       const nextSessions = generatedSessions(result);
       setSessions(nextSessions);
-      setSelectedDate(bookingDate(new Date(startsAt)));
-      setSelectedTime(scheduleTime(startsAt));
+      setSelectedDate(bookingDate(new Date(result.sessions[0].startsAt)));
+      setMonth(bookingDate(new Date(result.sessions[0].startsAt)).slice(0, 7));
+      setSelectedTime(scheduleTime(result.sessions[0].startsAt));
       setScheduleState("ready");
     } catch (reason) {
+      if (request !== generation.current) return;
       setSessions([]);
       setScheduleState("empty");
       setError(reason instanceof Error ? reason.message : "Nie udało się wygenerować harmonogramu.");
@@ -424,6 +439,14 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
   };
 
   const handleEdit = (index: number, field: "day" | "time") => {
+    if (field === "day" && props.profile.areaPricing) {
+      const date = multiSessionDateValue(sessions[index].date);
+      const exclusions = Array.from(new Set([...excludedDates, date]));
+      const first = sessions[0];
+      setExcludedDates(exclusions);
+      void generateSchedule(multiSessionIso(first.date, first.start), exclusions);
+      return;
+    }
     const next = editing?.index === index && editing.field === field ? null : { index, field };
     setEditing(next);
     if (!next) {
@@ -442,9 +465,11 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
   };
 
   const resetSchedule = () => {
+    generation.current++;
     try { sessionStorage.removeItem(storageKey); } catch { /* The visible reset still works. */ }
     setSelectedTime(null);
     setSessions([]);
+    setExcludedDates([]);
     setScheduleState("empty");
     setEditing(null);
     setError("");
@@ -489,7 +514,7 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
   const continueToSummary = () => {
     if (scheduleState !== "ready" || !selectedTime) return;
     try {
-      sessionStorage.setItem(storageKey, JSON.stringify({ selectedDate, selectedTime, sessions }));
+      sessionStorage.setItem(storageKey, JSON.stringify({ selectedDate, selectedTime, sessions, availability: availabilityInput, excludedDates }));
     } catch { /* Navigation still allows the summary to show its recovery state. */ }
     router.push(`/zamowienie/podsumowanie?${props.query}`);
   };
@@ -504,7 +529,7 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
     <>
       <OrderHeader />
       <main className="relative z-10 mx-auto box-border w-full max-w-[1440px] px-4 pb-[60px] pt-[80px] md:px-0" data-name="Panel generowania harmonogramu - wielosesyjne" data-node-id="4519:6906">
-        <div className="grid min-h-[831px] w-full items-start gap-[30px] xl:grid-cols-[400px_minmax(0,1fr)]">
+        <div className="grid min-h-[831px] w-full grid-cols-1 items-start gap-[30px] xl:grid-cols-[400px_minmax(0,1fr)]">
           <aside className="grid w-full gap-[30px] rounded-[30px] border border-[#e5e7eb] bg-white px-[25px] pb-[25px] pt-[10px] shadow-[0_4px_7px_rgba(0,0,0,0.04)] xl:w-[400px]">
             <PreviewCalendar availability={availability} loading={calendarLoading} month={month} onMonthChange={changeMonth} onSelect={handleDaySelect} selectedDate={selectedDate} />
             <TimePicker
@@ -521,7 +546,7 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
 
           <section className="grid min-w-0 gap-[20px]">
             <OrderSteps activeStep={1} mode="multi-session" />
-            <section className="flex min-h-[698px] w-full flex-col rounded-[30px] border border-[#e5e7eb] bg-white/40 p-[30px] shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+            <section className="flex min-h-[698px] min-w-0 w-full flex-col rounded-[30px] border border-[#e5e7eb] bg-white/40 p-[20px] shadow-[0_4px_14px_rgba(0,0,0,0.04)] sm:p-[30px]">
               <header className="relative z-20 flex flex-wrap items-start justify-between gap-5">
                 <div className="grid gap-[5px]">
                   <h1 className="m-0 text-[24px] font-semibold leading-normal text-[#2e3b4c]">Twój harmonogram</h1>
@@ -567,8 +592,8 @@ export function MultiSessionScheduleScreen(props: BookingPageProps) {
                   <img alt="Generowanie harmonogramu" className="h-[100px] w-[100px] object-contain" src="/figma-assets/schedule-loading.png" />
                 </div>
               ) : (
-                <div className="mt-[30px] min-w-0 flex-1 overflow-x-auto pr-[2px]">
-                  <div className="min-w-[720px]">
+                <div className="mt-[30px] min-w-0 flex-1 pr-[2px]">
+                  <div className="min-w-0">
                     <ScheduleBoard editing={editing} onEdit={handleEdit} sessions={sessions} />
                   </div>
                 </div>

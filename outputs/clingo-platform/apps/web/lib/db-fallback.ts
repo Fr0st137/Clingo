@@ -5,6 +5,15 @@ import type { OrderCardData } from "../components/order-card";
 import type { ProviderProfileData } from "../components/provider-profile-view";
 import type { ReviewCardData } from "../components/review-card";
 
+// Catalogue fallbacks must enforce the same roster limits as API reads.
+const staffingEligibilitySql = `(p.account_id IS NULL OR EXISTS (
+  SELECT 1 FROM provider_accounts a
+  CROSS JOIN LATERAL (SELECT count(*)::integer AS n FROM provider_employees e WHERE e.account_id=a.id) staff
+  WHERE a.id=p.account_id AND staff.n>0 AND (a.staffing_mode<>'solo' OR staff.n=1)
+  AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(p.area_pricing::jsonb->'workerTiers','[]'::jsonb)) tier
+    WHERE (tier->>'workers')::integer > CASE WHEN a.staffing_mode='solo' THEN 1 ELSE LEAST(50,COALESCE(a.declared_staff,staff.n),staff.n) END)
+))`;
+
 type QueryResult<T> = {
   rows: T[];
 };
@@ -292,7 +301,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
     const [searchFields, filters, listings] = await Promise.all([
       client.query<BoardPayload["searchFields"][number]>('select id, label, value from board_search_fields order by "orderIndex" asc'),
       client.query<Record<string, unknown>>('select id, title, options from board_filters order by "orderIndex" asc'),
-      client.query<Record<string, unknown>>('select b.*, p.service, p.area_pricing, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id where p.published = true order by b."orderIndex" asc')
+      client.query<Record<string, unknown>>(`select b.*, p.service, p.area_pricing, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id where p.published = true and ${staffingEligibilitySql} order by b."orderIndex" asc`)
     ]);
 
     return {
@@ -304,7 +313,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
       listings: listings.rows.map((listing) => ({
         service: String(listing.service),
         areaPricing: asJson<BoardPayload["listings"][number]["areaPricing"]>(listing.area_pricing as string | null),
-        addOns: (asJson<Array<{ id: string; label: string }>>(listing.profileAddOns as string) ?? []).map(({ id, label }) => ({ id, label })),
+        addOns: (asJson<Array<{ id: string; label: string; durationMinutes?: number }>>(listing.profileAddOns as string) ?? []).map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })),
         completedOrders: Number(listing.completedOrders),
         experience: String(listing.experience ?? ""),
         id: String(listing.id),
@@ -325,7 +334,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
 
 export async function getProviderProfileFromDb(id: string): Promise<ProviderProfileData> {
   return withDb(async (client) => {
-    const result = await client.query<Record<string, unknown>>("select * from provider_profiles where id = $1 and published = true limit 1", [id]);
+    const result = await client.query<Record<string, unknown>>(`select p.* from provider_profiles p where p.id = $1 and p.published = true and ${staffingEligibilitySql} limit 1`, [id]);
     const profile = result.rows[0];
 
     if (!profile) {
@@ -334,6 +343,7 @@ export async function getProviderProfileFromDb(id: string): Promise<ProviderProf
 
     return {
       areaPricing: asJson<ProviderProfileData["areaPricing"]>(profile.area_pricing as string | null),
+      bookingSettings: asJson<ProviderProfileData["bookingSettings"]>(profile.booking_settings as string | null),
       completedOrders: Number(profile.completedOrders),
       description: String(profile.description),
       experience: String(profile.experience),

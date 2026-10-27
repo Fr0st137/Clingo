@@ -3,6 +3,8 @@ import { ProviderAccountEntity } from "../provider/provider.entity";
 
 @Entity({ name: "provider_profiles" })
 export class ProviderProfileEntity {
+  // Computed from the current roster for public reads; never persisted.
+  staffingValid?: boolean;
   @Column({ type: "boolean", default: true })
   published!: boolean;
 

@@ -5,6 +5,13 @@ export type Job = { id: string; clientId: string; offerId: string; employeeId: s
   addOns?: Array<{ id: string; label: string; quantity: number }>;
   invoice?: { companyName: string; taxId: string; address: string } | null;
   frequencyLabel?: string | null;
+  estimatedWorkers?: number;
+  isProject?: boolean;
+  releasedByCompletion?: boolean;
+  projectCompletedAt?: string;
+  sessionId?: string;
+  employees?: Array<{ id: string; name: string }>;
+  employeeIds?: string[];
   providerMessages?: Array<{ type: "cancelled" | "rescheduled"; message: string; createdAt: string }>;
 };
 export type JobDraft = { clientId: string; offerId: string; employeeId: string; date: string; time: string; duration: string; price: string; notes: string; status: Job["status"] };

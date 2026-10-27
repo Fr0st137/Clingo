@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const routes: Record<string, string[]> = {
-  me: ["GET"], account: ["POST"], employees: ["GET", "POST"], clients: ["GET", "POST"], absences: ["GET"],
+  me: ["GET"], account: ["POST"], employees: ["GET", "POST"], clients: ["GET", "POST"], absences: ["GET", "POST"],
   services: ["GET", "POST"], jobs: ["GET", "POST"], "bookings/profiles": ["GET"], reviews: ["GET"], "multi-orders": ["GET"], "settings/location": ["GET", "PUT"],
   "settings/profile": ["GET", "PUT"], "settings/notifications": ["GET", "PUT"], "settings/password": ["POST"], "settings/export": ["GET"],
+  "settings/staffing": ["GET", "PUT"],
+  projects: ["GET"],
   "auth/login": ["POST"], "auth/register": ["POST"], "auth/logout": ["POST"]
 };
 async function proxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path: segments } = await params;
   const path = segments.join("/");
   const methods = routes[path] ?? (/^bookings\/[a-f0-9-]{36}\/reschedule-availability$/.test(path) ? ["POST"] : /^bookings\/[a-f0-9-]{36}\/reschedule$/.test(path) ? ["PUT"] : /^employees\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT", "DELETE"] : /^(clients|services|jobs|bookings)\/[a-f0-9-]{36}$/.test(path) ? ["GET", "PUT"] : /^reviews\/[a-f0-9-]{36}\/report$/.test(path) || /^multi-orders\/[a-f0-9-]{36}\/action$/.test(path) ? ["PUT"] : []);
-  const allowed = /^absences\/[a-f0-9-]{36}$/.test(path) ? ["PUT"] : methods;
+  const allowed = /^projects\/(booking|manual)\/[a-f0-9-]{36}\/(availability|complete)$/.test(path) ? ["POST"] : /^projects\/(booking|manual)\/[a-f0-9-]{36}$/.test(path) ? ["GET","PUT"] : /^bookings\/[a-f0-9-]{36}\/staffing$/.test(path) ? ["POST", "PUT"] : /^absences\/[a-f0-9-]{36}$/.test(path) ? ["PUT"] : methods;
   if (!allowed.includes(request.method)) return NextResponse.json({ message: "Nie znaleziono operacji." }, { status: 404 });
   const mutating = request.method !== "GET";
   if (mutating && (request.headers.get("origin") !== request.nextUrl.origin || request.headers.get("sec-fetch-site") === "cross-site")) return NextResponse.json({ message: "Niedozwolone źródło żądania." }, { status: 403 });
@@ -27,7 +29,7 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       const { done, value } = await reader.read();
       if (done) break;
       size += value.byteLength;
-      const limit = /^services\/[a-f0-9-]{36}$/.test(path) && request.method === "PUT" ? 3 * 1024 * 1024 : 16384;
+      const limit = /^projects\/(booking|manual)\/[a-f0-9-]{36}$/.test(path) ? 512 * 1024 : /^services\/[a-f0-9-]{36}$/.test(path) && request.method === "PUT" ? 3 * 1024 * 1024 : 16384;
       if (size > limit) { await reader.cancel(); return NextResponse.json({ message: "Formularz jest zbyt duży." }, { status: 413 }); }
       chunks.push(value);
     }

@@ -1,0 +1,1 @@
+export type StaffingSettings = { mode: "solo" | "team"; declaredStaff: number | null; employeeCount: number; limit: number; revision: number; invalidOffers: Array<{ id: string; title: string; workers: number }> };

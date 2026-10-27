@@ -1,0 +1,65 @@
+
+> clingo-platform@0.1.0 build:web
+> npm --workspace apps/web run build
+
+
+> @clingo/web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.24
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 12.8s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+   Generating static pages (12/26) 
+   Generating static pages (19/26) 
+ ✓ Generating static pages (26/26)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      127 B         111 kB
+├ ○ /_not-found                            988 B         104 kB
+├ ƒ /api/account/[...path]                 145 B         103 kB
+├ ƒ /api/auth/[action]                     145 B         103 kB
+├ ƒ /api/booking/[action]                  145 B         103 kB
+├ ƒ /api/providers/search                  145 B         103 kB
+├ ƒ /api/review-images/[id]                145 B         103 kB
+├ ƒ /chat                                2.56 kB         115 kB
+├ ƒ /dla-wykonawcow                        145 B         103 kB
+├ ○ /home                                  127 B         111 kB
+├ ƒ /logowanie                             125 B         111 kB
+├ ƒ /opinie                                256 B         112 kB
+├ ƒ /opinie/dodaj                          133 B         116 kB
+├ ƒ /opinie/edytuj                         133 B         116 kB
+├ ƒ /profil-ogloszeniowy/[id]            9.76 kB         124 kB
+├ ○ /profil-ogloszeniowy/jednosesyjne      145 B         103 kB
+├ ƒ /regulaminy                            256 B         112 kB
+├ ƒ /rejestracja                           125 B         111 kB
+├ ƒ /standardy-uslug                       256 B         112 kB
+├ ƒ /tablica-ogloszen                    13.3 kB         128 kB
+├ ƒ /ulubione                            2.03 kB         114 kB
+├ ƒ /ustawienia                          2.15 kB         114 kB
+├ ƒ /wykonawcy/[id]                      6.11 kB         121 kB
+├ ƒ /zamowienia                            823 B         118 kB
+├ ƒ /zamowienia/odwolaj                    133 B         117 kB
+├ ƒ /zamowienia/przeloz                    133 B         117 kB
+├ ƒ /zamowienia/szczegoly                  133 B         117 kB
+├ ƒ /zamowienie                            167 B         129 kB
+├ ƒ /zamowienie/podsumowanie               166 B         129 kB
+└ ƒ /zamowienie/potwierdzenie              167 B         129 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-51732c0e3a66e117.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)             2 kB
+
+
+ƒ Middleware                             34.5 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

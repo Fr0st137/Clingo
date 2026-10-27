@@ -16,6 +16,8 @@ export type MultiSessionBookingState = {
   selectedDate: string;
   selectedTime: string;
   sessions: MultiSessionBookingSession[];
+  availability?: { days: number[]; start?: string; end?: string };
+  excludedDates?: string[];
 };
 
 export function multiSessionStorageKey(props: BookingPageProps) {
@@ -52,6 +54,9 @@ export function isMultiSessionBookingState(value: unknown): value is MultiSessio
   if (!value || typeof value !== "object") return false;
   const state = value as Partial<MultiSessionBookingState>;
   return typeof state.selectedDate === "string"
+    && (state.excludedDates === undefined || Array.isArray(state.excludedDates) && state.excludedDates.length <= 186 && state.excludedDates.every(date => typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)))
+    && (state.availability === undefined || !!state.availability && Array.isArray(state.availability.days) && state.availability.days.every(day => Number.isInteger(day) && day >= 0 && day <= 6)
+      && [state.availability.start, state.availability.end].every(time => time === undefined || typeof time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(time)))
     && /^\d{4}-\d{2}-\d{2}$/.test(state.selectedDate)
     && typeof state.selectedTime === "string"
     && Array.isArray(state.sessions)

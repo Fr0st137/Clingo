@@ -95,6 +95,6 @@ export function OrderRescheduleForm({ order, initialSessionIndex, loadAvailabili
         {!availability.days.some(day => day.slots.length) ? <p>Brak wolnych terminów w tym miesiącu.</p> : null}
       </> : null}
     </div>
-    {error ? <div role="alert" className="rounded-[15px] border border-red-200 bg-red-50 p-[15px] text-red-700">{error}<button type="button" disabled={saving || loading} className="ml-[15px] underline" onClick={() => setRevision(value => value + 1)}>Odśwież terminy</button></div> : null}
+    {error ? <div role="alert" className="rounded-[15px] border border-red-200 bg-red-50 p-[15px] text-red-700">{error}<button type="button" disabled={saving || loading} className="ml-[15px] underline" onClick={() => {setRevision(value => value + 1);router.refresh();}}>Odśwież terminy</button></div> : null}
   </form>;
 }

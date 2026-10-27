@@ -4,14 +4,14 @@ import type { AccountProfile } from "./account";
 import { fetchPrivateJson } from "./private-api";
 import { getProviderProfile } from "./api";
 import type { BookingPageProps } from "./booking-client";
-import { offerRequestState, profilePricing } from "./offer-request";
+import { offerRequestState, profileBookingMode, profilePricing } from "./offer-request";
 
 export async function loadBookingPage(params: Record<string, string | string[] | undefined>, path: string): Promise<BookingPageProps> {
   const read = (key: string) => typeof params[key] === "string" ? params[key] as string : "";
   const providerId = read("provider");
   if (!providerId) redirect("/tablica-ogloszen");
   const query = new URLSearchParams();
-  for (const key of ["provider", "pricing", "frequency", "addons", "address", "area"]) if (read(key)) query.set(key, read(key));
+  for (const key of ["provider", "pricing", "frequency", "addons", "address", "area", "mode"]) if (read(key)) query.set(key, read(key));
   const cookieStore = await cookies();
   const email = decodeURIComponent(cookieStore.get("clingo-user-email")?.value ?? "");
   const loginUrl = `/logowanie?next=${encodeURIComponent(`${path}?${query}`)}`;
@@ -29,7 +29,11 @@ export async function loadBookingPage(params: Record<string, string | string[] |
   query.set("pricing", pricingId);
   if (!user) redirect(loginUrl);
   const addOns = read("addons").split(",").filter(Boolean).map(item => { const [id, quantity] = item.split(":"); return { id, quantity: Number(quantity) }; });
+  const splitIntoSessions = read("mode") === "multi";
+  const multi = profileBookingMode(profile, { pricingId, addOns, splitIntoSessions }) === "multi";
+  const frequencyId = multi && profile.areaPricing ? profile.frequencies?.find(row => row.id === "once")?.id ?? "once" : read("frequency") || profile.frequencies?.[0]?.id || "";
+  query.set("frequency", frequencyId);
   return { profile, user, query: query.toString(), initialAddress: read("address"), selection: {
-    providerId, pricingId, frequencyId: read("frequency") || profile.frequencies?.[0]?.id || "", addOns
+    providerId, pricingId, frequencyId, addOns, ...(splitIntoSessions ? { splitIntoSessions: true } : {})
   } };
 }

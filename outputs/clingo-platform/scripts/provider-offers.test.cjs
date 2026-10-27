@@ -6,6 +6,8 @@ const apiRequire = require('node:module').createRequire(resolve(__dirname, '../a
 const { UnauthorizedException } = apiRequire('@nestjs/common');
 const { ProviderOffersService } = require('../apps/api/dist/provider/provider-offers.service');
 const { offerInput, defaultOfferConfiguration } = require('../apps/api/dist/provider/provider-offers.input');
+const { ProviderAccountEntity, ProviderEmployeeEntity } = require('../apps/api/dist/provider/provider.entity');
+const { ProviderOfferEntity } = require('../apps/api/dist/provider/provider-offers.entity');
 const draft = () => ({ title: 'Sprzątanie domu', category: 'homes', description: '', priceMinor: 14990, durationMinutes: 90, status: 'draft' });
 const status = code => error => error.getStatus() === code;
 function setup(role = 'owner') {
@@ -18,6 +20,15 @@ function setup(role = 'owner') {
     async findOneBy(where) { const row = [...rows.values()].find(row => matches(row, where)); return row ? structuredClone(row) : null; },
     async update(where, input) { const row = rows.get(where.id); if (!row || !matches(row, where)) return { affected: 0 }; rows.set(row.id, { ...row, ...input }); return { affected: 1 }; }
   };
+  const manager = {
+    findOneOrFail: async (_entity, {where}) => ({id:where.id,staffingMode:'team',declaredStaff:null}),
+    findOne: async (entity, {where}) => entity === ProviderAccountEntity ? {id:where.id,staffingMode:'team',declaredStaff:null} : repository.findOneBy(where),
+    findOneBy: async (entity, where) => entity === ProviderOfferEntity ? repository.findOneBy(where) : null,
+    find: async entity => entity === ProviderEmployeeEntity ? [{id:'one'},{id:'two'},{id:'three'}] : [],
+    create: (_entity, input) => ({...input,id:input.id??randomUUID()}),
+    save: (_entity, input) => repository.save(input)
+  };
+  let queue=Promise.resolve();repository.manager={transaction(callback){const result=queue.then(()=>callback(manager));queue=result.catch(()=>{});return result;}};
   const service = new ProviderOffersService({ async sessionUser(token) { if (!token) throw new UnauthorizedException(); return { id: token }; } }, { async findOneBy({ userId }) { return userId === 'none' ? null : { accountId: userId, role }; } }, repository);
   return { service, rows };
 }

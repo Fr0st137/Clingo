@@ -6,6 +6,8 @@ import { OrderEntity } from "../dashboard/order.entity";
 import { ProviderProfileEntity } from "../dashboard/provider-profile.entity";
 import { ProviderMembershipEntity } from "./provider.entity";
 import { BookingService } from "../dashboard/booking.service";
+import { assignStaff, freeEmployees, loadStaffing } from "../dashboard/staffing";
+import { bookingSessions } from "../dashboard/booking-bridge";
 
 export function providerActionMessage(value: unknown) {
   if (value === undefined) return "";
@@ -35,6 +37,49 @@ export class ProviderBookingsService {
     if (!rows.length) throw new NotFoundException("Nie znaleziono rezerwacji.");
     return rows;
   }
+  private staffingIndex(order: OrderEntity, value: unknown) {
+    const index = value === undefined ? 0 : value;
+    if (!Number.isInteger(index) || Number(index) < 0 || Number(index) >= bookingSessions(order).length) throw new BadRequestException("Wybierz poprawną sesję.");
+    if (bookingStatus(order.status) !== "scheduled") throw new BadRequestException("Obsadę można zmienić w aktywnej rezerwacji.");
+    return Number(index);
+  }
+  async staffing(authorization: string | undefined, id: string, value: unknown) {
+    const { order } = await this.ownedOrder(authorization, id);
+    const input = objectInput(value), index = this.staffingIndex(order, input.sessionIndex);
+    const profile = await this.db.manager.findOneByOrFail(ProviderProfileEntity, { id: order.providerId! });
+    const staff = await loadStaffing(this.db.manager, profile, { orderId: id, sessionIndex: index });
+    if (staff) staff.category = order.selectedOptions?.serviceCategory ?? staff.category;
+    const session = bookingSessions(order)[index];
+    const current = order.selectedOptions?.sessions?.[index]?.employees ?? order.selectedOptions?.employees ?? [];
+    return { revision: order.revision, assigned: current, requiredWorkers: order.selectedOptions?.estimatedWorkers ?? 1,
+      available: staff ? freeEmployees(staff, session.startsAt, session.endsAt, profile.bookingSettings?.bufferMinutes ?? 0) : [] };
+  }
+  async assign(authorization: string | undefined, id: string, value: unknown) {
+    const { accountId } = await this.ownedOrder(authorization, id);
+    const input = objectInput(value);
+    if (Object.keys(input).some(key => !["revision", "sessionIndex", "employeeIds", "acceptUnderstaffing"].includes(key)) || !Number.isSafeInteger(input.revision) || !Array.isArray(input.employeeIds) || !input.employeeIds.length || input.employeeIds.length > 50 || input.employeeIds.some(id => typeof id !== "string") || new Set(input.employeeIds).size !== input.employeeIds.length || input.acceptUnderstaffing !== undefined && typeof input.acceptUnderstaffing !== "boolean") throw new BadRequestException("Wybierz co najmniej jednego pracownika i aktualną wersję rezerwacji.");
+    const employeeIds = input.employeeIds as string[];
+    return this.db.transaction(async manager => {
+      const current = await manager.findOneByOrFail(OrderEntity, { id });
+      const profile = await lockBookingProfile(manager, current.providerId!);
+      if (profile.accountId !== accountId) throw new NotFoundException("Nie znaleziono rezerwacji.");
+      const order = await manager.findOneOrFail(OrderEntity, { where: { id }, lock: { mode: "pessimistic_write" } });
+      if (order.revision !== input.revision) throw new ConflictException("Rezerwacja zmieniła się. Wczytaj aktualne dane.");
+      if (order.mode === "Wielosesyjne") throw new BadRequestException("Zmień obsadę w edytorze projektu, aby potwierdzić bilans roboczogodzin.");
+      const index = this.staffingIndex(order, input.sessionIndex), session = bookingSessions(order)[index];
+      if (+session.endsAt <= Date.now()) throw new BadRequestException("Nie można zmienić obsady zakończonego terminu.");
+      if (employeeIds.length < (order.selectedOptions?.estimatedWorkers ?? 1) && input.acceptUnderstaffing !== true) throw new BadRequestException("Potwierdź zmniejszenie obsady względem liczby osób przyjętej do obliczenia czasu.");
+      const staff = await loadStaffing(manager, profile, { orderId: id, sessionIndex: index });
+      if (!staff) throw new BadRequestException("Najpierw skonfiguruj pracowników działalności.");
+      staff.category = order.selectedOptions?.serviceCategory ?? staff.category;
+      const employees = assignStaff(staff, session.startsAt, session.endsAt, employeeIds.length, profile.bookingSettings?.bufferMinutes ?? 0, employeeIds);
+      order.selectedOptions ??= { addOns: [], frequencyId: "", pricingId: "" };
+      if (order.selectedOptions.sessions?.length) order.selectedOptions.sessions[index] = { ...order.selectedOptions.sessions[index], workers: employees.length, employees };
+      else order.selectedOptions.employees = employees;
+      order.revision++; await manager.save(order);
+      return bookingJobs(order);
+    });
+  }
   async update(authorization: string | undefined, id: string, value: unknown) {
     const accountId = await this.accountId(authorization);
     const input = objectInput(value);
@@ -50,6 +95,7 @@ export class ProviderBookingsService {
       const order = await manager.findOne(OrderEntity, { where: { id }, lock: { mode: "pessimistic_write" } });
       if (!order || order.providerId !== profile.id) throw new NotFoundException("Nie znaleziono rezerwacji.");
       if (order.revision !== input.revision || bookingStatus(order.status) !== "scheduled") throw new ConflictException("Rezerwacja zmieniła się. Wczytaj aktualne dane.");
+      if (input.status === "completed" && order.mode === "Wielosesyjne") throw new BadRequestException("Zakończ cały projekt w edytorze projektu i potwierdź zwolnienie przyszłych sesji.");
       if (input.status === "completed" && (!order.endsAt || order.endsAt.getTime() > Date.now())) throw new BadRequestException("Możesz zakończyć rezerwację po upływie ostatniego zaplanowanego terminu.");
       order.status = input.status === "completed" ? "Wykonane zlecenie" : "Odwołane zlecenie";
       if (message) {

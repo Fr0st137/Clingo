@@ -62,6 +62,7 @@ export function CustomerOrderDetails({ order }: { order: OrderCardData }) {
         </div>
       </section>
 
+      {details?.completedAt&&<p className="m-0 rounded-[15px] bg-[#f4f6f9] p-[15px] text-[14px]">Projekt zakończony {new Date(details.completedAt).toLocaleString("pl-PL",{timeZone:"Europe/Warsaw"})}. Zachowano ostatni harmonogram; pozostałe sesje zostały zwolnione.</p>}
       {multiSession ? <OrderSessionTimeline order={order} canReschedule={!inactive && Boolean(order.id) && order.actions.includes("Przełóż zlecenie")} /> : null}
 
       <section className="grid gap-[15px]">

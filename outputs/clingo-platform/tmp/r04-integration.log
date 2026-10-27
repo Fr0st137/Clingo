@@ -1,0 +1,1 @@
+PASS: real DB/API/browser; bootstrap defaults; solo creation race; declared and actual team limits; immutable order snapshots; concurrent offer growth/deletion; publication validation; stale revisions and roles; legacy invalid offers hidden in API and DB fallback; settings and offer steppers on desktop/mobile.

@@ -77,7 +77,7 @@ export function OrderReschedulePage({ order, initialSessionIndex, ...actions }: 
   return <DashboardShell active="Rezerwacje">
     <section className="w-full max-w-[1170px] pb-[60px]">
       <h1 className="mb-[25px] mt-[20px] text-[22px] font-semibold text-[#2e3b4c]">Przełóż zlecenie</h1>
-      {order ? <OrderRescheduleForm key={`${order.id}-${initialSessionIndex ?? "default"}`} order={order} initialSessionIndex={initialSessionIndex} {...actions} /> : <p className="rounded-[20px] bg-white p-[25px] text-[#7c8691]">Nie udało się pobrać zlecenia. <Link href="/zamowienia" className="text-[#0079de]">Wróć do rezerwacji</Link></p>}
+      {order ? <OrderRescheduleForm key={`${order.id}-${order.revision}-${initialSessionIndex ?? "default"}`} order={order} initialSessionIndex={initialSessionIndex} {...actions} /> : <p className="rounded-[20px] bg-white p-[25px] text-[#7c8691]">Nie udało się pobrać zlecenia. <Link href="/zamowienia" className="text-[#0079de]">Wróć do rezerwacji</Link></p>}
     </section>
   </DashboardShell>;
 }

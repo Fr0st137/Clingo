@@ -1,0 +1,634 @@
+TAP version 13
+# Subtest: R01: workload is divided by the staffing tier, with prices independent of staff count
+ok 1 - R01: workload is divided by the staffing tier, with prices independent of staff count
+  ---
+  duration_ms: 5.02
+  type: 'test'
+  ...
+# Subtest: R01: fractional area chooses the next whole-metre staffing boundary without changing billed area
+ok 2 - R01: fractional area chooses the next whole-metre staffing boundary without changing billed area
+  ---
+  duration_ms: 0.3154
+  type: 'test'
+  ...
+# Subtest: R01: legacy area profiles without tiers retain the single-worker duration
+ok 3 - R01: legacy area profiles without tiers retain the single-worker duration
+  ---
+  duration_ms: 0.2718
+  type: 'test'
+  ...
+# Subtest: R01: quote and free slots use the same team duration, retaining existing extra duration and prices
+ok 4 - R01: quote and free slots use the same team duration, retaining existing extra duration and prices
+  ---
+  duration_ms: 4.4231
+  type: 'test'
+  ...
+# Subtest: R01: publication preserves staffing tiers for every selected area
+ok 5 - R01: publication preserves staffing tiers for every selected area
+  ---
+  duration_ms: 2.3882
+  type: 'test'
+  ...
+# Subtest: R01: reservation persists the duration and staffing estimate, keeping its snapshot after offer changes
+ok 6 - R01: reservation persists the duration and staffing estimate, keeping its snapshot after offer changes
+  ---
+  duration_ms: 35.1567
+  type: 'test'
+  ...
+# Subtest: R01: existing multi-session planning reports the same staffing assumption as the area quote
+ok 7 - R01: existing multi-session planning reports the same staffing assumption as the area quote
+  ---
+  duration_ms: 35.0196
+  type: 'test'
+  ...
+# Subtest: provider details retain the booking frequency snapshot, extras, notes and session identity
+ok 8 - provider details retain the booking frequency snapshot, extras, notes and session identity
+  ---
+  duration_ms: 3.2233
+  type: 'test'
+  ...
+# Subtest: quote includes selected quantity, service duration and frequency discount
+ok 9 - quote includes selected quantity, service duration and frequency discount
+  ---
+  duration_ms: 3.9187
+  type: 'test'
+  ...
+# Subtest: rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+ok 10 - rejects unavailable variants and invalid/duplicate add-ons instead of silently changing the order
+  ---
+  duration_ms: 0.5563
+  type: 'test'
+  ...
+# Subtest: Polish wall time is independent of the server time zone and daylight saving changes
+ok 11 - Polish wall time is independent of the server time zone and daylight saving changes
+  ---
+  duration_ms: 2.0351
+  type: 'test'
+  ...
+# Subtest: availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+ok 12 - availability respects full duration, overlapping orders, work hours, Sundays and the six-month horizon
+  ---
+  duration_ms: 29.1952
+  type: 'test'
+  ...
+# Subtest: buffers, lead time and past hours are enforced
+ok 13 - buffers, lead time and past hours are enforced
+  ---
+  duration_ms: 43.6667
+  type: 'test'
+  ...
+# Subtest: multi-session duration is split into at least two bounded sessions without losing minutes
+ok 14 - multi-session duration is split into at least two bounded sessions without losing minutes
+  ---
+  duration_ms: 0.5381
+  type: 'test'
+  ...
+# Subtest: multi-session generator uses real free slots and returns a complete schedule
+ok 15 - multi-session generator uses real free slots and returns a complete schedule
+  ---
+  duration_ms: 60.7242
+  type: 'test'
+  ...
+# Subtest: confirmed multi-session order is persisted with its schedule and mode
+ok 16 - confirmed multi-session order is persisted with its schedule and mode
+  ---
+  duration_ms: 61.938
+  type: 'test'
+  ...
+# Subtest: R02: publication retains the whole configured area, even when the minimum needs several days
+ok 17 - R02: publication retains the whole configured area, even when the minimum needs several days
+  ---
+  duration_ms: 6.6358
+  type: 'test'
+  ...
+# Subtest: R02: mode follows area, staffing, extra duration and working day; multi-session projects use a single-job price
+ok 18 - R02: mode follows area, staffing, extra duration and working day; multi-session projects use a single-job price
+  ---
+  duration_ms: 1.0222
+  type: 'test'
+  ...
+# Subtest: R02: planning uses the selected late start and the next free day, preserving every required minute
+ok 19 - R02: planning uses the selected late start and the next free day, preserving every required minute
+  ---
+  duration_ms: 63.7543
+  type: 'test'
+  ...
+# Subtest: R02: fragmented windows respect existing bookings and buffers, rather than demanding a fixed-size session
+ok 20 - R02: fragmented windows respect existing bookings and buffers, rather than demanding a fixed-size session
+  ---
+  duration_ms: 82.3036
+  type: 'test'
+  ...
+# Subtest: R02: excluded days and customer hours replan the whole schedule; gaps and six-month horizon cannot be bypassed
+ok 21 - R02: excluded days and customer hours replan the whole schedule; gaps and six-month horizon cannot be bypassed
+  ---
+  duration_ms: 46.1199
+  type: 'test'
+  ...
+# Subtest: R02: a project longer than the old seven-day duration limit can still fit the reservation horizon
+ok 22 - R02: a project longer than the old seven-day duration limit can still fit the reservation horizon
+  ---
+  duration_ms: 477.7572
+  type: 'test'
+  ...
+# Subtest: R02: automatic scheduling and confirmation work for an area offer without a static multi-session tag
+ok 23 - R02: automatic scheduling and confirmation work for an area offer without a static multi-session tag
+  ---
+  duration_ms: 96.6997
+  type: 'test'
+  ...
+# Subtest: R02: catalogue/checkout mode follows selected area and timed extras, not a static profile tag
+ok 24 - R02: catalogue/checkout mode follows selected area and timed extras, not a static profile tag
+  ---
+  duration_ms: 34.2691
+  type: 'test'
+  ...
+# Subtest: published area pricing uses the exact requested area in preview and checkout
+ok 25 - published area pricing uses the exact requested area in preview and checkout
+  ---
+  duration_ms: 1.206
+  type: 'test'
+  ...
+# Subtest: missing or invalid area and either missing field keep checkout unavailable
+ok 26 - missing or invalid area and either missing field keep checkout unavailable
+  ---
+  duration_ms: 2.768
+  type: 'test'
+  ...
+# Subtest: a supported locality restores checkout only with an available pricing area
+ok 27 - a supported locality restores checkout only with an available pricing area
+  ---
+  duration_ms: 0.8827
+  type: 'test'
+  ...
+# Subtest: other cities and similarly named streets cannot activate checkout
+ok 28 - other cities and similarly named streets cannot activate checkout
+  ---
+  duration_ms: 0.3629
+  type: 'test'
+  ...
+# Subtest: coverage is provider-specific, accepts Polish names and never falls back to the office address
+ok 29 - coverage is provider-specific, accepts Polish names and never falls back to the office address
+  ---
+  duration_ms: 0.3244
+  type: 'test'
+  ...
+# Subtest: only explicit, available add-ons are restored; demo selections do not alter the price
+ok 30 - only explicit, available add-ons are restored; demo selections do not alter the price
+  ---
+  duration_ms: 0.4845
+  type: 'test'
+  ...
+# Subtest: refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+ok 31 - refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+  ---
+  duration_ms: 0.2654
+  type: 'test'
+  ...
+# Subtest: utilization uses the union of bookings and subtracts employee absences without double counting
+ok 32 - utilization uses the union of bookings and subtracts employee absences without double counting
+  ---
+  duration_ms: 4.3368
+  type: 'test'
+  ...
+# Subtest: missing schedules, unassigned jobs and full-day absence never fabricate utilization
+ok 33 - missing schedules, unassigned jobs and full-day absence never fabricate utilization
+  ---
+  duration_ms: 0.4579
+  type: 'test'
+  ...
+# Subtest: dashboard separates statuses, compares actual periods and counts ordered extras once per order
+ok 34 - dashboard separates statuses, compares actual periods and counts ordered extras once per order
+  ---
+  duration_ms: 14.3278
+  type: 'test'
+  ...
+# Subtest: inclusive date windows handle leap years, DST and invalid input
+ok 35 - inclusive date windows handle leap years, DST and invalid input
+  ---
+  duration_ms: 6.9569
+  type: 'test'
+  ...
+# Subtest: totals exclude cancelled and scheduled jobs and preserve integer cents
+ok 36 - totals exclude cancelled and scheduled jobs and preserve integer cents
+  ---
+  duration_ms: 15.2792
+  type: 'test'
+  ...
+# Subtest: service and employee filters apply to both periods and rankings use IDs
+ok 37 - service and employee filters apply to both periods and rankings use IDs
+  ---
+  duration_ms: 0.8569
+  type: 'test'
+  ...
+# Subtest: returning clients count prior or same-period completions, never future or cancelled work
+ok 38 - returning clients count prior or same-period completions, never future or cancelled work
+  ---
+  duration_ms: 12.7555
+  type: 'test'
+  ...
+# Subtest: CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+ok 39 - CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+  ---
+  duration_ms: 0.7559
+  type: 'test'
+  ...
+# Subtest: client validation accepts multiline notes and clears optional fields without trusting account or revision on creation
+ok 40 - client validation accepts multiline notes and clears optional fields without trusting account or revision on creation
+  ---
+  duration_ms: 1.8194
+  type: 'test'
+  ...
+# Subtest: every client operation requires session and provider owner/admin role
+ok 41 - every client operation requires session and provider owner/admin role
+  ---
+  duration_ms: 2.421
+  type: 'test'
+  ...
+# Subtest: client reads and writes are isolated by membership, with no foreign account fields returned
+ok 42 - client reads and writes are isolated by membership, with no foreign account fields returned
+  ---
+  duration_ms: 1.749
+  type: 'test'
+  ...
+# Subtest: concurrent client edits cannot silently overwrite contact details or notes
+ok 43 - concurrent client edits cannot silently overwrite contact details or notes
+  ---
+  duration_ms: 0.9124
+  type: 'test'
+  ...
+# Subtest: job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+ok 44 - job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+  ---
+  duration_ms: 3.6346
+  type: 'test'
+  ...
+# Subtest: all job operations require an authenticated managing member
+ok 45 - all job operations require an authenticated managing member
+  ---
+  duration_ms: 6.8887
+  type: 'test'
+  ...
+# Subtest: foreign jobs and references cannot be read, reassigned or attached to this account
+ok 46 - foreign jobs and references cannot be read, reassigned or attached to this account
+  ---
+  duration_ms: 4.3288
+  type: 'test'
+  ...
+# Subtest: client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+ok 47 - client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+  ---
+  duration_ms: 4.8328
+  type: 'test'
+  ...
+# Subtest: manual order location can differ from the client address and survives later edits
+ok 48 - manual order location can differ from the client address and survives later edits
+  ---
+  duration_ms: 5.0704
+  type: 'test'
+  ...
+# Subtest: same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+ok 49 - same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+  ---
+  duration_ms: 9.2208
+  type: 'test'
+  ...
+# Subtest: cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+ok 50 - cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+  ---
+  duration_ms: 8.2327
+  type: 'test'
+  ...
+# Subtest: archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+ok 51 - archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+  ---
+  duration_ms: 3.6891
+  type: 'test'
+  ...
+# Subtest: action messages preserve notes and reject overflow instead of truncating saved data
+ok 52 - action messages preserve notes and reject overflow instead of truncating saved data
+  ---
+  duration_ms: 1.2733
+  type: 'test'
+  ...
+# Subtest: completing a job releases the employee slot without removing the finished record
+ok 53 - completing a job releases the employee slot without removing the finished record
+  ---
+  duration_ms: 4.9203
+  type: 'test'
+  ...
+# Subtest: order detail actions send valid revisioned updates without changing saved client, service, time or price
+ok 54 - order detail actions send valid revisioned updates without changing saved client, service, time or price
+  ---
+  duration_ms: 8.4364
+  type: 'test'
+  ...
+# Subtest: calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+ok 55 - calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+  ---
+  duration_ms: 0.6388
+  type: 'test'
+  ...
+# Subtest: multi-session decisions accept only an explicit action and revision
+ok 56 - multi-session decisions accept only an explicit action and revision
+  ---
+  duration_ms: 1.8217
+  type: 'test'
+  ...
+# Subtest: offer prices use exact minor units and reject ambiguous, fractional or out-of-range inputs
+ok 57 - offer prices use exact minor units and reject ambiguous, fractional or out-of-range inputs
+  ---
+  duration_ms: 2.7249
+  type: 'test'
+  ...
+# Subtest: offer configuration validates rates, continuous area tiers, toggles and add-ons
+ok 58 - offer configuration validates rates, continuous area tiers, toggles and add-ons
+  ---
+  duration_ms: 0.7864
+  type: 'test'
+  ...
+# Subtest: offer actions require a session and management membership
+ok 59 - offer actions require a session and management membership
+  ---
+  duration_ms: 1.8514
+  type: 'test'
+  ...
+# Subtest: offers remain private to the owner account across edits, archive and restore
+ok 60 - offers remain private to the owner account across edits, archive and restore
+  ---
+  duration_ms: 1.5062
+  type: 'test'
+  ...
+# Subtest: competing price or status updates cannot overwrite one another
+ok 61 - competing price or status updates cannot overwrite one another
+  ---
+  duration_ms: 1.0033
+  type: 'test'
+  ...
+# Subtest: location validates a complete address, postal code and bounded integer radius
+ok 62 - location validates a complete address, postal code and bounded integer radius
+  ---
+  duration_ms: 0.4006
+  type: 'test'
+  ...
+# Subtest: location reads and edits require management membership and do not alter other accounts or settings revisions
+ok 63 - location reads and edits require management membership and do not alter other accounts or settings revisions
+  ---
+  duration_ms: 1.1218
+  type: 'test'
+  ...
+# Subtest: simultaneous location saves accept exactly one revision
+ok 64 - simultaneous location saves accept exactly one revision
+  ---
+  duration_ms: 0.4003
+  type: 'test'
+  ...
+# Subtest: proxy requires provider cookie and denies arbitrary upstream routes
+ok 65 - proxy requires provider cookie and denies arbitrary upstream routes
+  ---
+  duration_ms: 11.1253
+  type: 'test'
+  ...
+# Subtest: service and location writes forward only to their allowed provider endpoints
+ok 66 - service and location writes forward only to their allowed provider endpoints
+  ---
+  duration_ms: 8.1734
+  type: 'test'
+  ...
+# Subtest: staffing and absence mutations require the provider cookie and same origin
+ok 67 - staffing and absence mutations require the provider cookie and same origin
+  ---
+  duration_ms: 2.2968
+  type: 'test'
+  ...
+# Subtest: client proxy permits authenticated reads and edits but rejects unsupported operations
+ok 68 - client proxy permits authenticated reads and edits but rejects unsupported operations
+  ---
+  duration_ms: 1.087
+  type: 'test'
+  ...
+# Subtest: writes reject foreign or missing Origin, cross-site requests and invalid payloads
+ok 69 - writes reject foreign or missing Origin, cross-site requests and invalid payloads
+  ---
+  duration_ms: 1.7579
+  type: 'test'
+  ...
+# Subtest: login sets a separate HttpOnly cookie and never exposes the token in JSON
+ok 70 - login sets a separate HttpOnly cookie and never exposes the token in JSON
+  ---
+  duration_ms: 10.4213
+  type: 'test'
+  ...
+# Subtest: proxy forwards only the provider session, path and validated body
+ok 71 - proxy forwards only the provider session, path and validated body
+  ---
+  duration_ms: 1.536
+  type: 'test'
+  ...
+# Subtest: expired sessions clear the cookie; service outages return an explicit error
+ok 72 - expired sessions clear the cookie; service outages return an explicit error
+  ---
+  duration_ms: 1.0736
+  type: 'test'
+  ...
+# Subtest: settings routes are authenticated and password rotation replaces the HttpOnly cookie
+ok 73 - settings routes are authenticated and password rotation replaces the HttpOnly cookie
+  ---
+  duration_ms: 2.1621
+  type: 'test'
+  ...
+# Subtest: review reports accept only a boolean and a positive revision
+ok 74 - review reports accept only a boolean and a positive revision
+  ---
+  duration_ms: 1.8182
+  type: 'test'
+  ...
+# Subtest: reviews are private to one provider account
+ok 75 - reviews are private to one provider account
+  ---
+  duration_ms: 1.3241
+  type: 'test'
+  ...
+# Subtest: owners and admins can report a review with optimistic locking
+ok 76 - owners and admins can report a review with optimistic locking
+  ---
+  duration_ms: 1.0455
+  type: 'test'
+  ...
+# Subtest: profile validation normalizes contacts, allows clearing optional fields and rejects forged properties
+ok 77 - profile validation normalizes contacts, allows clearing optional fields and rejects forged properties
+  ---
+  duration_ms: 2.2759
+  type: 'test'
+  ...
+# Subtest: notification input requires explicit booleans for every channel and starts without assumed consent
+ok 78 - notification input requires explicit booleans for every channel and starts without assumed consent
+  ---
+  duration_ms: 1.2921
+  type: 'test'
+  ...
+# Subtest: all settings operations require a valid session and owner/admin membership
+ok 79 - all settings operations require a valid session and owner/admin membership
+  ---
+  duration_ms: 2.839
+  type: 'test'
+  ...
+# Subtest: profile edits update only the signed-in provider and return the account login email unchanged
+ok 80 - profile edits update only the signed-in provider and return the account login email unchanged
+  ---
+  duration_ms: 0.6813
+  type: 'test'
+  ...
+# Subtest: only one concurrent profile or notification save wins
+ok 81 - only one concurrent profile or notification save wins
+  ---
+  duration_ms: 0.779
+  type: 'test'
+  ...
+# Subtest: profile and notification revisions are independent and cannot overwrite each other
+ok 82 - profile and notification revisions are independent and cannot overwrite each other
+  ---
+  duration_ms: 0.4259
+  type: 'test'
+  ...
+# Subtest: export is restricted to own saved data and explicitly excludes credentials and extra entity fields
+ok 83 - export is restricted to own saved data and explicitly excludes credentials and extra entity fields
+  ---
+  duration_ms: 0.6025
+  type: 'test'
+  ...
+# Subtest: password change uses existing auth rotation only after provider access has been checked
+ok 84 - password change uses existing auth rotation only after provider access has been checked
+  ---
+  duration_ms: 0.2183
+  type: 'test'
+  ...
+# Subtest: re-login restores local destinations and rejects external or looping redirects
+ok 85 - re-login restores local destinations and rejects external or looping redirects
+  ---
+  duration_ms: 1.1917
+  type: 'test'
+  ...
+# Subtest: input preserves real contact data and normalizes name/email
+ok 86 - input preserves real contact data and normalizes name/email
+  ---
+  duration_ms: 0.7906
+  type: 'test'
+  ...
+# Subtest: rejects invalid, duplicate, missing or forged schedule fields
+ok 87 - rejects invalid, duplicate, missing or forged schedule fields
+  ---
+  duration_ms: 1.4569
+  type: 'test'
+  ...
+# Subtest: requires a valid login, provider membership and management role
+ok 88 - requires a valid login, provider membership and management role
+  ---
+  duration_ms: 1.5188
+  type: 'test'
+  ...
+# Subtest: isolates all employee operations by provider account
+ok 89 - isolates all employee operations by provider account
+  ---
+  duration_ms: 1.2547
+  type: 'test'
+  ...
+# Subtest: only one competing save wins; stale writes and deletes do not discard changes
+ok 90 - only one competing save wins; stale writes and deletes do not discard changes
+  ---
+  duration_ms: 1.8952
+  type: 'test'
+  ...
+# Subtest: schedule totals count minutes, disabled days, actual months and year boundaries
+ok 91 - schedule totals count minutes, disabled days, actual months and year boundaries
+  ---
+  duration_ms: 0.802
+  type: 'test'
+  ...
+# Subtest: CSV uses actual saved times and neutralizes spreadsheet formulas
+ok 92 - CSV uses actual saved times and neutralizes spreadsheet formulas
+  ---
+  duration_ms: 0.5313
+  type: 'test'
+  ...
+# Subtest: availability excludes the current order, retains its duration and requires ownership
+ok 93 - availability excludes the current order, retains its duration and requires ownership
+  ---
+  duration_ms: 185.2314
+  type: 'test'
+  ...
+# Subtest: rescheduling saves the new date without changing price or extras and rechecks conflicts
+ok 94 - rescheduling saves the new date without changing price or extras and rechecks conflicts
+  ---
+  duration_ms: 56.166
+  type: 'test'
+  ...
+# Subtest: multi-session move preserves other sessions, workers and updates the overall date range
+ok 95 - multi-session move preserves other sessions, workers and updates the overall date range
+  ---
+  duration_ms: 38.4359
+  type: 'test'
+  ...
+# Subtest: multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+ok 96 - multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+  ---
+  duration_ms: 259.2222
+  type: 'test'
+  ...
+# Subtest: cancelled, completed and past services cannot be rescheduled
+ok 97 - cancelled, completed and past services cannot be rescheduled
+  ---
+  duration_ms: 11.1066
+  type: 'test'
+  ...
+# Subtest: R03: only matching service and full-shift availability count; hidden calendar rows still work
+ok 98 - R03: only matching service and full-shift availability count; hidden calendar rows still work
+  ---
+  duration_ms: 123.4483
+  type: 'test'
+  ...
+# Subtest: R03: roster determines early/late hours and capacity for a stable crew, rounding to quarter-hours
+ok 99 - R03: roster determines early/late hours and capacity for a stable crew, rounding to quarter-hours
+  ---
+  duration_ms: 0.9665
+  type: 'test'
+  ...
+# Subtest: R03: concurrent work uses different employees; exhausted capacity rejects and legacy unassigned blocks everyone
+ok 100 - R03: concurrent work uses different employees; exhausted capacity rejects and legacy unassigned blocks everyone
+  ---
+  duration_ms: 15.6571
+  type: 'test'
+  ...
+# Subtest: R03/R05: partial absence blocks only selected people; buffers use the greater of both offers
+ok 101 - R03/R05: partial absence blocks only selected people; buffers use the greater of both offers
+  ---
+  duration_ms: 18.0752
+  type: 'test'
+  ...
+# Subtest: R03: multi-session planner keeps the whole crew for each session, instead of mixing incompatible shifts
+ok 102 - R03: multi-session planner keeps the whole crew for each session, instead of mixing incompatible shifts
+  ---
+  duration_ms: 331.2732
+  type: 'test'
+  ...
+# Subtest: R03: sessions preserve all minutes, buffers, excluded days, max gaps and required crew count
+ok 103 - R03: sessions preserve all minutes, buffers, excluded days, max gaps and required crew count
+  ---
+  duration_ms: 433.0524
+  type: 'test'
+  ...
+# Subtest: R03: spare employees allow parallel orders, while sessions of one project remain sequential
+ok 104 - R03: spare employees allow parallel orders, while sessions of one project remain sequential
+  ---
+  duration_ms: 423.9954
+  type: 'test'
+  ...
+1..104
+# tests 104
+# suites 0
+# pass 104
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4992.523

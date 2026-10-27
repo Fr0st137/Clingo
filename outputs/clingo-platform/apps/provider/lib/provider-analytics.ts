@@ -37,7 +37,7 @@ export function analyzeJobs(jobs: Job[], filters: AnalyticsFilters) {
   if (!days) return null;
   const previousStart = shiftDate(filters.start, -days);
   const previousEnd = shiftDate(filters.start, -1);
-  const scoped = jobs.filter(job => (!filters.offer || job.offerId === filters.offer) && (!filters.employee || employeeKey(job) === filters.employee));
+  const scoped = jobs.filter(job => !job.releasedByCompletion && (!filters.offer || job.offerId === filters.offer) && (!filters.employee || employeeKey(job) === filters.employee));
   const current = scoped.filter(job => job.date >= filters.start && job.date <= filters.end).sort((a, b) => a.date.localeCompare(b.date) || a.startMinute - b.startMinute || a.id.localeCompare(b.id));
   const previous = scoped.filter(job => job.date >= previousStart && job.date <= previousEnd);
   const counts = { scheduled: 0, completed: 0, cancelled: 0 };

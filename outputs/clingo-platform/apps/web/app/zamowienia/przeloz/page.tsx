@@ -23,7 +23,7 @@ export default async function RescheduleOrderRoute({ searchParams }: { searchPar
     "use server";
     if (!id) return { error: "Nie znaleziono zamówienia." };
     try {
-      await rescheduleOrder(id, email, startsAt, endsAt, sessionIndex);
+      await rescheduleOrder(id, email, startsAt, endsAt, sessionIndex, order?.revision);
       revalidatePath("/zamowienia");
       revalidatePath("/zamowienia/szczegoly");
       return { data: true };

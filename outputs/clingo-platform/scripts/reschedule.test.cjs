@@ -2,6 +2,8 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { BookingService } = require('../apps/api/dist/dashboard/booking.service');
 const { warsawDate, localDate, addLocalDays } = require('../apps/api/dist/dashboard/booking');
+const { ProviderProfileEntity } = require('../apps/api/dist/dashboard/provider-profile.entity');
+const { OrderEntity } = require('../apps/api/dist/dashboard/order.entity');
 const date = offset => addLocalDays(localDate(new Date()), offset);
 const interval = (offset, time = '10:00') => { const startsAt = warsawDate(date(offset), time); return { startsAt, endsAt: new Date(startsAt.getTime() + 135 * 60000) }; };
 function setup(multi = false) {
@@ -13,9 +15,9 @@ function setup(multi = false) {
   const saved = [];
   const provider = { id: 'provider', bookingSettings: { days: [0,1,2,3,4,5,6], startHour: 8, endHour: 20, leadHours: 0, bufferMinutes: 0 } };
   const manager = {
-    findOne: async () => provider,
-    findOneBy: async (_entity, where) => where.id === order.id && where.userEmail === order.userEmail ? order : null,
-    findOneByOrFail: async () => order,
+    findOne: async entity => entity === OrderEntity ? order : provider,
+    findOneBy: async (entity, where) => entity === ProviderProfileEntity ? provider : where.id === order.id && where.userEmail === order.userEmail ? order : null,
+    findOneOrFail: async () => order,
     find: async () => [order, ...others],
     save: async value => { saved.push(structuredClone(value)); return value; }
   };
@@ -66,6 +68,10 @@ test('multi-session availability and save reject overlaps, excessive gaps and in
   await assert.rejects(service.reschedule(order.id, order.userEmail, far.startsAt, far.endsAt, 0));
   for (const index of [undefined, -1, 2, 0.5, '0']) await assert.rejects(service.rescheduleAvailability(order.id, order.userEmail, date(1).slice(0,7), index));
   assert.equal(saved.length, 0);
+  const adjacent = order.selectedOptions.sessions[0].endsAt;
+  const adjacentEnd = new Date(Date.parse(adjacent) + 135 * 60000).toISOString();
+  assert.equal(service.rescheduleFits(order, adjacent, adjacentEnd, 1, 0), true);
+  assert.equal(service.rescheduleFits(order, adjacent, adjacentEnd, 1, 30), false, 'Project buffers also apply when sessions use different crews');
 });
 test('cancelled, completed and past services cannot be rescheduled', async () => {
   for (const status of ['Odwołane zlecenie', 'Wykonane zlecenie', 'Anulowane', 'completed']) {

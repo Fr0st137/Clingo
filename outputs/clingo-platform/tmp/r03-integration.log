@@ -1,0 +1,1 @@
+PASS: real API/PostgreSQL; automatic named crews; parallel bookings per employee; last-capacity race; service qualifications; staffing ownership/revisions/understaffing acknowledgement; absences block/release without cancellation; multi-session crews persist; public responses hide identities; active assignments prevent employee deletion.

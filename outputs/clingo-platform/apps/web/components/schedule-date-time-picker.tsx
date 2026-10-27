@@ -125,6 +125,7 @@ export function TimePicker({
     const minutes = timeToMinutes(time);
     return minutes >= timeToMinutes(availabilityStart) && minutes <= timeToMinutes(availabilityEnd);
   };
+  const displayedTimes = [...new Set<string>([...periods[period], ...slots.filter(slot => { const hour = Number(slot.time.slice(0, 2)); return period === "Rano" ? hour < 12 : period === "Południe" ? hour >= 12 && hour < 17 : hour >= 17; }).map(slot => slot.time)])].sort();
 
   return (
     <section className={`grid w-full ${variant === "reschedule" ? "gap-[20px]" : "gap-[10px]"}`} aria-label="Wybór godziny">
@@ -143,7 +144,7 @@ export function TimePicker({
       </div>
 
       <div className={`grid grid-cols-4 ${variant === "reschedule" ? "min-h-[270px] content-start gap-[8px]" : "gap-[7px]"}`}>
-        {periods[period].map((time) => {
+        {displayedTimes.map((time) => {
           const slot = slots.find(item => item.time === time);
           const unavailable = loading || !slot || !withinAvailability(time);
           const selected = selectedTime === time;

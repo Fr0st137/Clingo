@@ -1,0 +1,106 @@
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [NestFactory] Starting Nest application...
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] AppModule dependencies initialized +12ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] DatabaseModule dependencies initialized +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] ConfigHostModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] ConfigModule dependencies initialized +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] RedisModule dependencies initialized +24ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] TypeOrmCoreModule dependencies initialized +29ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] TypeOrmModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] DashboardModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [InstanceLoader] ProviderModule dependencies initialized +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] AuthController {/auth}: +4ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/lookup, POST} route +2ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/register, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/login, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/profile, GET} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/profile, PATCH} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/notifications, PATCH} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/password, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/auth/logout, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] DashboardController {/dashboard}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/booking/quote, POST} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/booking/availability, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/booking/multi-availability, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/booking/multi-schedule, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders, GET} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders/:id/cancel, PATCH} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders/:id/reschedule-availability, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/orders/:id/reschedule, PATCH} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/favorites, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/favorites/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/favorites/:id, DELETE} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/chat, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/opinions, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/opinions/:id, PATCH} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/:id, DELETE} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/review-images/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/standards, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/reviews/regulations, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/settings, GET} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/board, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/dashboard/provider-profiles/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderProjectsController {/provider/projects}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/projects, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/projects/:source/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/projects/:source/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/projects/:source/:id/availability, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderAbsencesController {/provider/absences}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/absences, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/absences, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/absences/:id, PUT} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderBookingsController {/provider/bookings}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/profiles, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id/staffing, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id/staffing, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id/reschedule-availability, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/bookings/:id/reschedule, PUT} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderController {/provider}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/me, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/account, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/employees, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/employees, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/employees/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/employees/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/employees/:id, DELETE} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderSettingsController {/provider/settings}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/staffing, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/staffing, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/profile, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/profile, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/notifications, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/notifications, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/password, POST} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/export, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/location, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/settings/location, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderClientsController {/provider/clients}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/clients, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/clients, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/clients/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/clients/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderOffersController {/provider/services}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/services, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/services, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/services/:id, GET} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/services/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderJobsController {/provider/jobs}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/jobs, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/jobs/:id, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/jobs, POST} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/jobs/:id, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderReviewsController {/provider/reviews}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/reviews, GET} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/reviews/:id/report, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RoutesResolver] ProviderMultiOrdersController {/provider/multi-orders}: +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/multi-orders, GET} route +1ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [RouterExplorer] Mapped {/provider/multi-orders/:id/action, PUT} route +0ms
+[Nest] 20828  - 27.10.2026, 03:13:13     LOG [NestApplication] Nest application successfully started +29ms

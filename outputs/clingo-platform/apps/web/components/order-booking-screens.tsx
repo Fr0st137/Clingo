@@ -13,7 +13,8 @@ import { MultiSessionScheduleScreen } from "./multi-session-schedule-screen";
 import type { OrderCardData } from "./order-card";
 import type { BookingAvailability, BookingDraft, BookingPageProps, BookingQuote } from "../lib/booking-client";
 import { BookingError, bookingDate, bookingDayLabel, bookingTime, postBooking } from "../lib/booking-client";
-import { isMultiSessionBookingState, multiSessionDateValue, multiSessionIso, multiSessionStorageKey, type MultiSessionBookingSession } from "../lib/multi-session-booking";
+import { isMultiSessionBookingState, multiSessionDateValue, multiSessionIso, multiSessionStorageKey, type MultiSessionBookingSession, type MultiSessionBookingState } from "../lib/multi-session-booking";
+import { profileBookingMode } from "../lib/offer-request";
 
 function useDraft(props: BookingPageProps) {
   const key = `clingo-booking:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}`;
@@ -89,6 +90,7 @@ function SingleSessionOrderDateScreen(props: BookingPageProps) {
     const controller = new AbortController();
     setLoading(true); setError("");
     postBooking<BookingAvailability>("availability", { ...props.selection, month }, controller.signal).then(result => {
+      if (result.quote.mode === "multi") { router.replace(`/zamowienie?${props.query}&mode=multi`); return; }
       setData(result);
       setDate(current => result.days.some(d => d.date === current && d.slots.length) ? current : result.days.find(d => d.slots.length)?.date ?? `${month}-01`);
     }).catch(err => { if (err.name !== "AbortError") { setData(null); setError(err.message || "Nie udało się pobrać terminów."); setErrorStatus(err.status); } })
@@ -100,10 +102,11 @@ function SingleSessionOrderDateScreen(props: BookingPageProps) {
   const dayCount = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0)).getUTCDate();
   const daySlots = data?.days.find(d => d.date === date)?.slots ?? [];
   const selectedSlot = daySlots.find(s => s.startsAt === draft.startsAt);
-  const times = Array.from({ length: period === 0 ? 16 : period === 1 ? 20 : 12 }, (_, i) => {
+  const defaultTimes = Array.from({ length: period === 0 ? 16 : period === 1 ? 20 : 12 }, (_, i) => {
     const min = (period === 0 ? 8 : period === 1 ? 12 : 17) * 60 + i * 15;
     return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
   });
+  const times = [...new Set([...defaultTimes, ...daySlots.filter(slot => { const hour = Number(slot.time.slice(0, 2)); return period === 0 ? hour < 12 : period === 1 ? hour >= 12 && hour < 17 : hour >= 17; }).map(slot => slot.time)])].sort();
   const changeMonth = (delta: number) => {
     setMonth(new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + delta, 1)).toISOString().slice(0, 7));
     update({ startsAt: "" });
@@ -133,6 +136,8 @@ function SingleSessionOrderDateScreen(props: BookingPageProps) {
         </div>
       </section>
       <section className="grid min-w-0 w-full content-start gap-[20px] xl:w-[540px]">
+        {props.profile.areaPricing && <Link className="text-[13px] text-[#0079de]" href={`/zamowienie?${props.query}&mode=multi`}>Zaplanuj w kilku sesjach</Link>}
+        {data?.quote.estimatedWorkers && <p className="m-0 text-[13px] text-[#7c8691]">Czas realizacji obliczony dla {data.quote.estimatedWorkers} {data.quote.estimatedWorkers === 1 ? "pracownika" : "pracowników"}.</p>}
         <div className="box-border flex h-[71px] min-w-0 w-full items-center justify-between gap-2 rounded-[20px] border border-[#e5e7eb] bg-white p-[15px] shadow-[0_4px_14px_rgba(0,0,0,0.04)]"><ProviderLine profile={props.profile} /><span className="shrink-0 rounded-[99px] bg-[#f0f2f4] px-[10px] py-1 text-[14px] text-[#7c8691]">{data?.quote.summary.duration ?? "…"}</span></div>
         <div className="box-border flex h-[51px] min-w-0 w-full items-center rounded-[30px] border border-[#e5e7eb] bg-[#f4f6f9] p-[7px] shadow-[0_4px_7px_rgba(0,0,0,0.04)]">
           {["Rano", "Południe", "Wieczór"].map((label, index) => <button aria-pressed={period === index} className={`h-[37px] flex-1 rounded-[30px] text-[14px] font-medium ${index === period ? "bg-white text-[#0079de] shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "text-[#2e3b4c]"}`} key={label} onClick={() => setPeriod(index)} type="button">{label}</button>)}
@@ -152,7 +157,7 @@ function SingleSessionOrderDateScreen(props: BookingPageProps) {
 }
 
 export function OrderDateScreen(props: BookingPageProps) {
-  const isMultiSession = props.profile.tags.some((tag) => tag.toLocaleLowerCase("pl-PL") === "wielosesyjne");
+  const isMultiSession = profileBookingMode(props.profile, props.selection) === "multi";
   return isMultiSession ? <MultiSessionScheduleScreen {...props} /> : <SingleSessionOrderDateScreen {...props} />;
 }
 
@@ -171,6 +176,7 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
   const { draft, update, ready, save, key } = useDraft(props);
   const [sessions, setSessions] = useState<MultiSessionBookingSession[] | null>(null);
   const [scheduleLoaded, setScheduleLoaded] = useState(false);
+  const [schedulePreferences, setSchedulePreferences] = useState<Pick<MultiSessionBookingState, "availability" | "excludedDates">>({});
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const [error, setError] = useState("");
   const [errorStatus, setErrorStatus] = useState<number>();
@@ -185,6 +191,7 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
     try {
       const stored = JSON.parse(sessionStorage.getItem(scheduleKey) ?? "null");
       setSessions(isMultiSessionBookingState(stored) ? stored.sessions : null);
+      if (isMultiSessionBookingState(stored)) setSchedulePreferences({ availability: stored.availability, excludedDates: stored.excludedDates });
     } catch { setSessions(null); }
     setScheduleLoaded(true);
   }, [scheduleKey]);
@@ -224,6 +231,7 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
         ...props.selection,
         startsAt: bookingSessions[0].startsAt,
         sessions: bookingSessions,
+        ...schedulePreferences,
         address: draft.address,
         apartment: draft.apartment,
         contactName: draft.contactName,
@@ -293,6 +301,10 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
           </div>
         </SummarySection>
 
+        <SummarySection title="Dane kontaktowe"><div className="grid gap-[20px] md:grid-cols-2">
+          <FloatingField label="Imię i nazwisko" value={draft.contactName} onChange={contactName => update({ contactName })} required maxLength={150} />
+          <FloatingField label="Telefon" value={draft.contactPhone} onChange={contactPhone => update({ contactPhone })} required type="tel" pattern="[+0-9 ()-]{9,30}" maxLength={30} />
+        </div></SummarySection>
         <SummarySection title="Uwagi do zamówienia">
           <textarea aria-label="Uwagi do zamówienia" className="h-[111px] w-full resize-none rounded-[15px] border border-[#e5e7eb] bg-white p-[15px] text-[14px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af] focus:border-[#0079de]" maxLength={2000} onChange={(event) => update({ notes: event.target.value })} placeholder="Wpisz jeżeli masz jakieś dodatkowe uwagi…" value={draft.notes} />
         </SummarySection>
@@ -366,6 +378,7 @@ function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
         <SummarySection title="Termin realizacji" action={editDate}>
           <div className="flex min-h-[63px] flex-wrap items-center justify-between gap-4 rounded-[15px] border border-[#e5e7eb] bg-[#f9fafb] px-[15px] py-2 text-[14px] text-[#2e3b4c]"><span>{bookingDayLabel(draft.startsAt)}</span><div className="flex items-center gap-[5px]"><span>{bookingTime(draft.startsAt)}</span><span className="grid justify-items-center px-[9px] text-[12px] text-[#7c8691]">{quote?.summary.duration ?? "…"}<ArrowRight className="h-4 w-4" strokeWidth={1.8} /></span><span>{bookingTime(endsAt)}</span></div></div>
           {quote && <p className="m-0 text-[13px] text-[#7c8691]">{quote.frequencyLabel}. Rezerwujesz jeden termin; kolejne wizyty wymagają osobnego zamówienia.</p>}
+          {quote?.estimatedWorkers && <p className="m-0 text-[13px] text-[#7c8691]">Czas realizacji obliczony dla {quote.estimatedWorkers} {quote.estimatedWorkers === 1 ? "pracownika" : "pracowników"}.</p>}
         </SummarySection>
         <SummarySection title="Zamówienie"><div className="grid gap-[18px]">{quote ? quote.summary.lines.map(line => <div className="flex items-center justify-between gap-4 border-b border-[#e5e7eb] px-0.5 pb-[8px] text-[14px] text-[#2e3b4c]" key={line.id}><span>{line.label}</span><span className="shrink-0 font-medium">{line.value}</span></div>) : <p className="text-[14px] text-[#7c8691]">Przeliczamy cenę…</p>}</div></SummarySection>
         <SummarySection title="Dane kontaktowe"><div className="grid gap-[20px] md:grid-cols-2">
@@ -394,7 +407,7 @@ function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
 }
 
 export function OrderSummaryScreen(props: BookingPageProps) {
-  const isMultiSession = props.profile.tags.some((tag) => tag.toLocaleLowerCase("pl-PL") === "wielosesyjne");
+  const isMultiSession = profileBookingMode(props.profile, props.selection) === "multi";
   return isMultiSession ? <MultiSessionOrderSummaryScreen {...props} /> : <SingleSessionOrderSummaryScreen {...props} />;
 }
 

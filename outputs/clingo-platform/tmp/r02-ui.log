@@ -1,0 +1,1 @@
+PASS: real PostgreSQL/API/browser; area switches single -> multi; full 900-minute schedule; exclude date regenerates all sessions; mobile layout; reload preserves schedule; contact form submits; provider sees all sessions and exact price; staffing changes save; absence form saves and manager lists it; no JavaScript errors.

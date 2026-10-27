@@ -7,6 +7,9 @@ import type { ProviderLocation } from "./provider-location.input";
 @Entity("provider_accounts")
 export class ProviderAccountEntity {
   @PrimaryGeneratedColumn("uuid") id!: string;
+  @Column({ name: "staffing_mode", type: "varchar", length: 10, default: "team" }) staffingMode!: "solo" | "team";
+  @Column({ name: "declared_staff", type: "integer", nullable: true }) declaredStaff!: number | null;
+  @Column({ name: "staffing_revision", type: "integer", default: 1 }) staffingRevision!: number;
   @Column({ type: "varchar", length: 180 }) name!: string;
   @Column({ name: "legal_name", type: "varchar", length: 180, default: "" }) legalName!: string;
   @Column({ type: "varchar", length: 40, default: "" }) phone!: string;

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { BoardPayload } from "../lib/api";
 import { numericArea } from "../lib/offer-request";
 import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
+import { bookingMode, durationMinutes } from "../../api/src/dashboard/booking-policy";
 import { paginate, paginationSequence } from "../lib/pagination";
 import { BoardFilters, type BoardAddOnFilter, type BoardFilterState } from "./board-filters";
 import { BoardAddOnsOverlay } from "./board-addons-overlay";
@@ -191,7 +192,10 @@ export function BoardInteractiveView({
     () => sortListings(board.listings.flatMap(listing => {
       if (!listing.areaPricing || !request.area) return [listing];
       const pricing = areaPricingOption(listing.areaPricing, `area-${numericArea(request.area)}`);
-      return pricing ? [{ ...listing, price: pricing.price }] : [];
+      const quantities = parsedAddOnQuantities(request.addons);
+      const extraMinutes = (listing.addOns ?? []).reduce((sum, row) => sum + (row.durationMinutes ?? 0) * (quantities.get(row.id) ?? 0), 0);
+      const multi = pricing && bookingMode(durationMinutes(pricing.duration) + extraMinutes, listing, false, pricing.estimatedWorkers) === "multi";
+      return pricing ? [{ ...listing, price: pricing.price, mode: multi ? "Wielosesyjne" as const : "Jednosesyjne" as const }] : [];
     }).filter((listing) => matchesFilters(listing, filters)), sortMode),
     [board.listings, filters, sortMode, request.area]
   );

@@ -7,6 +7,7 @@ import { SettingsFeedback, SettingsInput, SettingsLoadState, useSettingsResource
 import { useProvider } from "./provider-session";
 import { ApiError, providerApi } from "../lib/provider-client";
 import { downloadJson, type ProfileSettingsResponse, type ProviderProfileSettings } from "../lib/provider-settings";
+import { ProviderStaffingSettings } from "./provider-staffing-settings";
 
 function CompanyForm() {
   const publicProfiles = useSettingsResource<Array<{ id: string; provider: string }>>("bookings/profiles");
@@ -110,7 +111,7 @@ function CompanyExport() {
 function DataSettings() {
   const context = useProvider();
   if (context?.account?.role === "employee") return <div className="provider-state" role="alert">Ustawienia działalności są dostępne dla właściciela i administratora.</div>;
-  return <><CompanyForm /><PasswordForm /><CompanyExport /><SettingsSection title="Usunięcie konta" description="Usuwanie konta wykonawcy nie jest jeszcze dostępne. Wymaga powiązania zleceń i sprawdzenia zobowiązań działalności."><button type="button" className="settings-button" disabled>Usuń konto</button></SettingsSection></>;
+  return <><CompanyForm /><ProviderStaffingSettings /><PasswordForm /><CompanyExport /><SettingsSection title="Usunięcie konta" description="Usuwanie konta wykonawcy nie jest jeszcze dostępne. Wymaga powiązania zleceń i sprawdzenia zobowiązań działalności."><button type="button" className="settings-button" disabled>Usuń konto</button></SettingsSection></>;
 }
 export function ProviderSettingsDataPage() {
   return <ProviderSettingsLayout active="Twoje dane" figmaNode="1957:1857" live><DataSettings /></ProviderSettingsLayout>;

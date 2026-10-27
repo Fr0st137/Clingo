@@ -54,16 +54,21 @@ export function bookingJobs(order: OrderEntity) {
   const total = Math.round(Number((order.summary?.total ?? "0").replace(/\s/g, "").replace(",", ".").replace(/[^\d.]/g, "")) * 100);
   const base = Math.floor(total / Math.max(1, sessions.length));
   return sessions.map((session, index) => {
+    const stored = order.selectedOptions?.sessions?.[index];
+    const employees = order.selectedOptions?.sessions?.[index]?.employees ?? order.selectedOptions?.employees ?? [];
     const [hour, minute] = localTime(session.startsAt).split(":").map(Number);
-    return { id: `booking:${order.id}:${index + 1}`, source: "booking" as const, bookingId: order.id,
-      clientId: `customer:${order.userEmail ?? order.id}`, offerId: `profile:${order.providerId}`, employeeId: null, employeeName: "", date: localDate(session.startsAt), startMinute: hour * 60 + minute,
+    const released=order.selectedOptions?.projectCompletion?.releasedSessionIds.includes(stored?.id??String(index+1))??false;
+    return { id: `booking:${order.id}:${stored?.id ?? index + 1}`, source: "booking" as const, bookingId: order.id, isProject:order.mode==="Wielosesyjne", sessionId:stored?.id??String(index+1),
+      clientId: `customer:${order.userEmail ?? order.id}`, offerId: `profile:${order.providerId}`, employeeId: employees[0]?.id ?? null, employeeName: employees.map(row => row.name).join(", "), employees, employeeIds: employees.map(row => row.id), date: localDate(session.startsAt), startMinute: hour * 60 + minute,
       durationMinutes: (session.endsAt.getTime() - session.startsAt.getTime()) / 60_000,
-      priceMinor: base + (index < total % sessions.length ? 1 : 0), status: bookingStatus(order.status), revision: order.revision,
+      priceMinor: stored?.priceMinor ?? base + (index < total % sessions.length ? 1 : 0), status: released?"cancelled" as const:bookingStatus(order.status), revision: order.revision,
+      releasedByCompletion:released,projectCompletedAt:order.selectedOptions?.projectCompletion?.at,
       notes: order.selectedOptions?.notes ?? "", clientName: order.selectedOptions?.contactName ?? "Klient", clientPhone: order.selectedOptions?.contactPhone ?? "",
       clientEmail: order.userEmail ?? "", address: order.address, serviceTitle: order.serviceType,
       sessionIndex: index + 1, sessionCount: sessions.length, multiOrderId: null,
       summary: order.summary, addOns: order.selectedOptions?.addOns ?? [], invoice: order.selectedOptions?.invoice ?? null,
       frequencyLabel: order.selectedOptions?.frequencyLabel ?? null,
+      estimatedWorkers: order.selectedOptions?.estimatedWorkers,
       providerMessages: order.selectedOptions?.providerMessages ?? [],
       startsAt: session.startsAt.toISOString(), endsAt: session.endsAt.toISOString() };
   });

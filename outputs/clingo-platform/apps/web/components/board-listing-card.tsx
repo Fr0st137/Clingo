@@ -9,7 +9,7 @@ import { useState } from "react";
 export interface BoardListingData {
   service?: string;
   areaPricing?: import("../../api/src/dashboard/area-pricing").AreaPricing | null;
-  addOns?: Array<{ id: string; label: string }>;
+  addOns?: Array<{ id: string; label: string; durationMinutes?: number }>;
   id: string;
   provider: string;
   rating: number;

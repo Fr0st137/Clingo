@@ -6,6 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
   const { json } = require("express");
   app.use("/dashboard/reviews", json({ limit: "9mb" }));
+  app.use("/dashboard/orders", json({ limit: "128kb" }));
+  app.use("/provider/projects", json({ limit: "512kb" }));
   app.use(/^\/provider\/services\/[a-f0-9-]{36}$/, json({ limit: "3mb" }));
   app.use(json({ limit: "16kb" }));
   app.use((_request: unknown, response: { setHeader: (key: string, value: string) => void }, next: () => void) => {

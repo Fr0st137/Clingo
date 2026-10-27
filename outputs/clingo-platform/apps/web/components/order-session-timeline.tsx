@@ -22,6 +22,7 @@ export function OrderSessionTimeline({ order, canReschedule }: { order: OrderCar
           </span>
           <div className="col-start-2 sm:col-start-3"><ScheduleSessionCard saved title={title} duration={duration} workers={`${session.workers} ${session.workers === 1 ? "pracownik" : "pracowników"}`} start={bookingTime(session.startsAt)} end={bookingTime(session.endsAt)}
             actions={canReschedule && Date.parse(session.startsAt) > now ? <Link aria-label={`Przełóż sesję ${index + 1}`} href={`/zamowienia/przeloz?id=${encodeURIComponent(order.id!)}&session=${session.originalIndex}`} className="shrink-0 rounded-full border border-[#e5e7eb] bg-[#f4f6f9] px-[20px] py-[12px] text-[14px] leading-[17px] text-[#2e3b4c] hover:bg-[#e6edf3]">Przełóż sesję</Link> : undefined} />
+            {session.releasedByCompletion&&<p className="mb-0 mt-[10px] text-[13px] text-[#7c8691]">Termin zwolniony po zakończeniu projektu — sesja nie będzie realizowana.</p>}
           </div>
         </li>;
       })}

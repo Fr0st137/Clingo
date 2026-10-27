@@ -35,6 +35,15 @@ test('service and location writes forward only to their allowed provider endpoin
     assert.equal((await call(path, 'PUT', { token: 'session', headers: { origin: 'https://foreign.test' } })).status, 403);
   }
 });
+test('staffing and absence mutations require the provider cookie and same origin', async t => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  t.mock.method(global,'fetch',async()=>Response.json({revision:2}));
+  for (const [path,method] of [['absences','POST'],['settings/staffing','PUT'],[`bookings/${id}/staffing`,'POST'],[`bookings/${id}/staffing`,'PUT'],['projects','GET'],[`projects/booking/${id}`,'GET'],[`projects/booking/${id}`,'PUT'],[`projects/manual/${id}/availability`,'POST'],[`projects/booking/${id}/complete`,'POST'],[`projects/manual/${id}/complete`,'POST']]) {
+    assert.equal((await call(path,method)).status,401);
+    assert.equal((await call(path,method,{token:'provider'})).status,200);
+    if(method!=='GET')assert.equal((await call(path,method,{token:'provider',headers:{origin:'https://foreign.test'}})).status,403);
+  }
+});
 
 test('client proxy permits authenticated reads and edits but rejects unsupported operations', async t => {
   const id = '11111111-1111-4111-8111-111111111111';

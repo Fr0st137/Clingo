@@ -7,6 +7,7 @@ export type OrderCardData = {
   dateLines: string[];
   details: string;
   id?: string;
+  revision?: number;
   logo?: "stepapp";
   mode: string;
   modeTone?: string;
@@ -19,9 +20,11 @@ export type OrderCardData = {
     contactName?: string;
     contactPhone?: string;
     frequencyLabel?: string;
+    estimatedWorkers?: number;
     notes?: string;
     invoice?: { companyName: string; taxId: string; address: string } | null;
-    sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
+    completedAt?: string;
+    sessions?: Array<{ startsAt: string; endsAt: string; workers: number; releasedByCompletion?: boolean }>;
   };
   summary?: {
     duration: string;

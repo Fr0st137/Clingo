@@ -1,0 +1,1 @@
+PASS: customer profile 50/100/151 m² reflects 1/2/3 workers and correct time; mobile label visible; provider order retains estimate; no JavaScript errors. Controlled API fixtures, no real account/database writes.

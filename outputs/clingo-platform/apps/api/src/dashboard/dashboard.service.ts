@@ -32,6 +32,7 @@ import { OrderEntity } from "./order.entity";
 import { PanelReviewEntity } from "./panel-review.entity";
 import { CustomerService } from "./customer.service";
 import { ProviderProfileEntity } from "./provider-profile.entity";
+import { withRosterHours } from "./staffing";
 import { SettingsSectionEntity } from "./settings-section.entity";
 
 function dashboardCacheKey(email: string) {
@@ -119,6 +120,7 @@ function toDashboardOrder(order: OrderEntity): DashboardOrder {
 
   return {
     id: order.id,
+    revision: order.revision,
     status: order.status,
     mode: order.mode,
     modeTone: order.mode === "Wielosesyjne" ? ("blue" as const) : undefined,
@@ -131,8 +133,9 @@ function toDashboardOrder(order: OrderEntity): DashboardOrder {
     actions: orderActions(order),
     summary: order.summary,
     bookingDetails: order.selectedOptions ? { addOns: order.selectedOptions.addOns, contactName: order.selectedOptions.contactName, contactPhone: order.selectedOptions.contactPhone,
-      frequencyLabel: order.selectedOptions.frequencyLabel, notes: order.selectedOptions.notes, invoice: order.selectedOptions.invoice,
-      sessions: order.selectedOptions.sessions } : undefined,
+      frequencyLabel: order.selectedOptions.frequencyLabel, estimatedWorkers: order.selectedOptions.estimatedWorkers, notes: order.selectedOptions.notes, invoice: order.selectedOptions.invoice,
+      completedAt:order.selectedOptions.projectCompletion?.at,
+      sessions: order.selectedOptions.sessions?.map(({ id, startsAt, endsAt, workers },index) => ({ id, startsAt, endsAt, workers,releasedByCompletion:order.selectedOptions?.projectCompletion?.releasedSessionIds.includes(id??String(index+1))??false })) } : undefined,
     ...providerVisual(order)
   };
 }
@@ -450,19 +453,19 @@ export class DashboardService implements OnModuleInit {
       this.boardSearchFieldsRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardFiltersRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardListingsRepository.find({ order: { orderIndex: "ASC" } }),
-      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "addOns", "service", "areaPricing"] })
+      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "accountId", "bookingSettings", "addOns", "service", "areaPricing"] })
     ]);
-    const profilesById = new Map(providerProfiles.map((profile) => [profile.id, profile]));
+    const profilesById = new Map((await Promise.all(providerProfiles.map(profile => withRosterHours(this.providerProfilesRepository.manager, profile)))).map((profile) => [profile.id, profile]));
 
     const ratings = await this.customer.ratingTotals(listings.map(listing => listing.id));
 
     return {
       searchFields: searchFields.map(({ id, label, value }) => ({ id, label, value })),
       filters: filters.map(({ id, title, options }) => ({ id, title, options })),
-      listings: listings.filter((listing) => profilesById.has(listing.id)).map((listing) => ({
+      listings: listings.filter((listing) => profilesById.has(listing.id) && profilesById.get(listing.id)?.staffingValid !== false).map((listing) => ({
         service: profilesById.get(listing.id)?.service,
         areaPricing: profilesById.get(listing.id)?.areaPricing,
-        addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label }) => ({ id, label })) ?? [],
+        addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })) ?? [],
         id: listing.id,
         provider: listing.provider,
         ...this.customer.rating({ rating: Number(listing.rating), reviewsCount: listing.reviews }, ratings.get(listing.id)),
@@ -485,7 +488,8 @@ export class DashboardService implements OnModuleInit {
       return null;
     }
 
-    return this.customer.publicProfile(profile);
+    const availableProfile = await withRosterHours(this.providerProfilesRepository.manager, profile);
+    return availableProfile.staffingValid === false ? null : this.customer.publicProfile(availableProfile);
   }
 
   async clearDashboardCache(email: string) {

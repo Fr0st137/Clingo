@@ -3,11 +3,12 @@ import type sharpFactory from "sharp";
 const sharp: typeof sharpFactory = require("sharp");
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { AuthService } from "../auth/auth.service";
-import { ProviderAccountEntity, ProviderMembershipEntity } from "./provider.entity";
+import { AuthService, objectInput } from "../auth/auth.service";
+import { ProviderAccountEntity, ProviderEmployeeEntity, ProviderMembershipEntity } from "./provider.entity";
 import { publishOffer, publicOfferId } from "./provider-offer-publication";
 import { ProviderOfferEntity } from "./provider-offers.entity";
 import { defaultOfferConfiguration, offerConfiguration, offerInput, type OfferConfiguration } from "./provider-offers.input";
+import { assertOfferStaffing, staffingLimit } from "./provider-staffing";
 
 async function validatePresentation(presentation: OfferConfiguration["presentation"]) {
   if (!presentation) return;
@@ -48,7 +49,16 @@ export class ProviderOffersService {
     const accountId = await this.accountId(authorization);
     const input = offerInput(value);
     await validatePresentation(input.configuration.presentation);
-    return offerView(await this.offers.save(this.offers.create({ ...input, accountId, revision: 1 })));
+    return this.offers.manager.transaction(async manager => {
+      const account = await manager.findOneOrFail(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
+      if (objectInput(value).configuration === undefined) {
+        const employees = await manager.find(ProviderEmployeeEntity, { where: { accountId } });
+        const limit = staffingLimit(account, employees.length);
+        input.configuration.areaTiers = input.configuration.areaTiers.map(row => ({ ...row, workers: Math.min(row.workers, limit) }));
+      }
+      if (input.status !== "archived") await assertOfferStaffing(manager, account, input.configuration, input.status === "published");
+      return offerView(await manager.save(ProviderOfferEntity, manager.create(ProviderOfferEntity, { ...input, accountId, revision: 1 })));
+    });
   }
   async update(authorization: string | undefined, id: string, value: unknown) {
     const accountId = await this.accountId(authorization);
@@ -59,22 +69,18 @@ export class ProviderOffersService {
     if (presentation && JSON.stringify(presentation) !== JSON.stringify(existing.configuration?.presentation)) {
       await validatePresentation(presentation);
     }
-    if (input.status === "published" || existing.status === "published") {
       return this.offers.manager.transaction(async manager => {
         const account = await manager.findOne(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
         if (!account) throw new NotFoundException("Nie znaleziono działalności.");
         const current = await manager.findOne(ProviderOfferEntity, { where: { id, accountId }, lock: { mode: "pessimistic_write" } });
         if (!current) throw new NotFoundException("Nie znaleziono usługi.");
         if (current.revision !== revision) throw new ConflictException("Dane usługi zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
+        if (objectInput(value).configuration === undefined) input.configuration = storedConfiguration(current);
+        if (input.status !== "archived") await assertOfferStaffing(manager, account, input.configuration, input.status === "published");
         const next = manager.create(ProviderOfferEntity, { ...current, ...input, revision: revision! + 1 });
         await publishOffer(manager, next, account);
         return offerView(await manager.save(ProviderOfferEntity, next));
       });
-    }
-    const nextRevision = revision! + 1;
-    const result = await this.offers.update({ id, accountId, revision }, { ...input, revision: nextRevision });
-    if (result.affected !== 1) throw new ConflictException("Dane usługi zmieniły się w innym oknie. Wczytaj aktualną wersję przed zapisem.");
-    return offerView({ ...existing, ...input, revision: nextRevision });
   }
 }
 

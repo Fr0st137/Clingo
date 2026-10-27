@@ -7,6 +7,7 @@ const { ProviderService } = require('../apps/api/dist/provider/provider.service'
 const { employeeInput, revisionInput } = require('../apps/api/dist/provider/provider.input');
 const apiRequire = require('node:module').createRequire(resolve(__dirname, '../apps/api/package.json'));
 const { UnauthorizedException } = apiRequire('@nestjs/common');
+const { ProviderEmployeeEntity } = require('../apps/api/dist/provider/provider.entity');
 
 function loadTs(path, imports = {}) {
   const module = { exports: {} };
@@ -58,6 +59,13 @@ function setup(role = 'owner') {
     async update(where, change) { const row = rows.get(where.id); if (!row || !matches(row, where)) return { affected: 0 }; rows.set(row.id, { ...row, ...change }); return { affected: 1 }; },
     async delete(where) { const row = rows.get(where.id); if (!row || !matches(row, where)) return { affected: 0 }; rows.delete(row.id); return { affected: 1 }; }
   };
+  const manager = {
+    findOneOrFail: async (_entity, {where}) => ({id:where.id,staffingMode:'team',declaredStaff:null}),
+    create: (_entity, value) => employees.create(value), save: (_entity, value) => employees.save(value),
+    update: (_entity, where, value) => employees.update(where, value), delete: (_entity, where) => employees.delete(where),
+    find: async (entity, options) => entity === ProviderEmployeeEntity ? employees.find(options) : []
+  };
+  employees.manager = { transaction: callback => callback(manager) };
   return new ProviderService(auth, memberships, employees);
 }
 test('requires a valid login, provider membership and management role', async () => {

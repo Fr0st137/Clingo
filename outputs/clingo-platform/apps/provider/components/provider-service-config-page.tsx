@@ -10,6 +10,7 @@ import { ProviderOfferDescription } from "./provider-offer-description";
 import { useSettingsResource, useUnsavedSettings } from "./provider-settings-state";
 import { ApiError, providerApi } from "../lib/provider-client";
 import { minorInput, offerCategories, offerPrice, priceMinor, type Offer, type OfferAddOn, type OfferAreaTier, type OfferConfiguration } from "../lib/provider-offers";
+import type { StaffingSettings } from "../lib/provider-staffing";
 
 type ConfigDraft = Omit<OfferConfiguration, "ratePerSquareMeterMinor" | "travelRatePerKmMinor" | "durationPer100SquareMetersMinutes" | "addOns"> & {
   ratePerSquareMeter: string;
@@ -75,6 +76,8 @@ function Toolbar({ busy, dirty, save, publish, published, preview, message }: { 
 }
 
 function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: () => void; update: (offer: Offer) => void }) {
+  const staffing = useSettingsResource<StaffingSettings>("settings/staffing");
+  const workerLimit = staffing.data?.limit ?? 0;
   const [original, setOriginal] = useState(offer);
   const [draft, setDraft] = useState(() => toDraft(offer.configuration));
   const [description, setDescription] = useState(offer.description);
@@ -105,6 +108,8 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
   }, [offer, original.revision]);
 
   function parseConfiguration(): OfferConfiguration | null {
+    if (!staffing.data || staffing.error) { setError("Najpierw odśwież limit obsady działalności."); return null; }
+    if (draft.areaTiers.some(tier => tier.workers > workerLimit)) { setError(`Liczba osób w każdym przedziale może wynosić najwyżej ${workerLimit}. Popraw obsadę w widełkach.`); return null; }
     const rate = priceMinor(draft.ratePerSquareMeter);
     const travel = /^(?:0|0[.,]0{1,2})$/.test(draft.travelRatePerKm.trim()) ? 0 : priceMinor(draft.travelRatePerKm);
     const duration = Number(draft.durationPer100SquareMeters);
@@ -134,10 +139,10 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
 
   async function save(status: Offer["status"]) {
     if (pending.current || mediaBusy || conflict) return;
-    if (!dirty && status === original.status) { setMessage(status === "draft" ? "Szkic zapisany" : "Ogłoszenie opublikowane"); return; }
     setError(""); setMessage("");
     const configuration = parseConfiguration();
     if (!configuration) return;
+    if (!dirty && status === original.status) { setMessage(status === "draft" ? "Szkic zapisany" : "Ogłoszenie opublikowane"); return; }
     pending.current = true; setBusy(true);
     try {
       const saved = await providerApi<Offer>(`services/${offer.id}`, "PUT", {
@@ -216,10 +221,11 @@ function OfferConfigEditor({ offer, reload, update }: { offer: Offer; reload: ()
           <div className="offer-tier-fields"><span>Dla lokalu od</span>
           <label className="offer-area-control"><input aria-label={`Powierzchnia od — przedział ${index + 1}`} type="number" min={1} max={10000} value={tier.minSquareMeters} readOnly={index > 0} onChange={event => updateTier(index, { minSquareMeters: Number(event.target.value) })} /><span>m²</span></label><span>do</span>
           <label className="offer-area-control"><input aria-label={`Powierzchnia do — przedział ${index + 1}`} inputMode="numeric" value={tier.maxSquareMeters ?? "Bez limitu"} onChange={event => updateTier(index, { maxSquareMeters: index === draft.areaTiers.length - 1 && (!event.target.value || /bez limitu/i.test(event.target.value)) ? null : Number(event.target.value.replace(/\D/g, "")) })} /><span>m²</span></label><span>przypisz</span>
-          <div className="offer-worker-stepper"><button type="button" aria-label={`Zmniejsz liczbę pracowników — przedział ${index + 1}`} disabled={tier.workers <= 1} onClick={() => updateTier(index, { workers: Math.max(1, tier.workers - 1) })}><img src={asset("minus.svg")} alt="" /></button><strong>{tier.workers}</strong><button type="button" aria-label={`Zwiększ liczbę pracowników — przedział ${index + 1}`} disabled={tier.workers >= 50} onClick={() => updateTier(index, { workers: Math.min(50, tier.workers + 1) })}><img src={asset("plus.svg")} alt="" /></button></div><span>Pracownika/ów</span></div>
+          <div className="offer-worker-stepper"><button type="button" aria-label={`Zmniejsz liczbę pracowników — przedział ${index + 1}`} disabled={tier.workers <= 1} onClick={() => updateTier(index, { workers: Math.max(1, tier.workers - 1) })}><img src={asset("minus.svg")} alt="" /></button><strong>{tier.workers}</strong><button type="button" aria-label={`Zwiększ liczbę pracowników — przedział ${index + 1}`} disabled={staffing.loading || !!staffing.error || tier.workers >= workerLimit} onClick={() => updateTier(index, { workers: Math.min(workerLimit, tier.workers + 1) })}><img src={asset("plus.svg")} alt="" /></button></div><span>Pracownika/ów</span></div>
           <button type="button" className="offer-tier-remove" aria-label={`Usuń przedział ${index + 1}`} disabled={draft.areaTiers.length === 1} onClick={() => removeTier(index)}><img src={asset("trash.svg")} alt="" /></button>
         </div>)}<button type="button" className="offer-config-add" disabled={draft.areaTiers.length >= 12} onClick={addTier}><img src={asset("add-tier.svg")} alt="" />Dodaj przedział</button></div>
         <p className="offer-config-info"><img src={asset("info-blue.svg")} alt="" />Przy obecnych ustawieniach obsługujesz zlecenia od {draft.areaTiers[0].minSquareMeters} m². {draft.areaTiers.at(-1)?.maxSquareMeters === null ? `Dla lokali powyżej ${draft.areaTiers.at(-1)!.minSquareMeters} m² system przypisze ${draft.areaTiers.at(-1)!.workers} pracowników.` : `Maksymalny obsługiwany metraż: ${draft.areaTiers.at(-1)?.maxSquareMeters} m².`}</p>
+        <p className="offer-config-info" role="status">{staffing.loading ? "Sprawdzamy obsadę działalności…" : staffing.error || `Limit osób w każdym przedziale: ${workerLimit}${staffing.data?.mode === "solo" ? " — praca samodzielna" : ""}.`} <button type="button" onClick={staffing.reload}>Odśwież limit</button> <Link href="/settings">Ustawienia obsady</Link></p>
         <p className="offer-config-info is-warning"><img src={asset("warning.svg")} alt="" />Klienci szukający usług dla lokali poniżej {draft.areaTiers[0].minSquareMeters} m² nie zobaczą Twojego ogłoszenia.</p>
       </section>
       <section className="offer-config-card offer-options-card"><SectionTitle description="Ustaw bufor między zleceniami i wyprzedzenie zamówienia.">Harmonogram</SectionTitle>

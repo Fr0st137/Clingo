@@ -4,6 +4,8 @@ import { ProviderSettingsService } from "./provider-settings.service";
 @Controller("provider/settings")
 export class ProviderSettingsController {
   constructor(private readonly settings: ProviderSettingsService) {}
+  @Get("staffing") getStaffing(@Headers("authorization") auth?: string) { return this.settings.getStaffing(auth); }
+  @Put("staffing") saveStaffing(@Headers("authorization") auth: string | undefined, @Body() body: unknown) { return this.settings.saveStaffing(auth, body); }
   @Get("profile") getProfile(@Headers("authorization") auth?: string) { return this.settings.getProfile(auth); }
   @Put("profile") saveProfile(@Headers("authorization") auth: string | undefined, @Body() body: unknown) { return this.settings.saveProfile(auth, body); }
   @Get("notifications") getNotifications(@Headers("authorization") auth?: string) { return this.settings.getNotifications(auth); }

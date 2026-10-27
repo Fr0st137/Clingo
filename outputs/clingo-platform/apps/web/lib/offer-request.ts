@@ -1,6 +1,7 @@
 import type { ProviderProfileData } from "../components/provider-profile-view";
 import { serviceAreaStatus } from "../../api/src/dashboard/service-area";
 import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
+import { bookingMode, durationMinutes } from "../../api/src/dashboard/booking-policy";
 
 export type OfferRequest = { area?: string; address?: string; pricing?: string; frequency?: string; addons?: string };
 export type OfferRequestState = "missing" | "unknown-area" | "unsupported-location" | "ready";
@@ -30,6 +31,12 @@ export function requestPricing<T extends { id: string; label: string }>(pricing:
 
 export function profilePricing(profile: Pick<ProviderProfileData, "pricing" | "areaPricing">, area: string, pricingId?: string) {
   return profile.areaPricing ? areaPricingOption(profile.areaPricing, `area-${numericArea(area)}`) : requestPricing(profile.pricing ?? [], area, pricingId);
+}
+
+export function profileBookingMode(profile: Pick<ProviderProfileData, "pricing" | "areaPricing" | "addOns" | "tags" | "bookingSettings">, selection: { pricingId?: string; addOns?: Array<{ id?: string; quantity?: number }>; splitIntoSessions?: boolean }) {
+  const pricing = profile.areaPricing ? areaPricingOption(profile.areaPricing, selection.pricingId) : requestPricing(profile.pricing ?? [], "", selection.pricingId);
+  const extra = (selection.addOns ?? []).reduce((sum, row) => sum + (profile.addOns?.find(item => item.id === row.id)?.durationMinutes ?? 0) * (row.quantity ?? 0), 0);
+  return bookingMode(durationMinutes(pricing?.duration ?? "") + extra, profile, selection.splitIntoSessions, pricing && "estimatedWorkers" in pricing && typeof pricing.estimatedWorkers === "number" ? pricing.estimatedWorkers : undefined);
 }
 
 export function offerRequestState(profile: Pick<ProviderProfileData, "metrics" | "pricing" | "areaPricing">, area: string, address: string): OfferRequestState {

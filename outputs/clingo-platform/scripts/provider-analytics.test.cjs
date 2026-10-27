@@ -11,6 +11,10 @@ function loadTs(file) {
 const { analyzeJobs, rangeDays, employeeKey, analyticsCsv, percentageChange } = loadTs(resolve(__dirname, '../apps/provider/lib/provider-analytics.ts'));
 const filters = { start: '2026-09-01', end: '2026-09-30', offer: '', employee: '' };
 const job = (id, changes = {}) => ({ id, date: '2026-09-01', status: 'completed', clientId: 'client', offerId: 'offer', employeeId: 'employee', employeeName: 'Anna', serviceTitle: 'Sprzątanie', priceMinor: 10001, durationMinutes: 90, startMinute: 480, ...changes });
+test('released project sessions do not count as performed work or customer cancellations',()=>{
+ const report=analyzeJobs([job('done'),job('cancelled',{status:'cancelled'}),job('released',{status:'cancelled',releasedByCompletion:true})],filters);
+ assert.equal(report.current.length,2);assert.deepEqual(report.counts,{scheduled:0,completed:1,cancelled:1});assert.equal(report.totals.value,10001);
+});
 
 test('inclusive date windows handle leap years, DST and invalid input', () => {
   assert.equal(rangeDays('2024-02-28', '2024-03-01'), 3);

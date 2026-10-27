@@ -26,7 +26,9 @@ import { ProviderReviewsController } from "./provider-reviews.controller";
 import { ProviderMultiOrderEntity } from "./provider-multi-orders.entity";
 import { ProviderMultiOrdersService } from "./provider-multi-orders.service";
 import { ProviderMultiOrdersController } from "./provider-multi-orders.controller";
+import { ProviderProjectsService } from "./provider-projects.service";
+import { ProviderProjectsController } from "./provider-projects.controller";
 
-@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderAbsencesController, ProviderBookingsController, ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderAbsencesService, BookingService, ProviderBookingsService, ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
+@Module({ imports: [AuthModule, TypeOrmModule.forFeature([ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity])], controllers: [ProviderProjectsController, ProviderAbsencesController, ProviderBookingsController, ProviderController, ProviderSettingsController, ProviderClientsController, ProviderOffersController, ProviderJobsController, ProviderReviewsController, ProviderMultiOrdersController], providers: [ProviderProjectsService, ProviderAbsencesService, BookingService, ProviderBookingsService, ProviderService, ProviderSettingsService, ProviderClientsService, ProviderOffersService, ProviderJobsService, ProviderReviewsService, ProviderMultiOrdersService] })
 export class ProviderModule {}
 

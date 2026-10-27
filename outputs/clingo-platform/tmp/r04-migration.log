@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "migration": "20261027-provider-staffing-limit.sql",
+  "appliedTwice": true,
+  "ordersUnchanged": {
+    "count": 7,
+    "checksum": "35b192bd1125866d73f0a61054e88814"
+  }
+}

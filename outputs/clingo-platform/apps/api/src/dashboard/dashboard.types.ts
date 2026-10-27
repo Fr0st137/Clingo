@@ -1,5 +1,6 @@
 export type DashboardOrder = {
   id: string;
+  revision?: number;
   status: string;
   mode: string;
   modeTone?: "blue";
@@ -17,9 +18,11 @@ export type DashboardOrder = {
     contactName?: string;
     contactPhone?: string;
     frequencyLabel?: string;
+    estimatedWorkers?: number;
     notes?: string;
     invoice?: { companyName: string; taxId: string; address: string } | null;
-    sessions?: Array<{ startsAt: string; endsAt: string; workers: number }>;
+    completedAt?: string;
+    sessions?: Array<{ startsAt: string; endsAt: string; workers: number; releasedByCompletion?: boolean }>;
   };
   summary?: {
     duration: string;
@@ -127,7 +130,7 @@ export type FilterGroup = {
 export type BoardListing = {
   service?: string;
   areaPricing?: import("./area-pricing").AreaPricing | null;
-  addOns?: Array<{ id: string; label: string }>;
+  addOns?: Array<{ id: string; label: string; durationMinutes?: number }>;
   id: string;
   provider: string;
   rating: number;

@@ -16,9 +16,18 @@ function loadSource(path, dependencies = {}) {
   return context.exports;
 }
 const coverage = loadSource('../apps/api/src/dashboard/service-area.ts');
-const { offerRequestState, offerAddOnQuantities, pricingArea, requestPricing, profilePricing } = loadSource('../apps/web/lib/offer-request.ts', {
+const { offerRequestState, offerAddOnQuantities, pricingArea, requestPricing, profilePricing, profileBookingMode } = loadSource('../apps/web/lib/offer-request.ts', {
   '../../api/src/dashboard/service-area': coverage,
+  '../../api/src/dashboard/booking-policy': loadSource('../apps/api/src/dashboard/booking-policy.ts'),
   '../../api/src/dashboard/area-pricing': loadSource('../apps/api/src/dashboard/area-pricing.ts')
+});
+
+test('R02: catalogue/checkout mode follows selected area and timed extras, not a static profile tag', () => {
+  const areaProfile = { tags: ['Jednosesyjne'], areaPricing: { rateMinor: 150, minutesPer100: 180, minimum: 15, maximum: 1000, maxSessionMinutes: 720 }, pricing: [], addOns: [{ id: 'ironing', durationMinutes: 30 }] };
+  assert.equal(profileBookingMode(areaProfile, { pricingId: 'area-100' }), 'single');
+  assert.equal(profileBookingMode(areaProfile, { pricingId: 'area-500' }), 'multi');
+  assert.equal(profileBookingMode(areaProfile, { pricingId: 'area-400', addOns: [{ id: 'ironing', quantity: 1 }] }), 'multi');
+  assert.equal(profileBookingMode(areaProfile, { pricingId: 'area-100', splitIntoSessions: true }), 'multi');
 });
 const profile = {
   metrics: [{ id: 'location', label: 'Obsługiwany obszar', value: 'Warszawa' }],

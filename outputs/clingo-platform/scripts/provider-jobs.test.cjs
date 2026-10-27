@@ -3,6 +3,10 @@ const assert=require('node:assert/strict');
 const {setup}=require('./provider-jobs-fixture.cjs');
 const {jobInput}=require('../apps/api/dist/provider/provider-jobs.input');
 const status=code=>error=>error.getStatus()===code;
+test('project metadata can preserve a one-minute zero-priced session without loosening standalone jobs',()=>{
+ const {draft}=setup(),input={...draft(),durationMinutes:1,priceMinor:0,revision:1};
+ assert.equal(jobInput(input,true,true).durationMinutes,1);assert.throws(()=>jobInput(input,true),status(400));
+});
 test('job input validates actual calendar dates, same-day times, integer amounts and all explicit references',()=>{
  const {draft}=setup();
  assert.equal(jobInput({...draft(),date:'2024-02-29',notes:' First\nSecond '}).notes,'First\nSecond');

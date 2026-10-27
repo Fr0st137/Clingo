@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: R02: catalogue/checkout mode follows selected area and timed extras, not a static profile tag
+ok 1 - R02: catalogue/checkout mode follows selected area and timed extras, not a static profile tag
+  ---
+  duration_ms: 19.2811
+  type: 'test'
+  ...
+# Subtest: published area pricing uses the exact requested area in preview and checkout
+ok 2 - published area pricing uses the exact requested area in preview and checkout
+  ---
+  duration_ms: 1.0629
+  type: 'test'
+  ...
+# Subtest: missing or invalid area and either missing field keep checkout unavailable
+ok 3 - missing or invalid area and either missing field keep checkout unavailable
+  ---
+  duration_ms: 0.4241
+  type: 'test'
+  ...
+# Subtest: a supported locality restores checkout only with an available pricing area
+ok 4 - a supported locality restores checkout only with an available pricing area
+  ---
+  duration_ms: 0.5049
+  type: 'test'
+  ...
+# Subtest: other cities and similarly named streets cannot activate checkout
+ok 5 - other cities and similarly named streets cannot activate checkout
+  ---
+  duration_ms: 0.3173
+  type: 'test'
+  ...
+# Subtest: coverage is provider-specific, accepts Polish names and never falls back to the office address
+ok 6 - coverage is provider-specific, accepts Polish names and never falls back to the office address
+  ---
+  duration_ms: 0.3097
+  type: 'test'
+  ...
+# Subtest: only explicit, available add-ons are restored; demo selections do not alter the price
+ok 7 - only explicit, available add-ons are restored; demo selections do not alter the price
+  ---
+  duration_ms: 0.3416
+  type: 'test'
+  ...
+# Subtest: refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+ok 8 - refresh and checkout preserve extended packages and correct mismatched fixed-area variants
+  ---
+  duration_ms: 0.1595
+  type: 'test'
+  ...
+# Subtest: utilization uses the union of bookings and subtracts employee absences without double counting
+ok 9 - utilization uses the union of bookings and subtracts employee absences without double counting
+  ---
+  duration_ms: 3.5662
+  type: 'test'
+  ...
+# Subtest: missing schedules, unassigned jobs and full-day absence never fabricate utilization
+ok 10 - missing schedules, unassigned jobs and full-day absence never fabricate utilization
+  ---
+  duration_ms: 0.3934
+  type: 'test'
+  ...
+# Subtest: dashboard separates statuses, compares actual periods and counts ordered extras once per order
+ok 11 - dashboard separates statuses, compares actual periods and counts ordered extras once per order
+  ---
+  duration_ms: 12.0929
+  type: 'test'
+  ...
+# Subtest: inclusive date windows handle leap years, DST and invalid input
+ok 12 - inclusive date windows handle leap years, DST and invalid input
+  ---
+  duration_ms: 6.5267
+  type: 'test'
+  ...
+# Subtest: totals exclude cancelled and scheduled jobs and preserve integer cents
+ok 13 - totals exclude cancelled and scheduled jobs and preserve integer cents
+  ---
+  duration_ms: 10.6022
+  type: 'test'
+  ...
+# Subtest: service and employee filters apply to both periods and rankings use IDs
+ok 14 - service and employee filters apply to both periods and rankings use IDs
+  ---
+  duration_ms: 0.8371
+  type: 'test'
+  ...
+# Subtest: returning clients count prior or same-period completions, never future or cancelled work
+ok 15 - returning clients count prior or same-period completions, never future or cancelled work
+  ---
+  duration_ms: 6.9804
+  type: 'test'
+  ...
+# Subtest: CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+ok 16 - CSV keeps Polish amounts, quotes and multiline text and neutralizes formulas
+  ---
+  duration_ms: 0.6105
+  type: 'test'
+  ...
+# Subtest: availability excludes the current order, retains its duration and requires ownership
+ok 17 - availability excludes the current order, retains its duration and requires ownership
+  ---
+  duration_ms: 110.0417
+  type: 'test'
+  ...
+# Subtest: rescheduling saves the new date without changing price or extras and rechecks conflicts
+ok 18 - rescheduling saves the new date without changing price or extras and rechecks conflicts
+  ---
+  duration_ms: 40.3913
+  type: 'test'
+  ...
+# Subtest: multi-session move preserves other sessions, workers and updates the overall date range
+ok 19 - multi-session move preserves other sessions, workers and updates the overall date range
+  ---
+  duration_ms: 21.5547
+  type: 'test'
+  ...
+# Subtest: multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+ok 20 - multi-session availability and save reject overlaps, excessive gaps and invalid session indices
+  ---
+  duration_ms: 157.806
+  type: 'test'
+  ...
+# Subtest: cancelled, completed and past services cannot be rescheduled
+ok 21 - cancelled, completed and past services cannot be rescheduled
+  ---
+  duration_ms: 5.2473
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1991.5652

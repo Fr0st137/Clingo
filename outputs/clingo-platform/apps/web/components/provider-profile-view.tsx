@@ -5,6 +5,7 @@ import { Award, Check, CheckCircle2, ChevronLeft, Clock, Heart, MapPin, ShieldCh
 
 export interface ProviderProfileData {
   areaPricing?: import("../../api/src/dashboard/area-pricing").AreaPricing | null;
+  bookingSettings?: import("../../api/src/dashboard/booking-policy").WorkingHours | null;
   id: string;
   provider: string;
   verified: boolean;

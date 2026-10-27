@@ -1,0 +1,59 @@
+
+> clingo-platform@0.1.0 build:provider
+> npm --workspace apps/provider run build
+
+
+> @clingo/provider@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.24
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.4s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+   Generating static pages (12/26) 
+   Generating static pages (19/26) 
+ ✓ Generating static pages (26/26)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      131 B         137 kB
+├ ○ /_not-found                            987 B         104 kB
+├ ○ /analytics                            9.4 kB         122 kB
+├ ƒ /api/provider/[...path]                125 B         103 kB
+├ ○ /calendar/day                          131 B         137 kB
+├ ○ /calendar/week                         131 B         137 kB
+├ ○ /chat                                  161 B         113 kB
+├ ○ /clients                             4.84 kB         131 kB
+├ ○ /employees                           2.07 kB         114 kB
+├ ○ /employees/add                         122 B         117 kB
+├ ○ /employees/edit                        122 B         117 kB
+├ ○ /login                               2.35 kB         105 kB
+├ ○ /orders                              2.62 kB         129 kB
+├ ƒ /orders/[orderId]/edit                 131 B         137 kB
+├ ○ /orders/history                        131 B         137 kB
+├ ○ /orders/multi-session                3.39 kB         116 kB
+├ ○ /orders/multi-session/details          125 B         103 kB
+├ ○ /payment-methods                     1.58 kB         114 kB
+├ ○ /payment-methods/billing               176 B         113 kB
+├ ○ /reviews                             2.48 kB         115 kB
+├ ○ /services                            3.33 kB         116 kB
+├ ƒ /services/[serviceId]                9.53 kB         122 kB
+├ ○ /settings                             4.1 kB         116 kB
+├ ○ /settings/calendar                     176 B         113 kB
+├ ○ /settings/location                   2.05 kB         114 kB
+├ ○ /settings/notifications              2.49 kB         115 kB
+└ ○ /work-schedules                      2.65 kB         115 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-51732c0e3a66e117.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          2.01 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

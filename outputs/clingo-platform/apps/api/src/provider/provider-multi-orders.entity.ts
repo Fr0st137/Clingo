@@ -3,11 +3,11 @@ import { ProviderClientEntity } from "./provider-clients.entity";
 import { ProviderOfferEntity } from "./provider-offers.entity";
 import { ProviderAccountEntity } from "./provider.entity";
 
-export type ProviderMultiOrderSession = { date: string; startMinute: number; durationMinutes: number; employeeId: string | null };
+export type ProviderMultiOrderSession = { id?: string; date: string; startMinute: number; durationMinutes: number; employeeId: string | null; employees?: Array<{ id: string; name: string }> };
 
 @Entity("provider_multi_orders")
 @Index("provider_multi_orders_account_start_idx", ["accountId", "startDate"])
-@Check("provider_multi_order_status", '"status" IN (\'pending\', \'accepted\', \'rejected\')')
+@Check("provider_multi_order_status", '"status" IN (\'pending\', \'accepted\', \'rejected\', \'completed\')')
 export class ProviderMultiOrderEntity {
   @PrimaryGeneratedColumn("uuid") id!: string;
   @Column({ name: "account_id", type: "uuid" }) accountId!: string;
@@ -21,12 +21,13 @@ export class ProviderMultiOrderEntity {
   @Column({ name: "service_detail", type: "varchar", length: 180 }) serviceDetail!: string;
   @Column({ name: "start_date", type: "date" }) startDate!: string;
   @Column({ name: "end_date", type: "date" }) endDate!: string;
-  @Column({ name: "area_square_meters", type: "integer" }) areaSquareMeters!: number;
+  @Column({ name: "area_square_meters", type: "numeric", precision:12,scale:2,transformer:{to:(value:number)=>value,from:(value:string|number)=>Number(value)} }) areaSquareMeters!: number;
   @Column({ name: "add_on_count", type: "integer", default: 0 }) addOnCount!: number;
   @Column({ name: "total_price_minor", type: "integer" }) totalPriceMinor!: number;
   @Column({ type: "boolean", default: false }) external!: boolean;
-  @Column({ type: "varchar", length: 20, default: "pending" }) status!: "pending" | "accepted" | "rejected";
+  @Column({ type: "varchar", length: 20, default: "pending" }) status!: "pending" | "accepted" | "rejected" | "completed";
   @Column({ type: "jsonb" }) sessions!: ProviderMultiOrderSession[];
+  @Column({ name: "project_data", type: "jsonb", nullable: true }) projectData!: { estimate: import("./project-work").ProjectEstimate; history?: import("./project-work").ProjectEdit[]; completion?: import("./project-completion").ProjectCompletion } | null;
   @Column({ type: "varchar", length: 2000, default: "" }) notes!: string;
   @Column({ type: "integer", default: 1 }) revision!: number;
   @Column({ name: "accepted_at", type: "timestamptz", nullable: true }) acceptedAt!: Date | null;

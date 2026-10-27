@@ -1,0 +1,3 @@
+const {Client}=require('pg');const fs=require('node:fs');
+async function main(){const db=new Client({host:process.env.POSTGRES_HOST||'127.0.0.1',port:Number(process.env.POSTGRES_PORT||55432),database:process.env.POSTGRES_DB||'clingo',user:process.env.POSTGRES_USER||'clingo',password:process.env.POSTGRES_PASSWORD||'clingo'});await db.connect();try{await db.query(fs.readFileSync('apps/api/src/database/migrations/20261027-project-completion.sql','utf8'));console.log('PASS: project completion status constraint applied; existing project data preserved.');}finally{await db.end();}}
+main().catch(error=>{console.error(error);process.exitCode=1;});

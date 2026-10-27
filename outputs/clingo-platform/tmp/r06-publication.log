@@ -1,0 +1,1 @@
+PASS: publication -> per-area/staffing quote -> booking -> provider job; preserved snapshots; withdrawal/cancellation/republication; idempotent R01/R02 backfills; full-area multi-session project with exact duration and price; ownership, rollback and revision conflicts.

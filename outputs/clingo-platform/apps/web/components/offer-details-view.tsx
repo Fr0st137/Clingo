@@ -10,9 +10,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { ProviderProfileData } from "./provider-profile-view";
 import { OfferSummaryUnavailable } from "./offer-summary-unavailable";
-import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, profilePricing } from "../lib/offer-request";
+import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, profileBookingMode, profilePricing } from "../lib/offer-request";
 import type { OfferRequest } from "../lib/offer-request";
 import { declaredServiceAreas } from "../../api/src/dashboard/service-area";
+import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
 
 type AddOn = NonNullable<ProviderProfileData["addOns"]>[number];
 type Frequency = NonNullable<ProviderProfileData["frequencies"]>[number];
@@ -336,8 +337,10 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
     [addOns, addOnQuantities]
   );
 
-  const selectedPricing = profilePricing(profile, area, selectedPricingId) ?? pricing[0];
-  const selectedFrequency = frequencies.find((item) => item.id === selectedFrequencyId) ?? frequencies[0];
+  const areaOption = profile.areaPricing ? areaPricingOption(profile.areaPricing, `area-${numericArea(area) || profile.areaPricing.minimum}`) : undefined;
+  const selectedPricing = profilePricing(profile, area, selectedPricingId) ?? areaOption ?? pricing[0];
+  const isMultiSession = profileBookingMode(profile, { pricingId: selectedPricing?.id, addOns: selectedAddOnItems.map(({ addOn, quantity }) => ({ id: addOn.id, quantity })) }) === "multi";
+  const selectedFrequency = (isMultiSession && profile.areaPricing ? frequencies.find(item => item.id === "once") : frequencies.find((item) => item.id === selectedFrequencyId)) ?? frequencies[0];
   const discount = frequencyDiscount(selectedFrequency?.discount ?? "0%");
   const baseTotal = selectedPricing?.priceValue ?? priceFromText(profile.summary.total);
   const discountedBase = Math.round(baseTotal * (1 - discount / 100) * 100) / 100;
@@ -473,7 +476,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
             <p className="m-0 whitespace-pre-line text-[14px] font-normal leading-[22px] text-[#2e3b4c]"><ProviderOfferDescription text={profile.description} /></p>
           </div>
           <div className="mt-[20px] flex flex-wrap gap-[10px]">
-            {profile.tags.map((tag) => (
+            {(profile.areaPricing ? [isMultiSession ? "Wielosesyjne" : "Jednosesyjne"] : profile.tags).map((tag) => (
               <span className="rounded-[30px] bg-[#e9f5ff] px-[12px] py-[5px] text-[13px] font-normal leading-[17px] text-[#0079de]" key={tag}>
                 {tag}
               </span>
@@ -506,12 +509,12 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           </div>
         </SectionCard>
 
-        <FrequencyPricingTable
+        {!isMultiSession && <FrequencyPricingTable
           basePrice={baseTotal}
           frequencies={frequencies}
           onSelect={setSelectedFrequencyId}
           selectedId={selectedFrequency?.id}
-        />
+        />}
 
         <SectionCard title="Usługi dodatkowe">
           <div className="mt-[20px] grid gap-x-[17px] gap-y-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}>
@@ -567,6 +570,8 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
               {selectedPricing?.duration ?? profile.summary.duration}
               {addOnDuration ? ` + ${addOnDuration} min` : ""}
             </p>
+            {areaOption && <p className="mb-0 mt-[8px] text-[12px] leading-5 text-[#7c8691]">Czas realizacji obliczony dla {areaOption.estimatedWorkers} {areaOption.estimatedWorkers === 1 ? "pracownika" : "pracowników"}.</p>}
+            {isMultiSession && <p className="mb-0 mt-[8px] text-[13px] leading-5 text-[#0079de]">Realizacja w kilku sesjach. W kolejnym kroku wybierzesz początek i wygenerujesz harmonogram.</p>}
           </div>
 
           <dl className="mt-[20px] grid gap-[8px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px] text-[14px] font-normal leading-5 text-[#2e3b4c]">

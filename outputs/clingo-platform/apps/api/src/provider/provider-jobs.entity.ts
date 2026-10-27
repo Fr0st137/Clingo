@@ -5,6 +5,7 @@ import { ProviderOfferEntity } from "./provider-offers.entity";
 @Entity("provider_jobs")
 @Index(["accountId", "date"])
 @Index("provider_jobs_multi_order_session_idx", ["multiOrderId", "sessionIndex"], { unique: true })
+@Index("provider_jobs_project_session_idx", ["multiOrderId", "projectSessionId"], { unique: true, where: '"project_session_id" IS NOT NULL' })
 export class ProviderJobEntity {
   @PrimaryGeneratedColumn("uuid") id!: string;
   @Column({ name: "account_id", type: "uuid" }) accountId!: string;
@@ -14,6 +15,8 @@ export class ProviderJobEntity {
   @Column({ name: "offer_id", type: "uuid" }) offerId!: string;
   @ManyToOne(() => ProviderOfferEntity, { onDelete: "RESTRICT" }) @JoinColumn({ name: "offer_id" }) offer!: ProviderOfferEntity;
   @Column({ name: "employee_id", type: "uuid", nullable: true }) employeeId!: string | null;
+  @Column({ type: "jsonb", nullable: true }) employees!: Array<{ id: string; name: string }> | null;
+  @Column({ name: "project_session_id", type: "varchar", length: 100, nullable: true }) projectSessionId!: string | null;
   @ManyToOne(() => ProviderEmployeeEntity, { onDelete: "SET NULL", nullable: true }) @JoinColumn({ name: "employee_id" }) employee!: ProviderEmployeeEntity | null;
   @Column({ type: "date" }) date!: string;
   @Column({ name: "start_minute", type: "integer" }) startMinute!: number;

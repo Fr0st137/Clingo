@@ -14,10 +14,12 @@ function setup(role='owner') {
  const rows=new Map();
  const clients=new Map([[ids.clientA,{id:ids.clientA,accountId:'a',name:'Klient QA',phone:'+48 123 456 789',email:'client@example.test',street:'Testowa 12',postalCode:'00-001',city:'Warszawa'}],[ids.clientB,{id:ids.clientB,accountId:'b',name:'Obcy klient'}]]);
  const offers=new Map([[ids.offerA,{id:ids.offerA,accountId:'a',title:'Sprzątanie QA',status:'draft',category:'homes',description:'',priceMinor:14990,durationMinutes:90,revision:1}],[ids.offerB,{id:ids.offerB,accountId:'b',title:'Obca usługa',status:'draft'}]]);
- const employees=new Map([[ids.employeeA,{id:ids.employeeA,accountId:'a',name:'Pracownik QA'}],[ids.employeeB,{id:ids.employeeB,accountId:'b',name:'Obcy pracownik'}]]);
+ const schedule=Array.from({length:7},(_,day)=>({day,enabled:true,start:'00:00',end:'23:59'}));
+ const employees=new Map([[ids.employeeA,{id:ids.employeeA,accountId:'a',name:'Pracownik QA',services:['homes'],schedule}],[ids.employeeB,{id:ids.employeeB,accountId:'b',name:'Obcy pracownik',services:['homes'],schedule}]]);
  const tables=new Map([[ProviderProfileEntity,new Map()],[ProviderJobEntity,rows],[ProviderClientEntity,clients],[ProviderOfferEntity,offers],[ProviderEmployeeEntity,employees],[ProviderAccountEntity,new Map([['a',{id:'a'}],['b',{id:'b'}]])]]);
  const matches=(row,where)=>Object.entries(where).every(([key,value])=>row[key]===value);
  const manager={
+  async query(){return [];},
   async findOne(entity,{where,lock}) { if(entity===ProviderAccountEntity && lock?.mode!=='pessimistic_write')throw new Error('Account writes must acquire the database row lock');return this.findOneBy(entity,where); },
   async findOneBy(entity,where){const row=[...tables.get(entity).values()].find(row=>matches(row,where));return row?structuredClone(row):null;},
   async find(entity,{where}){return [...tables.get(entity).values()].filter(row=>matches(row,where)).map(row=>structuredClone(row));},

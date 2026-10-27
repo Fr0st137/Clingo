@@ -1,0 +1,15 @@
+{
+  status: 'PASS',
+  schemaAppliedTwice: true,
+  updatedPublic: 1,
+  updatedManual: 1,
+  backup: 'tmp/backups/r06-projects-1793068321542.json'
+}
+
+{
+  status: 'PASS',
+  schemaAppliedTwice: true,
+  updatedPublic: 0,
+  updatedManual: 0,
+  backup: 'tmp/backups/r06-projects-1793068321654.json'
+}

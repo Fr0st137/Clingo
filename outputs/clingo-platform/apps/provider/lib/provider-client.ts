@@ -3,7 +3,7 @@ export type EmployeeDraft = { name: string; email: string; phone: string; showIn
 export type Employee = EmployeeDraft & { id: string; revision: number };
 export type ProviderContext = { user: { name: string; email: string }; account: { id: string; name: string; role: "owner" | "admin" | "employee" } | null };
 export const dayNames = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-export const services = [{ id: "homes", label: "Mieszkań i domów" }, { id: "offices", label: "Biur i lokali użytkowych" }];
+export const services = [{ id: "homes", label: "Mieszkań i domów" }, { id: "offices", label: "Biur i lokali użytkowych" }, { id: "pressure", label: "Mycie ciśnieniowe" }, { id: "painting", label: "Malowanie" }];
 export const newEmployee = (): EmployeeDraft => ({ name: "", email: "", phone: "", showInCalendar: true, services: [], schedule: [1, 2, 3, 4, 5, 6, 0].map(day => ({ day, enabled: false, start: "08:00", end: "16:00" })) });
 export const minutes = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
 export const dayMinutes = (day: WorkDay) => day.enabled ? Math.max(0, minutes(day.end) - minutes(day.start)) : 0;
