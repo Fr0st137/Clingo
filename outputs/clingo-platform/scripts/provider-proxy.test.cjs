@@ -58,7 +58,14 @@ test('own multi-session project writes and availability are authenticated and sc
   assert.equal((await call('multi-orders','PUT',{token:'provider'})).status,404);
   assert.equal((await call('multi-orders/availability','GET',{token:'provider'})).status,404);
   assert.equal((await call('multi-orders','POST',{token:'provider',body:JSON.stringify({sessions:'x'.repeat(17000)})})).status,200);
-  assert.equal((await call('multi-orders','POST',{token:'provider',body:JSON.stringify({sessions:'x'.repeat(512*1024)})})).status,413);
+  assert.equal((await call('multi-orders','POST',{token:'provider',body:JSON.stringify({sessions:'x'.repeat(3*1024*1024)})})).status,413);
+});
+
+test('private project notes permit only authenticated same-origin reads and edits with a bounded photo payload',async t=>{
+ const path='projects/manual/11111111-1111-4111-8111-111111111111/notes';t.mock.method(global,'fetch',async()=>Response.json({revision:2}));
+ for(const method of ['GET','PUT']){assert.equal((await call(path,method)).status,401);assert.equal((await call(path,method,{token:'provider'})).status,200);}
+ assert.equal((await call(path,'PUT',{token:'provider',headers:{origin:'https://foreign.test'}})).status,403);assert.equal((await call(path,'DELETE',{token:'provider'})).status,404);
+ assert.equal((await call(path,'PUT',{token:'provider',body:JSON.stringify({photos:'a'.repeat(512*1024)})})).status,200);assert.equal((await call(path,'PUT',{token:'provider',body:JSON.stringify({photos:'a'.repeat(3*1024*1024)})})).status,413);
 });
 
 test('client proxy permits authenticated reads and edits but rejects unsupported operations', async t => {

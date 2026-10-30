@@ -11,6 +11,8 @@ import { ProviderOrderActionDialog, type OrderAction, type OrderActionSelection 
 import { ProviderBookingStaffing } from "./provider-booking-staffing";
 import Link from "next/link";
 import {projectHref} from "../lib/provider-projects";
+import {ProviderSavedProjectNotes} from "./provider-project-notes-dialog";
+import {ProviderSavedOrderHistory} from "./provider-order-history-dialog";
 
 const asset = (name: string) => `/figma-assets/orders/details/${name}`;
 type Panel = "employees" | "comments" | "notes" | "history" | "contact" | "service" | null;
@@ -23,6 +25,8 @@ export function ProviderOrderDetails({ job, onClose, onSaved, onReloaded, onEdit
   const [panel, setPanel] = useState<Panel>(null);
   const [confirm, setConfirm] = useState<OrderAction | "close" | null>(null);
   const [notes, setNotes] = useState(job.notes);
+  const [projectNotesOpen, setProjectNotesOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [conflict, setConflict] = useState(false);
   const pending = useRef(false);
   const employees = useSettingsResource<Employee[]>("employees");
@@ -124,9 +128,11 @@ export function ProviderOrderDetails({ job, onClose, onSaved, onReloaded, onEdit
     {confirm === "close" && <section className="order-details-confirm" aria-label="Potwierdzenie operacji"><h3>Odrzucić niezapisaną notatkę?</h3><div><button type="button" onClick={() => setConfirm(null)}>Wróć</button><button className="order-details-edit" type="button" onClick={onClose}>Potwierdź</button></div></section>}
     <div className="order-details-footer">
       <button type="button" aria-expanded={panel === "comments"} onClick={() => togglePanel("comments")}>Uwagi klienta<img src={asset("comments.svg")} alt="" />{booking && current.notes && <span className="order-details-count">1</span>}</button>
-      <button type="button" aria-expanded={panel === "history"} onClick={() => togglePanel("history")}>Historia zmian<img className="order-details-history-icon" src={asset("history.svg")} alt="" /></button>
-      <button type="button" aria-expanded={panel === "notes"} onClick={() => togglePanel("notes")}>Notatki i zdjęcia<img src={asset("notes.svg")} alt="" />{!booking && current.notes && <span className="order-details-count">1</span>}</button>
+      <button type="button" aria-expanded={historyOpen || panel === "history"} onClick={() => current.multiOrderId || booking && project ? setHistoryOpen(true) : togglePanel("history")}>Historia zmian<img className="order-details-history-icon" src={asset("history.svg")} alt="" /></button>
+      <button type="button" aria-expanded={current.multiOrderId ? projectNotesOpen : panel === "notes"} onClick={() => current.multiOrderId && !booking ? setProjectNotesOpen(true) : togglePanel("notes")}>Notatki i zdjęcia<img src={asset("notes.svg")} alt="" />{!booking && !current.multiOrderId && current.notes && <span className="order-details-count">1</span>}</button>
     </div>
     {confirm && confirm !== "close" && <ProviderOrderActionDialog action={confirm} job={current} busy={busy} error={error} conflict={conflict} onClose={() => { if (!busy) { setConfirm(null); setError(""); } }} onReload={() => void reload()} onExecute={executeAction} />}
+    {projectNotesOpen&&current.multiOrderId&&<ProviderSavedProjectNotes projectId={current.multiOrderId} onClose={()=>setProjectNotesOpen(false)} onSaved={()=>window.dispatchEvent(new Event("provider-projects-changed"))}/>}
+    {historyOpen&&<ProviderSavedOrderHistory source={booking?"booking":"manual"} id={current.bookingId??current.multiOrderId??""} onClose={()=>setHistoryOpen(false)}/>}
   </ProviderModal>;
 }

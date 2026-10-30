@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "checks": [
+    "Figma add-note form desktop/mobile geometry, validation and discard",
+    "Figma notes/photos tabs and desktop/mobile geometry",
+    "real add/edit/delete titled notes",
+    "photo upload/preview/invalid-type rejection",
+    "draft reload retains notes and photos",
+    "project save stores private attachments",
+    "saved-project note editing",
+    "foreign account/project isolation and unauthenticated image denial",
+    "revision conflicts",
+    "photo removal deletes bytes and revokes URL",
+    "idempotent migration preserves images"
+  ]
+}

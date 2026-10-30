@@ -10,6 +10,8 @@ import {estimateForArea,projectBalance} from "../../api/src/provider/project-wor
 import {localDuration} from "../../api/src/dashboard/booking-time";
 import {ProviderModal} from "./provider-modal";
 import {SettingsLoadState,useSettingsResource,useUnsavedSettings} from "./provider-settings-state";
+import {ProviderSavedProjectNotes} from "./provider-project-notes-dialog";
+import {ProviderSavedOrderHistory} from "./provider-order-history-dialog";
 
 type Person={id:string;name:string};
 const minutes=(value:string)=>Number(value.slice(0,2))*60+Number(value.slice(3));
@@ -48,6 +50,8 @@ export function ProviderProjectEditor({source,id,onClose,onSaved}:{source:Projec
   const[rows,setRows]=useState<ProjectSession[]>([]),[area,setArea]=useState("");
   const[busy,setBusy]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState(""),[conflict,setConflict]=useState(false),[under,setUnder]=useState(false),[over,setOver]=useState(false);
   const[completing,setCompleting]=useState(false),[confirmed,setConfirmed]=useState(false);
+  const[notesOpen,setNotesOpen]=useState(false);
+  const[historyOpen,setHistoryOpen]=useState(false);
   useEffect(()=>{if(resource.data){setRows(structuredClone(resource.data.sessions));setArea(resource.data.estimate.areaSquareMeters===null?"":String(resource.data.estimate.areaSquareMeters));setUnder(false);setOver(false);setConflict(false);setError("");}},[resource.data]);
   const project=resource.data;
   const dirty=!!project&&(JSON.stringify(rows)!==JSON.stringify(project.sessions)||area!==(project.estimate.areaSquareMeters===null?"":String(project.estimate.areaSquareMeters)));
@@ -82,7 +86,10 @@ export function ProviderProjectEditor({source,id,onClose,onSaved}:{source:Projec
       {error&&<p role="alert" className="provider-feedback is-error">{error}</p>}{message&&<p role="status" className="provider-feedback">{message}</p>}
       <footer className="project-editor-actions">{conflict&&<button className="settings-button" type="button" disabled={busy} onClick={()=>{if(!dirty||window.confirm("Odrzucić zmiany i wczytać aktualny projekt?"))resource.reload();}}>Wczytaj aktualny projekt</button>}<button className="employee-save-button" type="button" disabled={busy||conflict||!project.canEdit||!dirty||!preview||preview.state==="shortage"&&!under||preview.state==="excess"&&!over} onClick={()=>void save()}>{busy?"Zapisywanie…":"Zapisz projekt"}</button>{source==="manual"&&project.status==="pending"&&<button className="settings-button" type="button" disabled={busy||dirty} onClick={()=>void accept()}>Akceptuj projekt</button>}</footer>
       {project.canComplete&&<button className="settings-button" type="button" disabled={busy||dirty||conflict} onClick={()=>{setCompleting(true);setConfirmed(false);}}>Zakończ projekt</button>}
-      {!!project.history.length&&<details><summary>Ostatnie zmiany harmonogramu</summary>{[...project.history].reverse().map((event,index)=><p key={index}>{new Date(event.at).toLocaleString("pl-PL")} · dodano {event.added.length}, usunięto {event.removed.length}, zmieniono {event.changed.length} sesji</p>)}</details>}
+      {source==="manual"&&<button className="settings-button" type="button" disabled={busy||dirty} onClick={()=>setNotesOpen(true)}>Notatki i zdjęcia</button>}
+      <button className="settings-button" type="button" onClick={()=>setHistoryOpen(true)}>Historia zmian</button>
     </>}
+    {notesOpen&&<ProviderSavedProjectNotes projectId={id} onClose={()=>setNotesOpen(false)} onSaved={()=>{resource.reload();onSaved();}}/>}
+    {historyOpen&&<ProviderSavedOrderHistory source={source} id={id} onClose={()=>setHistoryOpen(false)}/>}
   </ProviderModal>;
 }

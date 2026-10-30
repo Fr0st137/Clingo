@@ -24,6 +24,7 @@ import { ProviderClientEntity } from "../provider/provider-clients.entity";
 import { ProviderOfferEntity } from "../provider/provider-offers.entity";
 import { ProviderReviewEntity } from "../provider/provider-reviews.entity";
 import { ProviderMultiOrderEntity } from "../provider/provider-multi-orders.entity";
+import { ProviderProjectPhotoEntity } from "../provider/provider-project-photo.entity";
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { ProviderMultiOrderEntity } from "../provider/provider-multi-orders.enti
         password: config.get<string>("POSTGRES_PASSWORD", "clingo"),
         database: config.get<string>("POSTGRES_DB", "clingo"),
         entities: [
-          ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity,
+          ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity, ProviderProjectPhotoEntity,
           AuthSessionEntity,
           AuthRateLimitEntity,
           CustomerFavoriteEntity, CustomerReviewEntity, CustomerReviewImageEntity,

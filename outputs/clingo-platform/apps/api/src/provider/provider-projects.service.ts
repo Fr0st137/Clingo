@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { DataSource, EntityManager } from "typeorm";
+import { DataSource, EntityManager, In } from "typeorm";
 import { createHash, randomUUID } from "crypto";
 import { AuthService, objectInput } from "../auth/auth.service";
 import { OrderEntity } from "../dashboard/order.entity";
@@ -19,6 +19,10 @@ import { manualProjectInput } from "./manual-project.input";
 import { manualProjectPricing } from "./manual-project-pricing";
 import { staffingLimit } from "./provider-staffing";
 import { defaultOfferConfiguration } from "./provider-offers.input";
+import { projectNotesInput, prepareProjectPhotos } from "./project-notes.input";
+import { legacyProjectNotes, projectNotesSummary } from "./project-notes.types";
+import { ProviderProjectPhotoEntity } from "./provider-project-photo.entity";
+import { attachmentHistoryDiff, historyMoney, orderHistoryDiff, type HistorySession } from "./order-history";
 
 type Source = "booking" | "manual";
 type Project = { source: Source; id: string; accountId: string; revision: number; clientName: string; title: string; status: string; priceMinor: number; estimate: ProjectEstimate; sessions: ProjectSession[]; profile: ProviderProfileEntity; publicOrder?: OrderEntity; manualOrder?: ProviderMultiOrderEntity; jobs?: ProviderJobEntity[]; history: ProjectEdit[] };
@@ -26,6 +30,7 @@ const minor = (text?: string) => Math.round(Number((text??"0").replace(/\s/g,"")
 const minute = (date: Date) => { const [hour,min]=localTime(date).split(":").map(Number);return hour*60+min; };
 const endMinute = (row: Pick<ProjectSession,"startsAt"|"endsAt">) => minute(row.endsAt)===0&&localDate(row.endsAt)!==localDate(row.startsAt)?1440:minute(row.endsAt);
 const areaFromId = (value?: string) => /^area-\d+(?:\.\d{1,2})?$/.test(value??"") ? Number(value!.slice(5)) : null;
+const historySessions = (sessions: ProjectSession[]): HistorySession[] => sessions.map(row => ({ id: row.id, date: localDate(row.startsAt), startMinute: minute(row.startsAt), endMinute: endMinute(row), employees: row.employees }));
 
 @Injectable()
 export class ProviderProjectsService {
@@ -74,16 +79,64 @@ export class ProviderProjectsService {
       if (understaffed && !input.confirmUnderstaffing) throw new BadRequestException(`Usługa jest przewidziana na ${estimate.estimatedWorkers} osób. Potwierdź realizację z mniejszą obsadą.`);
       const sessions = allocateProjectPrice(quote.total, result.sessions, []);
       const history: ProjectEdit[] = [{ at: new Date().toISOString(), actor, added: sessions.map(row => row.id), removed: [], changed: [], areaChanged: false,
-        confirmedShortage: input.confirmUnderplanned, confirmedExcess: input.confirmOverplanned, confirmedUnderstaffing: understaffed && input.confirmUnderstaffing }];
+        confirmedShortage: input.confirmUnderplanned, confirmedExcess: input.confirmOverplanned, confirmedUnderstaffing: understaffed && input.confirmUnderstaffing,
+        changes: [{ type: "Utworzenie zamówienia", before: "—", after: `${offer.title}, ${historyMoney(quote.total)}` }, ...orderHistoryDiff({ sessions: [] }, { sessions: historySessions(sessions) })] }];
+      const noteItems = input.noteItems ?? legacyProjectNotes(input.notes, input.requestId);
+      const photos = await prepareProjectPhotos(input.photos ?? []);
       const order = manager.create(ProviderMultiOrderEntity, { id: input.requestId, accountId, clientId: client.id, offerId: offer.id, clientName: client.name, serviceTitle: offer.title, serviceDetail: "Zlecenie własne",
         startDate: localDate(sessions[0].startsAt), endDate: localDate(sessions[sessions.length - 1].startsAt), areaSquareMeters: input.areaSquareMeters, addOnCount: quote.extras.reduce((sum, row) => sum + row.quantity, 0) + quote.positions.length, totalPriceMinor: quote.total, external: true, status: "pending", notes: input.notes, revision: 1,
         sessions: sessions.map(row => ({ id: row.id, date: localDate(row.startsAt), startMinute: minute(row.startsAt), durationMinutes: (+row.endsAt - +row.startsAt) / 60000, employeeId: row.employees[0].id, employees: row.employees })),
-        projectData: { estimate, history, creation: { digest, address: input.address, clientPhone: client.phone, clientEmail: client.email, quote } } });
+        projectData: { estimate, history, noteItems, creation: { digest, address: input.address, clientPhone: client.phone, clientEmail: client.email, quote } } });
       await manager.save(ProviderMultiOrderEntity, order);
+      await this.persistPhotos(manager, accountId, order.id, photos);
       const project: Project = { source: "manual", id: order.id, accountId, revision: 1, clientName: client.name, title: offer.title, status: "pending", priceMinor: quote.total, estimate, sessions: [], profile, manualOrder: order, jobs: [], history };
       await this.persist(manager, project, sessions, estimate, history, true);
       return this.view(await this.load(manager, accountId, "manual", order.id));
     });
+  }
+  private async persistPhotos(manager: EntityManager, accountId: string, projectId: string, photos: Awaited<ReturnType<typeof prepareProjectPhotos>>) {
+    const existing = await manager.find(ProviderProjectPhotoEntity, { where: { accountId, projectId } });
+    for (const [position, photo] of photos.entries()) {
+      const current = await manager.findOneBy(ProviderProjectPhotoEntity, { id: photo.id });
+      if (current && (current.accountId !== accountId || current.projectId !== projectId) || !current && !photo.data || current && photo.data) throw new BadRequestException("Nie można dołączyć tego zdjęcia do projektu. Dodaj nowy plik.");
+      if (current) { current.position = position; await manager.save(ProviderProjectPhotoEntity, current); }
+      else await manager.save(ProviderProjectPhotoEntity, manager.create(ProviderProjectPhotoEntity, { id: photo.id, accountId, projectId, position, data: photo.data! }));
+    }
+    const removed = existing.filter(row => !photos.some(photo => photo.id === row.id)).map(row => row.id);
+    if (removed.length) await manager.delete(ProviderProjectPhotoEntity, { accountId, projectId, id: In(removed) });
+  }
+  private async notesView(manager: EntityManager, accountId: string, projectId: string) {
+    const order = await manager.findOneBy(ProviderMultiOrderEntity, { id: projectId, accountId });
+    if (!order) throw new NotFoundException("Nie znaleziono projektu.");
+    const photos = await manager.find(ProviderProjectPhotoEntity, { where: { projectId, accountId }, order: { position: "ASC", id: "ASC" } });
+    return { revision: order.revision, noteItems: order.projectData?.noteItems ?? legacyProjectNotes(order.notes, order.id), photos: photos.map(photo => ({ id: photo.id, url: `/api/provider-project-photos/${projectId}/${photo.id}` })) };
+  }
+  async getNotes(authorization: string | undefined, projectId: string) { const { accountId } = await this.member(authorization); return this.notesView(this.db.manager, accountId, projectId); }
+  async saveNotes(authorization: string | undefined, projectId: string, value: unknown) {
+    const { accountId, actor } = await this.member(authorization), input = objectInput(value);
+    if (Object.keys(input).some(key => !["revision", "noteItems", "photos"].includes(key)) || !Number.isSafeInteger(input.revision) || Number(input.revision) < 1) throw new BadRequestException("Odśwież notatki przed zapisem.");
+    await this.notesView(this.db.manager, accountId, projectId);
+    const validated = projectNotesInput(input.noteItems, input.photos), photos = await prepareProjectPhotos(validated.photos);
+    return this.db.transaction(async manager => {
+      await manager.findOneOrFail(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
+      const order = await manager.findOne(ProviderMultiOrderEntity, { where: { id: projectId, accountId }, lock: { mode: "pessimistic_write" } });
+      if (!order) throw new NotFoundException("Nie znaleziono projektu.");
+      if (order.revision !== input.revision) throw new ConflictException("Projekt lub notatki zmieniły się w innym oknie. Wczytaj aktualną wersję.");
+      const estimate = order.projectData?.estimate ?? (await this.load(manager, accountId, "manual", projectId)).estimate;
+      const oldPhotos = await manager.find(ProviderProjectPhotoEntity, { where: { accountId, projectId } });
+      const changes = attachmentHistoryDiff({ noteItems: order.projectData?.noteItems ?? legacyProjectNotes(order.notes, order.id), photos: oldPhotos }, validated);
+      const history = order.projectData?.history ?? [], last = history.at(-1);
+      if (changes.length) history.push({ at: new Date().toISOString(), actor, added: [], removed: [], changed: [], areaChanged: false, confirmedShortage: last?.confirmedShortage ?? false, confirmedExcess: last?.confirmedExcess ?? false, changes });
+      order.projectData = { ...order.projectData, estimate, history: history.slice(-100), noteItems: validated.noteItems }; order.notes = projectNotesSummary(validated.noteItems); order.revision++;
+      await this.persistPhotos(manager, accountId, projectId, photos); await manager.save(ProviderMultiOrderEntity, order);
+      return this.notesView(manager, accountId, projectId);
+    });
+  }
+  async notesPhoto(authorization: string | undefined, projectId: string, photoId: string) {
+    const { accountId } = await this.member(authorization);
+    const rows: Array<{ data: Buffer }> = await this.db.manager.query("SELECT data FROM provider_project_photos WHERE id=$1 AND project_id=$2 AND account_id=$3", [photoId, projectId, accountId]);
+    if (!rows[0]) throw new NotFoundException("Nie znaleziono zdjęcia.");
+    return rows[0].data;
   }
   private async load(manager: EntityManager, accountId: string, source: string, id: string, lock=false): Promise<Project> {
     if(source!=="booking" && source!=="manual")throw new NotFoundException("Nie znaleziono projektu.");
@@ -135,9 +188,11 @@ export class ProviderProjectsService {
       if(project.revision!==input.revision||project.status==="completed")throw new ConflictException("Projekt zmienił się lub został już zakończony. Wczytaj aktualne dane.");
       if(!["scheduled","accepted"].includes(project.status))throw new BadRequestException("Możesz zakończyć wyłącznie aktywny, przyjęty projekt.");
       const completion=projectCompletion(project.sessions,actor);
+      const last=project.history.at(-1);
+      project.history=[...project.history,{at:completion.at,actor,added:[],removed:[],changed:[],areaChanged:false,confirmedShortage:last?.confirmedShortage??false,confirmedExcess:last?.confirmedExcess??false,changes:[{type:"Zakończenie zamówienia",before:project.status==="accepted"?"Przyjęte":"Zaplanowane",after:"Zakończone"},...(completion.releasedSessionIds.length?[{type:"Zwolnienie przyszłych sesji",before:String(completion.releasedSessionIds.length),after:"0 zarezerwowanych terminów"}]:[])]}].slice(-100);
       if(project.publicOrder){
         const order=project.publicOrder;order.selectedOptions??={addOns:[],frequencyId:"",pricingId:""};
-        order.selectedOptions.projectEstimate=project.estimate;order.selectedOptions.projectCompletion=completion;
+        order.selectedOptions.projectEstimate=project.estimate;order.selectedOptions.projectCompletion=completion;order.selectedOptions.projectHistory=project.history;
         order.status="Wykonane zlecenie";order.revision++;await manager.save(OrderEntity,order);
       }else{
         const order=project.manualOrder!;order.projectData={...order.projectData,estimate:project.estimate,history:project.history,completion};order.status="completed";order.revision++;
@@ -201,6 +256,7 @@ export class ProviderProjectsService {
       const sessions=allocateProjectPrice(project.priceMinor,result.sessions,project.status==="pending"?[]:project.sessions);
       const originals=new Map(project.sessions.map(row=>[row.id,row])),ids=new Set(sessions.map(row=>row.id));
       const event:ProjectEdit={at:new Date().toISOString(),actor,added:sessions.filter(row=>!originals.has(row.id)).map(row=>row.id),removed:project.sessions.filter(row=>!ids.has(row.id)).map(row=>row.id),changed:sessions.filter(row=>originals.has(row.id)&&!sameSession(row,originals.get(row.id)!)).map(row=>row.id),areaChanged:result.estimate.areaSquareMeters!==project.estimate.areaSquareMeters,confirmedShortage:input.confirmUnderplanned===true,confirmedExcess:input.confirmOverplanned===true};
+      event.changes=orderHistoryDiff({ sessions: historySessions(project.sessions), fields: { "Zmiana powierzchni": project.estimate.areaSquareMeters === null ? "—" : `${project.estimate.areaSquareMeters} m²` } }, { sessions: historySessions(sessions), fields: { "Zmiana powierzchni": result.estimate.areaSquareMeters === null ? "—" : `${result.estimate.areaSquareMeters} m²` } });
       await this.persist(manager,project,sessions,result.estimate,[...project.history,event].slice(-100));
       return this.view(await this.load(manager,accountId,source,id));
     });

@@ -28,7 +28,7 @@ export class ProviderMultiOrderEntity {
   @Column({ type: "boolean", default: false }) external!: boolean;
   @Column({ type: "varchar", length: 20, default: "pending" }) status!: "pending" | "accepted" | "rejected" | "completed";
   @Column({ type: "jsonb" }) sessions!: ProviderMultiOrderSession[];
-  @Column({ name: "project_data", type: "jsonb", nullable: true }) projectData!: { estimate: import("./project-work").ProjectEstimate; history?: import("./project-work").ProjectEdit[]; completion?: import("./project-completion").ProjectCompletion; creation?: { digest: string; address: string; clientPhone: string; clientEmail: string; quote: ReturnType<typeof import("./manual-project-pricing").manualProjectPricing> } } | null;
+  @Column({ name: "project_data", type: "jsonb", nullable: true }) projectData!: { estimate: import("./project-work").ProjectEstimate; history?: import("./project-work").ProjectEdit[]; completion?: import("./project-completion").ProjectCompletion; noteItems?: import("./project-notes.types").ProjectNote[]; creation?: { digest: string; address: string; clientPhone: string; clientEmail: string; quote: ReturnType<typeof import("./manual-project-pricing").manualProjectPricing> } } | null;
   @Column({ type: "varchar", length: 2000, default: "" }) notes!: string;
   @Column({ type: "integer", default: 1 }) revision!: number;
   @Column({ name: "accepted_at", type: "timestamptz", nullable: true }) acceptedAt!: Date | null;

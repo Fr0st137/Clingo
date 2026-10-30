@@ -5,7 +5,7 @@ import type { OfferConfiguration } from "../lib/provider-offers";
 const asset = (name: string) => `/figma-assets/services/editor/${name}`;
 type Media = NonNullable<OfferConfiguration["presentation"]>;
 
-async function readPhoto(file: File): Promise<string> {
+export async function readProviderPhoto(file: File): Promise<string> {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 10 * 1024 * 1024) throw Error("Wybierz zdjęcie JPG, PNG lub WebP do 10 MB.");
   const bitmap = await createImageBitmap(file);
   try {
@@ -32,7 +32,7 @@ export function ProviderOfferMedia({ value, onChange, disabled, onBusyChange }: 
       const selected = Array.from(files);
       if (kind === "gallery" && selected.length + media.gallery.length > 10) throw Error("Możesz dodać maksymalnie 10 zdjęć do galerii.");
       const images: string[] = [];
-      for (const file of kind === "banner" ? selected.slice(0, 1) : selected) images.push(await readPhoto(file));
+      for (const file of kind === "banner" ? selected.slice(0, 1) : selected) images.push(await readProviderPhoto(file));
       onChange(kind === "banner" ? { ...media, banner: images[0] } : { ...media, gallery: [...media.gallery, ...images] });
     } catch (error) { setError(error instanceof Error ? error.message : "Nie można dodać zdjęcia."); }
     finally { setBusy(false); onBusyChange(false); if (bannerInput.current) bannerInput.current.value = ""; if (galleryInput.current) galleryInput.current.value = ""; }

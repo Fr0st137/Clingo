@@ -2,6 +2,8 @@
 
 Własne zlecenia wielosesyjne: formularz, wybór dodatków z Figmy, planowanie sesji i atomowy zapis są opisane w [dokumentacji](docs/wlasne-zlecenia-wielosesyjne.md). Weryfikacja: `npm run test:manual-projects` oraz `npm run verify:manual-projects`. Przed uruchomieniem na istniejącej bazie zastosuj `apps/api/src/database/migrations/20261030-manual-projects.sql` po migracjach R06/R07.
 
+Notatki z tytułami i prywatne zdjęcia projektów wymagają również `apps/api/src/database/migrations/20261030-project-notes-photos.sql`. Sprawdzenie reguł i całego przebiegu: `npm run test:project-notes`, `npm run verify:project-notes`.
+
 Figma import implemented as a Next.js + Tailwind CSS frontend with a NestJS backend scaffold for PostgreSQL/PostGIS and Redis.
 
 ## Apps

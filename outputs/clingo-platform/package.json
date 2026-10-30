@@ -8,6 +8,10 @@
     "multer": "2.3.0"
   },
   "scripts": {
+    "test:order-history": "npm run build:api && node --test scripts/order-history.test.cjs scripts/project-editor.test.cjs scripts/project-completion.test.cjs scripts/project-notes.test.cjs",
+    "verify:order-history": "npm run build:api && node scripts/verify-order-history.cjs",
+    "test:project-notes": "npm run build:api && node --test scripts/project-notes.test.cjs scripts/provider-project-photos.test.cjs scripts/provider-proxy.test.cjs scripts/manual-project.test.cjs scripts/project-editor.test.cjs scripts/project-completion.test.cjs",
+    "verify:project-notes": "npm run build:api && node scripts/verify-project-notes.cjs",
     "test:manual-projects": "npm run build:api && node --test scripts/manual-project.test.cjs scripts/project-editor.test.cjs scripts/project-completion.test.cjs scripts/provider-multi-orders.test.cjs scripts/provider-proxy.test.cjs",
     "verify:manual-projects": "npm run build:api && node scripts/verify-manual-project.cjs",
     "dev:web": "npm --workspace apps/web run dev",

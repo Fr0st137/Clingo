@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "checks": [
+    "Figma 1177×343 geometry and exact timeline asset",
+    "mobile horizontal table scrolling",
+    "real draft session/price changes survive reload",
+    "saved project before/after values",
+    "note edits retained in private history",
+    "concurrent stale save does not add history",
+    "calendar project history button",
+    "ownership and authentication",
+    "completion audit and retry safety"
+  ]
+}

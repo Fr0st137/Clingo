@@ -19,7 +19,21 @@ Serwer ponownie wylicza cenę i pracę z zapisanej konfiguracji. Zmiana konfigur
 
 Projekt zostaje przyjęty jako zlecenie własne, a jego sesje pojawiają się w kalendarzu i na liście zleceń. Łączna cena jest dokładnie rozdzielana między sesje. Dane kontaktowe, adres, wycena, dodatki oraz podstawa roboczogodzin są zachowane. Dalsza edycja korzysta z R06; zakończenie z R07. Obce konta i pracownicy bez uprawnień zarządzania nie mogą tworzyć takich projektów.
 
-Nie dodano wysyłki wiadomości, potwierdzania otrzymania płatności ani nowego przechowywania zdjęć w notatkach. To odrębne istniejące zakresy. Notatki własne oraz kontakt i uwagi z kartoteki są dostępne w tym widoku.
+Nie dodano wysyłki wiadomości ani potwierdzania otrzymania płatności. To odrębne istniejące zakresy. Kontakt i uwagi z kartoteki są dostępne w tym widoku.
+
+## Notatki i zdjęcia
+
+Przycisk „Notatki i zdjęcia” otwiera okno zgodne z ekranami Figma `3599:6548` i `6367:11274`. Obsługuje do 20 notatek z tytułami (100 znaków) i treścią (2000 znaków), menu edycji/usunięcia i do 10 zdjęć JPG/PNG/WebP. W formularzu nowego projektu dane pozostają w karcie przeglądarki i trafiają do bazy razem z projektem. Edytor zapisanego projektu i szczegóły jego sesji otwierają to samo okno; zmiany zapisuje się z kontrolą aktualnej wersji projektu. Dawne notatki tekstowe pozostają dostępne.
+
+Zdjęcia są przygotowywane do wysłania w przeglądarce i ponownie odczytywane na serwerze. Serwer ogranicza liczbę pikseli, zapisuje WebP bez metadanych zdjęcia, a dane binarne trzyma oddzielnie od list projektów. Zdjęcia odczytuje prywatna ścieżka sprawdzająca firmę i projekt, z nagłówkiem `private, no-store`. Klienci, obce firmy i pracownicy bez uprawnień zarządzania nie mają do nich dostępu. Usunięcie zdjęcia usuwa jego dane i unieważnia adres. Zdjęcie z innego projektu nie może być dołączone przez podanie jego identyfikatora.
+
+Zastosuj również `apps/api/src/database/migrations/20261030-project-notes-photos.sql` przed uruchomieniem nowej wersji na istniejącej bazie. Migracja tworzy tabelę zdjęć, nie przepisuje wcześniejszych notatek. Weryfikacja: `npm run test:project-notes` oraz `npm run verify:project-notes`. Zrzuty i wyniki: `tmp/project-notes-*`, `tmp/project-photos-*`.
+
+## Historia zmian
+
+Przycisk „Historia zmian” otwiera okno Figma `4499:6943`: datę i godzinę w strefie Warszawy, oś czasu oraz kolumny „Typ zmiany”, „Wcześniej” i „Zmiana na”. Na telefonie tabelę przewija się poziomo. Historia szkicu zapisuje zmiany klienta, usługi, adresu, powierzchni, ceny, dodatków, sesji, pracowników, notatek i zdjęć w bieżącej karcie przeglądarki. Odczytuje też dawne wpisy tekstowe.
+
+Po utworzeniu zamówienia historia serwerowa zaczyna się od jego rzeczywistych parametrów i sesji. Kolejne zapisane zmiany harmonogramu, powierzchni, notatek, zdjęć i zakończenie projektu są rejestrowane w tej samej transakcji co zmiana danych, z wartościami przed i po zmianie. Odrzucone lub nieaktualne zapisy nie dodają wpisów. Zachowywane jest ostatnie 100 zdarzeń. Starsze wpisy bez zapisanych wartości pozostają opisowe. Historia jest dostępna w edytorze projektu i szczegółach jego sesji; obowiązują uprawnienia zarządzania działalnością. Nie wymaga dodatkowej migracji bazy poza migracjami projektu i zdjęć opisanymi wyżej. Weryfikacja: `npm run test:order-history` i `npm run verify:order-history`; zrzuty i wynik znajdują się w `tmp/order-history-*`.
 
 ## Baza i sprawdzenie
 

@@ -3,10 +3,11 @@ import { objectInput } from "../auth/auth.service";
 import { revisionInput, textInput } from "./provider.input";
 import type { ManualDiscount, ManualPosition } from "./manual-project-pricing";
 import { MAX_BOOKING_SESSIONS } from "../dashboard/booking-policy";
+import { projectNotesInput } from "./project-notes.input";
 
 export function manualProjectInput(value: unknown) {
   const input = objectInput(value);
-  const allowed = ["requestId", "clientId", "offerId", "offerRevision", "areaSquareMeters", "basePriceMinor", "quantities", "positions", "discount", "address", "notes", "sessions", "confirmUnderplanned", "confirmOverplanned", "confirmUnderstaffing"];
+  const allowed = ["requestId", "clientId", "offerId", "offerRevision", "areaSquareMeters", "basePriceMinor", "quantities", "positions", "discount", "address", "notes", "sessions", "confirmUnderplanned", "confirmOverplanned", "confirmUnderstaffing", "noteItems", "photos"];
   if (Object.keys(input).some(key => !allowed.includes(key))) throw new BadRequestException("Nieznane pole zlecenia wielosesyjnego.");
   const uuid = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
   if (!uuid(input.requestId) || !uuid(input.clientId) || !uuid(input.offerId)) throw new BadRequestException("Wybierz klienta i usługę oraz poprawny identyfikator formularza.");
@@ -25,5 +26,6 @@ export function manualProjectInput(value: unknown) {
   return { requestId: input.requestId.toLowerCase(), clientId: input.clientId.toLowerCase(), offerId: input.offerId.toLowerCase(), offerRevision: revisionInput(input.offerRevision), areaSquareMeters: input.areaSquareMeters as number,
     ...(input.basePriceMinor === undefined ? {} : { basePriceMinor: input.basePriceMinor as number }), quantities: quantities as Record<string, number>, positions, discount: discount as ManualDiscount,
     address: textInput(input.address, "adres", 420, true), notes: notes.trim(), sessions: input.sessions,
-    confirmUnderplanned: input.confirmUnderplanned === true, confirmOverplanned: input.confirmOverplanned === true, confirmUnderstaffing: input.confirmUnderstaffing === true };
+    confirmUnderplanned: input.confirmUnderplanned === true, confirmOverplanned: input.confirmOverplanned === true, confirmUnderstaffing: input.confirmUnderstaffing === true,
+    ...(input.noteItems === undefined && input.photos === undefined ? {} : projectNotesInput(input.noteItems ?? [], input.photos ?? [])) };
 }
