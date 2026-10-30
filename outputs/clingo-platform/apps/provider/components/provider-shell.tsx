@@ -85,7 +85,7 @@ export function ProviderSidebar({ active }: { active?: ProviderNavLabel }) {
         </div>
         <div className="provider-copy">
           <strong>{name}</strong>
-          <span>{context?.user.email}</span>
+          <ProviderSidebarRating />
         </div>
       </div>
 
@@ -102,6 +102,19 @@ export function ProviderSidebar({ active }: { active?: ProviderNavLabel }) {
       {helpOpen && <ProviderModal titleId="sidebar-help-title" onClose={() => setHelpOpen(false)}><h2 id="sidebar-help-title">Pomoc w panelu</h2><p>Wybierz sekcję z menu, aby zarządzać swoją działalnością. Dane konta i preferencje zmienisz w ustawieniach.</p><Link href="/settings" onClick={() => setHelpOpen(false)}>Przejdź do ustawień</Link></ProviderModal>}
     </aside>
   );
+}
+
+function ProviderSidebarRating() {
+  const resource = useSettingsResource<{ average: number | null; count: number }>("reviews/summary");
+  const count = resource.data?.count ?? 0;
+  const plural = new Intl.PluralRules("pl").select(count);
+  const countLabel = `${count} ${plural === "one" ? "ocena" : plural === "few" ? "oceny" : "ocen"}`;
+  const average = resource.data?.average;
+  const label = resource.loading ? "Wczytywanie ocen firmy" : resource.error ? "Ocena firmy niedostępna. Przejdź do opinii" : average == null ? "Brak ocen firmy. Przejdź do opinii" : `Opinie firmy: średnia ${average.toFixed(1)} na 5, ${countLabel}`;
+  return <Link className="rating provider-sidebar-rating" href="/reviews" aria-label={label} data-figma-node="2886:3827">
+    <span className="rating-icon" aria-hidden="true"><img src={sidebarAsset("rating-star.svg")} alt="" /></span>
+    {resource.loading || resource.error ? <span className="rating-state">{resource.loading ? "Wczytywanie ocen…" : "Ocena niedostępna"}</span> : <><b>{average == null ? "—" : average.toFixed(1)}</b><span>({countLabel})</span></>}
+  </Link>;
 }
 function HeaderIcon({ file, label, badge, href, active = false }: { file: string; label: string; badge?: string; href?: string; active?: boolean }) {
   const icon = (

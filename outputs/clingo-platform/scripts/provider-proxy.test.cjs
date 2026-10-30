@@ -22,6 +22,7 @@ test('proxy requires provider cookie and denies arbitrary upstream routes', asyn
   assert.equal((await call('services')).status, 401);
   assert.equal((await call('jobs')).status, 401);
   assert.equal((await call('multi-orders')).status, 401);
+  assert.equal((await call('reviews/summary')).status, 401);
   assert.equal((await call('settings/location')).status, 401);
   assert.equal((await call('services', 'DELETE', { token: 'session' })).status, 404);
 });
@@ -43,6 +44,21 @@ test('staffing and absence mutations require the provider cookie and same origin
     assert.equal((await call(path,method,{token:'provider'})).status,200);
     if(method!=='GET')assert.equal((await call(path,method,{token:'provider',headers:{origin:'https://foreign.test'}})).status,403);
   }
+});
+
+test('own multi-session project writes and availability are authenticated and scoped to allowed routes', async t => {
+  let observed;
+  t.mock.method(global, 'fetch', async (url, init) => { observed = {url, init}; return Response.json({id:'project'}); });
+  for (const path of ['multi-orders','multi-orders/availability']) {
+    assert.equal((await call(path,'POST')).status,401);
+    assert.equal((await call(path,'POST',{token:'provider',headers:{origin:'https://foreign.test'}})).status,403);
+    assert.equal((await call(path,'POST',{token:'provider'})).status,200);
+    assert.ok(observed.url.endsWith(`/provider/${path}`)); assert.equal(observed.init.headers.Authorization,'Bearer provider');
+  }
+  assert.equal((await call('multi-orders','PUT',{token:'provider'})).status,404);
+  assert.equal((await call('multi-orders/availability','GET',{token:'provider'})).status,404);
+  assert.equal((await call('multi-orders','POST',{token:'provider',body:JSON.stringify({sessions:'x'.repeat(17000)})})).status,200);
+  assert.equal((await call('multi-orders','POST',{token:'provider',body:JSON.stringify({sessions:'x'.repeat(512*1024)})})).status,413);
 });
 
 test('client proxy permits authenticated reads and edits but rejects unsupported operations', async t => {

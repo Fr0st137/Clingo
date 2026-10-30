@@ -1,0 +1,336 @@
+{
+  "status": "PASS",
+  "checks": [
+    "real configured addon picker, quantities, save/cancel",
+    "Figma asset dimensions and modal geometry",
+    "draft survives refresh",
+    "session-specific qualified available crews",
+    "workload and price with additions/custom positions/discount",
+    "atomic project and calendar sessions",
+    "same-request retries do not duplicate",
+    "stale offer conflict and UI refresh",
+    "foreign ownership and role isolation",
+    "invalid input, shortage and occupied crew rejection",
+    "concurrent plans reserve capacity once",
+    "desktop/mobile and no JavaScript errors"
+  ],
+  "pickerAssets": [
+    {
+      "src": "/figma-assets/services/config/addon-15.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/orders/addons/increase.svg",
+      "width": 30,
+      "height": 17,
+      "cssWidth": "30px",
+      "cssHeight": "17px",
+      "naturalWidth": 30,
+      "naturalHeight": 17
+    },
+    {
+      "src": "/figma-assets/orders/addons/selected.svg",
+      "width": 13.96875,
+      "height": 10.078125,
+      "cssWidth": "13.9688px",
+      "cssHeight": "10.0781px",
+      "naturalWidth": 14,
+      "naturalHeight": 10
+    },
+    {
+      "src": "/figma-assets/services/config/addon-04.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-18.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-07.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/orders/addons/increase.svg",
+      "width": 30,
+      "height": 17,
+      "cssWidth": "30px",
+      "cssHeight": "17px",
+      "naturalWidth": 30,
+      "naturalHeight": 17
+    },
+    {
+      "src": "/figma-assets/orders/addons/selected.svg",
+      "width": 13.96875,
+      "height": 10.078125,
+      "cssWidth": "13.9688px",
+      "cssHeight": "10.0781px",
+      "naturalWidth": 14,
+      "naturalHeight": 10
+    },
+    {
+      "src": "/figma-assets/services/config/addon-12.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-05.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-09.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-10.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-01.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    },
+    {
+      "src": "/figma-assets/services/config/addon-16.png",
+      "width": 40,
+      "height": 40,
+      "cssWidth": "40px",
+      "cssHeight": "40px",
+      "naturalWidth": 540,
+      "naturalHeight": 540
+    }
+  ],
+  "plannerAssets": [
+    {
+      "src": "/figma-assets/analytics/angle.svg",
+      "width": 15,
+      "height": 16,
+      "cssWidth": "16px",
+      "cssHeight": "15px",
+      "naturalWidth": 16,
+      "naturalHeight": 15
+    },
+    {
+      "src": "/figma-assets/orders/details/cancel.svg",
+      "width": 13.984375,
+      "height": 13.984375,
+      "cssWidth": "13.9844px",
+      "cssHeight": "13.9844px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/save.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/clients/chat-design.svg",
+      "width": 20,
+      "height": 21,
+      "cssWidth": "20px",
+      "cssHeight": "21px",
+      "naturalWidth": 20,
+      "naturalHeight": 21
+    },
+    {
+      "src": "/figma-assets/orders/planner/area.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/details/map.svg",
+      "width": 13.984375,
+      "height": 13.984375,
+      "cssWidth": "13.9844px",
+      "cssHeight": "13.9844px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/details/maps.png",
+      "width": 17,
+      "height": 17,
+      "cssWidth": "17px",
+      "cssHeight": "17px",
+      "naturalWidth": 512,
+      "naturalHeight": 512
+    },
+    {
+      "src": "/figma-assets/orders/single/minus.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/single/discount-plus.svg",
+      "width": 19.7989501953125,
+      "height": 19.7989501953125,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/work.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/services/editor/info-addons.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/crew.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/clients/empty-orders-design.png",
+      "width": 70,
+      "height": 60,
+      "cssWidth": "70px",
+      "cssHeight": "60px",
+      "naturalWidth": 188,
+      "naturalHeight": 160
+    },
+    {
+      "src": "/figma-assets/orders/planner/expand.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/comments.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/notes.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/previous-week.svg",
+      "width": 16,
+      "height": 18,
+      "cssWidth": "18px",
+      "cssHeight": "16px",
+      "naturalWidth": 18,
+      "naturalHeight": 16
+    },
+    {
+      "src": "/figma-assets/calendar/angle.svg",
+      "width": 16,
+      "height": 18,
+      "cssWidth": "18px",
+      "cssHeight": "16px",
+      "naturalWidth": 18,
+      "naturalHeight": 16
+    },
+    {
+      "src": "/figma-assets/orders/planner/sessions.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/history.svg",
+      "width": 14,
+      "height": 14,
+      "cssWidth": "14px",
+      "cssHeight": "14px",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/planner/add-session.svg",
+      "width": 16,
+      "height": 16,
+      "cssWidth": "16px",
+      "cssHeight": "16px",
+      "naturalWidth": 16,
+      "naturalHeight": 16
+    }
+  ]
+}

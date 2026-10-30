@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { DataSource, EntityManager } from "typeorm";
-import { randomUUID } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { AuthService, objectInput } from "../auth/auth.service";
 import { OrderEntity } from "../dashboard/order.entity";
 import { ProviderProfileEntity } from "../dashboard/provider-profile.entity";
@@ -15,6 +15,10 @@ import { ProviderMultiOrderEntity } from "./provider-multi-orders.entity";
 import { allocateProjectPrice, projectInterval, sameSession, validateProjectPlan, type ProjectSession } from "./project-plan";
 import { historicalEstimate, projectBalance, type ProjectEdit, type ProjectEstimate } from "./project-work";
 import { projectCompletion, projectCompletionInput } from "./project-completion";
+import { manualProjectInput } from "./manual-project.input";
+import { manualProjectPricing } from "./manual-project-pricing";
+import { staffingLimit } from "./provider-staffing";
+import { defaultOfferConfiguration } from "./provider-offers.input";
 
 type Source = "booking" | "manual";
 type Project = { source: Source; id: string; accountId: string; revision: number; clientName: string; title: string; status: string; priceMinor: number; estimate: ProjectEstimate; sessions: ProjectSession[]; profile: ProviderProfileEntity; publicOrder?: OrderEntity; manualOrder?: ProviderMultiOrderEntity; jobs?: ProviderJobEntity[]; history: ProjectEdit[] };
@@ -31,6 +35,55 @@ export class ProviderProjectsService {
     const membership=await this.db.manager.findOneBy(ProviderMembershipEntity,{userId:user.id});
     if(!membership || !["owner","admin"].includes(membership.role))throw new ForbiddenException("Brak uprawnień do edycji projektów.");
     return {accountId:membership.accountId,actor:user.email};
+  }
+  private manualProfile(accountId: string, offer: ProviderOfferEntity) {
+    const config = Object.keys(offer.configuration ?? {}).length ? offer.configuration : defaultOfferConfiguration();
+    return { id: `service-${offer.id}`, accountId, bookingSettings: { ...defaultWorkingHours, bufferMinutes: config.bufferEnabled ? config.bufferMinutes : 0 } } as ProviderProfileEntity;
+  }
+  async manualAvailability(authorization: string | undefined, value: unknown) {
+    const { accountId } = await this.member(authorization), input = objectInput(value);
+    if (Object.keys(input).some(key => !["offerId", "date", "startMinute", "endMinute"].includes(key)) || typeof input.offerId !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(input.offerId)) throw new BadRequestException("Wybierz usługę i poprawny termin sesji.");
+    const offer = await this.db.manager.findOneBy(ProviderOfferEntity, { id: input.offerId, accountId });
+    if (!offer || offer.status === "archived") throw new BadRequestException("Usługa nie jest dostępna w Twojej działalności.");
+    const interval = projectInterval(input), profile = this.manualProfile(accountId, offer), staff = await loadStaffing(this.db.manager, profile);
+    return { available: staff ? freeEmployees(staff, interval.startsAt, interval.endsAt, profile.bookingSettings!.bufferMinutes) : [] };
+  }
+  async createManual(authorization: string | undefined, value: unknown) {
+    const { accountId, actor } = await this.member(authorization), input = manualProjectInput(value);
+    const digest = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+    return this.db.transaction(async manager => {
+      const account = await manager.findOne(ProviderAccountEntity, { where: { id: accountId }, lock: { mode: "pessimistic_write" } });
+      if (!account) throw new NotFoundException("Nie znaleziono działalności.");
+      const existing = await manager.findOneBy(ProviderMultiOrderEntity, { id: input.requestId });
+      if (existing) {
+        if (existing.accountId !== accountId || existing.projectData?.creation?.digest !== digest) throw new ConflictException("Ten formularz został już zapisany. Otwórz zapisany projekt lub rozpocznij nowe zlecenie.");
+        return this.view(await this.load(manager, accountId, "manual", existing.id));
+      }
+      const client = await manager.findOneBy(ProviderClientEntity, { id: input.clientId, accountId });
+      const offer = await manager.findOneBy(ProviderOfferEntity, { id: input.offerId, accountId });
+      if (!client || !offer || offer.status === "archived") throw new BadRequestException("Wybierz klienta i aktywną usługę ze swojej działalności.");
+      if (offer.revision !== input.offerRevision) throw new ConflictException("Konfiguracja usługi zmieniła się. Wczytaj aktualne usługi i sprawdź wycenę oraz bilans pracy.");
+      let quote: ReturnType<typeof manualProjectPricing>;
+      try { quote = manualProjectPricing(Object.keys(offer.configuration ?? {}).length ? offer.configuration : defaultOfferConfiguration(), input); } catch (error) { throw new BadRequestException((error as Error).message); }
+      const estimate = quote.estimate, profile = this.manualProfile(accountId, offer), staff = await loadStaffing(manager, profile);
+      if (!staff) throw new BadRequestException("Dodaj pracowników i ich grafiki przed utworzeniem zlecenia.");
+      const result = validateProjectPlan({ sessions: input.sessions, confirmUnderplanned: input.confirmUnderplanned, confirmOverplanned: input.confirmOverplanned }, [], estimate, staff, profile.bookingSettings!.bufferMinutes);
+      if (result.sessions.some(row => (+row.endsAt - +row.startsAt) / 60000 < 15)) throw new BadRequestException("Każda nowa sesja musi trwać co najmniej 15 minut.");
+      if (result.sessions.some(row => row.workers > staffingLimit(account, staff.employees.length))) throw new BadRequestException("Obsada sesji przekracza zadeklarowaną wielkość zespołu.");
+      const understaffed = result.sessions.some(row => row.workers < estimate.estimatedWorkers);
+      if (understaffed && !input.confirmUnderstaffing) throw new BadRequestException(`Usługa jest przewidziana na ${estimate.estimatedWorkers} osób. Potwierdź realizację z mniejszą obsadą.`);
+      const sessions = allocateProjectPrice(quote.total, result.sessions, []);
+      const history: ProjectEdit[] = [{ at: new Date().toISOString(), actor, added: sessions.map(row => row.id), removed: [], changed: [], areaChanged: false,
+        confirmedShortage: input.confirmUnderplanned, confirmedExcess: input.confirmOverplanned, confirmedUnderstaffing: understaffed && input.confirmUnderstaffing }];
+      const order = manager.create(ProviderMultiOrderEntity, { id: input.requestId, accountId, clientId: client.id, offerId: offer.id, clientName: client.name, serviceTitle: offer.title, serviceDetail: "Zlecenie własne",
+        startDate: localDate(sessions[0].startsAt), endDate: localDate(sessions[sessions.length - 1].startsAt), areaSquareMeters: input.areaSquareMeters, addOnCount: quote.extras.reduce((sum, row) => sum + row.quantity, 0) + quote.positions.length, totalPriceMinor: quote.total, external: true, status: "pending", notes: input.notes, revision: 1,
+        sessions: sessions.map(row => ({ id: row.id, date: localDate(row.startsAt), startMinute: minute(row.startsAt), durationMinutes: (+row.endsAt - +row.startsAt) / 60000, employeeId: row.employees[0].id, employees: row.employees })),
+        projectData: { estimate, history, creation: { digest, address: input.address, clientPhone: client.phone, clientEmail: client.email, quote } } });
+      await manager.save(ProviderMultiOrderEntity, order);
+      const project: Project = { source: "manual", id: order.id, accountId, revision: 1, clientName: client.name, title: offer.title, status: "pending", priceMinor: quote.total, estimate, sessions: [], profile, manualOrder: order, jobs: [], history };
+      await this.persist(manager, project, sessions, estimate, history, true);
+      return this.view(await this.load(manager, accountId, "manual", order.id));
+    });
   }
   private async load(manager: EntityManager, accountId: string, source: string, id: string, lock=false): Promise<Project> {
     if(source!=="booking" && source!=="manual")throw new NotFoundException("Nie znaleziono projektu.");
@@ -54,8 +107,7 @@ export class ProviderProjectsService {
     const offer=await manager.findOneBy(ProviderOfferEntity,{id:order.offerId,accountId});
     if(!offer)throw new BadRequestException("Usługa projektu nie jest już dostępna.");
     const jobs=await manager.find(ProviderJobEntity,{where:{accountId,multiOrderId:id},order:{date:"ASC",startMinute:"ASC",id:"ASC"}});
-    const config=offer.configuration;
-    const profile={id:`service-${offer.id}`,accountId,bookingSettings:{...defaultWorkingHours,bufferMinutes:config?.bufferEnabled?config.bufferMinutes:0}} as ProviderProfileEntity;
+    const profile=this.manualProfile(accountId,offer);
     const initial=order.sessions.map((session,index)=>{const startsAt=warsawDate(session.date,`${String(Math.floor(session.startMinute/60)).padStart(2,"0")}:${String(session.startMinute%60).padStart(2,"0")}`);return{id:session.id??`manual:${id}:${index+1}`,startsAt,endsAt:new Date(+startsAt+session.durationMinutes*60000),employees:session.employees??(session.employeeId?[{id:session.employeeId,name:""}]:[]),workers:session.employees?.length||1,priceMinor:Math.floor(order.totalPriceMinor/order.sessions.length)+(index<order.totalPriceMinor%order.sessions.length?1:0)};});
     const sessions:ProjectSession[]=["accepted","completed"].includes(order.status)?jobs.filter(job=>job.status!=="cancelled"||order.projectData?.completion?.releasedSessionIds.includes(job.projectSessionId??job.id)).map(job=>{const startsAt=warsawDate(job.date,`${String(Math.floor(job.startMinute/60)).padStart(2,"0")}:${String(job.startMinute%60).padStart(2,"0")}`);return{id:job.projectSessionId??job.id,startsAt,endsAt:new Date(+startsAt+job.durationMinutes*60000),employees:job.employees??(job.employeeId?[{id:job.employeeId,name:job.employeeName}]:[]),workers:job.employees?.length||1,priceMinor:job.priceMinor};}):initial;
     const estimate=order.projectData?.estimate??historicalEstimate(order.areaSquareMeters||null,initial.reduce((sum,row)=>sum+(+row.endsAt-+row.startsAt)/60000*row.workers,0),initial[0]?.workers||1);
@@ -66,6 +118,7 @@ export class ProviderProjectsService {
     const sessions=project.sessions.map(row=>({id:row.id,date:localDate(row.startsAt),startMinute:minute(row.startsAt),endMinute:endMinute(row),durationMinutes:(+row.endsAt-+row.startsAt)/60000,employeeIds:row.employees.map(employee=>employee.id),employees:row.employees,workers:row.workers,priceMinor:row.priceMinor,state:completion?.releasedSessionIds.includes(row.id)?"released":completion?"ended":project.status==="pending"?"future":+row.endsAt<=Date.now()?"ended":+row.startsAt<=Date.now()?"ongoing":"future"}));
     return{source:project.source,id:project.id,revision:project.revision,clientName:project.clientName,title:project.title,status:project.status,priceMinor:project.priceMinor,estimate:project.estimate,bufferMinutes:project.profile.bookingSettings?.bufferMinutes??0,
       balance:projectBalance(project.estimate.requiredWorkMinutes,sessions),sessions,completion,canComplete:["scheduled","accepted"].includes(project.status),canEdit:["scheduled","pending","accepted"].includes(project.status),history:project.history,
+      ...(project.manualOrder?.projectData?.creation?{pricing:project.manualOrder.projectData.creation.quote,address:project.manualOrder.projectData.creation.address}:{}),
       hasLongGap:sessions.some((row,index)=>index>0&&(Date.parse(row.date)-Date.parse(sessions[index-1].date))/86400000>3)};
   }
   async list(authorization?:string) {
@@ -87,7 +140,7 @@ export class ProviderProjectsService {
         order.selectedOptions.projectEstimate=project.estimate;order.selectedOptions.projectCompletion=completion;
         order.status="Wykonane zlecenie";order.revision++;await manager.save(OrderEntity,order);
       }else{
-        const order=project.manualOrder!;order.projectData={estimate:project.estimate,history:project.history,completion};order.status="completed";order.revision++;
+        const order=project.manualOrder!;order.projectData={...order.projectData,estimate:project.estimate,history:project.history,completion};order.status="completed";order.revision++;
         for(const job of project.jobs??[]){if(job.status!=="scheduled")continue;job.status=completion.releasedSessionIds.includes(job.projectSessionId??job.id)?"cancelled":"completed";job.revision++;await manager.save(ProviderJobEntity,job);}
         await manager.save(ProviderMultiOrderEntity,order);
       }
@@ -129,13 +182,13 @@ export class ProviderProjectsService {
         const previous=project.jobs?.find(job=>(job.projectSessionId??job.id)===row.id);
         const job=manager.create(ProviderJobEntity,{...(previous??{}),id:previous?.id??randomUUID(),accountId:project.accountId,multiOrderId:project.id,projectSessionId:row.id,clientId:order.clientId,offerId:order.offerId,date:localDate(row.startsAt),startMinute:minute(row.startsAt),durationMinutes:(+row.endsAt-+row.startsAt)/60000,
           employeeId:row.employees[0]?.id??null,employeeName:row.employees[0]?.name??"",employees:row.employees,priceMinor:row.priceMinor,status:previous?.status==="cancelled"?"scheduled":previous?.status??"scheduled",revision:previous?previous.revision+1:1,sessionIndex:index+1,sessionCount:sessions.length,
-          clientName:previous?.clientName??client.name,clientPhone:previous?.clientPhone??client.phone,clientEmail:previous?.clientEmail??client.email,address:previous?.address??[client.street,client.postalCode,client.city].filter(Boolean).join(", "),serviceTitle:previous?.serviceTitle??order.serviceTitle,notes:previous?.notes??order.notes});
+          clientName:previous?.clientName??order.clientName,clientPhone:previous?.clientPhone??order.projectData?.creation?.clientPhone??client.phone,clientEmail:previous?.clientEmail??order.projectData?.creation?.clientEmail??client.email,address:previous?.address??order.projectData?.creation?.address??[client.street,client.postalCode,client.city].filter(Boolean).join(", "),serviceTitle:previous?.serviceTitle??order.serviceTitle,notes:previous?.notes??order.notes});
         await manager.save(ProviderJobEntity,job);
       }
     }
     order.sessions=storedSessions;order.startDate=storedSessions[0].date;order.endDate=storedSessions[storedSessions.length-1].date;
     if(estimate.areaSquareMeters!==null)order.areaSquareMeters=estimate.areaSquareMeters;
-    order.projectData={estimate,history};if(accept){order.status="accepted";order.acceptedAt=new Date();}order.revision++;
+    order.projectData={...order.projectData,estimate,history};if(accept){order.status="accepted";order.acceptedAt=new Date();}order.revision++;
     await manager.save(ProviderMultiOrderEntity,order);
   }
   async save(authorization:string|undefined,source:string,id:string,value:unknown) {

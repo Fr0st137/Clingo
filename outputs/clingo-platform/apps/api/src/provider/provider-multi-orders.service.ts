@@ -26,6 +26,8 @@ export class ProviderMultiOrdersService {
     const accountId = await this.accountId(authorization);
     return (await this.multiOrders.find({ where: { accountId }, order: { startDate: "ASC", id: "ASC" } })).map(multiOrderView);
   }
+  async create(authorization: string | undefined, value: unknown) { return this.projects.createManual(authorization, value); }
+  async availability(authorization: string | undefined, value: unknown) { return this.projects.manualAvailability(authorization, value); }
 
   async action(authorization: string | undefined, id: string, value: unknown) {
     const accountId = await this.accountId(authorization);

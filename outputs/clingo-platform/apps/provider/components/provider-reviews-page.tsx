@@ -4,11 +4,13 @@ import { useMemo, useState } from "react";
 import { ProviderShell } from "./provider-shell";
 import { useSettingsResource } from "./provider-settings-state";
 import { ApiError, normalized, providerApi } from "../lib/provider-client";
+import { useProvider } from "./provider-session";
 
 const reviewAsset = (name: string) => `/figma-assets/reviews/${name}`;
 
 type ProviderReview = {
   id: string;
+  source: "customer" | "legacy";
   authorName: string;
   serviceTitle: string;
   rating: number;
@@ -17,6 +19,8 @@ type ProviderReview = {
   reported: boolean;
   revision: number;
   createdAt: string;
+  updatedAt: string;
+  images: Array<{id:string;label:string;url:string}>;
 };
 
 function ReviewStars({ rating, large = false }: { rating: number; large?: boolean }) {
@@ -32,7 +36,7 @@ function RatingsSummary({ reviews }: { reviews: ProviderReview[] }) {
     return { rating, count, percent: reviews.length ? count / reviews.length * 100 : 0 };
   });
   return <div className="reviews-summary">
-    <div className="reviews-score"><strong>{average.toFixed(1)}</strong><ReviewStars rating={average} large /><span>{reviews.length} {reviews.length === 1 ? "ocena" : "ocen"}</span></div>
+    <div className="reviews-score"><strong>{reviews.length?average.toFixed(1):"—"}</strong><ReviewStars rating={average} large /><span>{reviews.length} {new Intl.PluralRules("pl").select(reviews.length)==="one"?"ocena":new Intl.PluralRules("pl").select(reviews.length)==="few"?"oceny":"ocen"}</span></div>
     <div className="ratings-distribution">{rows.map(row => <div className="rating-row" key={row.rating}><span className="rating-label"><img src={reviewAsset("star-outline.svg")} alt="" />{row.rating}</span><span className="rating-track"><i style={{ width: `${row.percent}%` }} /></span><span className="rating-count">{row.count}</span></div>)}</div>
   </div>;
 }
@@ -47,6 +51,8 @@ function dateLabel(value: string) {
 }
 
 function Reviews() {
+  const context=useProvider();
+  const canReport=context?.account?.role==="owner"||context?.account?.role==="admin";
   const resource = useSettingsResource<ProviderReview[]>("reviews");
   const [query, setQuery] = useState("");
   const [dateRange, setDateRange] = useState("all");
@@ -69,10 +75,11 @@ function Reviews() {
 
   async function toggleReported(review: ProviderReview) {
     if (busyId) return;
-    setBusyId(review.id); setError("");
+    setBusyId(`${review.source}:${review.id}`); setError("");
     try {
-      const saved = await providerApi<ProviderReview>(`reviews/${review.id}/report`, "PUT", { reported: !review.reported, revision: review.revision });
-      resource.setData(previous => (previous ?? []).map(row => row.id === saved.id ? saved : row));
+      const saved = await providerApi<ProviderReview>(`reviews/${review.id}/report`, "PUT", { reported: !review.reported, revision: review.revision,source:review.source,...(review.source==="customer"?{updatedAt:review.updatedAt}:{}) });
+      resource.setData(previous => (previous ?? []).map(row => row.id === saved.id&&row.source===saved.source ? saved : row));
+      resource.reload();window.dispatchEvent(new Event("provider-reviews-changed"));
     } catch (caught) {
       setError((caught as Error).message);
       if (caught instanceof ApiError && caught.status === 409) resource.reload();
@@ -99,11 +106,12 @@ function Reviews() {
 
       {error && <div className="provider-feedback is-error reviews-feedback" role="alert">{error}<button type="button" className="settings-button" onClick={resource.reload}>Odśwież</button></div>}
       <div className="reviews-list" aria-live="polite">
-        {filtered.map(review => <article className={`review-card${review.reported ? " is-reported" : ""}`} key={review.id}>
+        {filtered.map(review => <article className={`review-card${review.reported ? " is-reported" : ""}`} key={`${review.source}:${review.id}`}>
           <img className="review-avatar" src={reviewAsset("reviewer-avatar.png")} alt="" />
           <div className="review-card-body">
-            <div className="review-card-header"><div><strong>{review.authorName}</strong><span className="review-meta"><ReviewStars rating={review.rating} /><small>{dateLabel(review.createdAt)}</small><small className="review-service">{review.serviceTitle}</small></span></div><span className="review-actions"><span><img src={reviewAsset("heart.svg")} alt="" />{review.helpfulCount}<span className="sr-only"> polubień</span></span><button type="button" aria-label={review.reported ? `Cofnij zgłoszenie opinii ${review.authorName}` : `Zgłoś opinię ${review.authorName}`} aria-pressed={review.reported} disabled={busyId === review.id} onClick={() => toggleReported(review)}><img src={reviewAsset("flag.svg")} alt="" /></button></span></div>
+            <div className="review-card-header"><div><strong>{review.authorName}</strong><span className="review-meta"><ReviewStars rating={review.rating} /><small>{dateLabel(review.updatedAt)}</small><small className="review-service">{review.serviceTitle}</small></span></div><span className="review-actions"><span><img src={reviewAsset("heart.svg")} alt="" />{review.helpfulCount}<span className="sr-only"> polubień</span></span><button type="button" aria-label={review.reported ? `Cofnij zgłoszenie opinii ${review.authorName}` : `Zgłoś opinię ${review.authorName}`} aria-pressed={review.reported} disabled={!canReport||!!busyId} onClick={() => toggleReported(review)}><img src={reviewAsset("flag.svg")} alt="" /></button></span></div>
             <p>{review.content}</p>
+            {!!review.images.length&&<div className="provider-review-images">{review.images.map(image=><a key={image.id} href={image.url} target="_blank" rel="noreferrer" aria-label={`Otwórz: ${image.label}`}><img src={image.url} alt={image.label} loading="lazy"/></a>)}</div>}
             {review.reported && <span className="review-reported-label">Opinia zgłoszona do moderacji</span>}
           </div>
         </article>)}

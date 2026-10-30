@@ -1,0 +1,5 @@
+PASS: authenticated settings, persisted profile/preferences, validation and account isolation.
+PASS: scrypt hashing, salt rotation, old-password rejection, whitespace preservation, session revocation/logout and legacy upgrade.
+PASS: persistent account-scoped favorites, concurrent deduplication, removal and invalid provider rejection.
+PASS: verified-order reviews, ownership, validation, concurrent uniqueness, public display, safe photo storage/removal and deletion.
+PASS: database-backed rate limit. All account integration checks passed.

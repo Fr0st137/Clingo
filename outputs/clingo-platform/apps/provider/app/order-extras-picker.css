@@ -1,0 +1,32 @@
+.provider-modal.order-extras-picker{width:735px;color:var(--ink);font:14px "Inter Services",Inter,sans-serif}
+.order-extras-picker>.provider-modal-body{display:flex;flex-direction:column;gap:30px;padding:30px;border-radius:25px}
+.order-extras-picker h2{margin:0;font-size:24px;font-weight:600;line-height:29px}
+.order-extras-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 25px;width:100%}
+.order-extra-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;height:155px;padding:15px 13px;border-radius:30px;background:#f4f6f9;box-shadow:inset 0 0 0 .5px #d9d9d9,0 2px 3px #0000000a}
+.order-extra-tile.is-selected{background:#dee4ea;box-shadow:inset 0 0 0 1px #c2c9d5,0 2px 3px #0000000a}
+.order-extra-picture{display:flex;align-items:center;justify-content:center;flex:0 0 50px;width:50px;height:50px;padding:5px;filter:drop-shadow(-1px 2px 2px #00000026)}
+.order-extra-picture img{display:block;object-fit:cover}
+.order-extra-picture>span{font-size:24px;color:#7c8691}
+.order-extra-tile h3{display:flex;align-items:center;justify-content:center;flex:0 0 36px;width:124px;max-width:calc(100% + 2px);height:36px;margin:0;padding:2px 0;font-size:14px;font-weight:400;line-height:17px;text-align:center;overflow:hidden;overflow-wrap:anywhere}
+.order-extras-picker .order-extra-select,.order-extra-quantity{display:flex;align-items:center;justify-content:center;flex:0 0 29px;width:124px;height:29px;padding:6px 0;border:0;border-radius:30px;background:var(--blue);color:white;font:inherit;font-weight:500;line-height:17px}
+.order-extra-quantity{gap:5px;max-width:calc(100% + 2px);padding:6px 2px}
+.order-extra-quantity.has-large-quantity{gap:3px}
+.order-extra-quantity output{min-width:9px;font:inherit;text-align:center}
+.order-extra-quantity>span{font-size:14px;white-space:nowrap}
+.order-extras-picker .order-extra-quantity button{display:flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:17px;padding:0;border:0;background:transparent;color:white;cursor:pointer}
+.order-extra-quantity button img{display:block;flex-shrink:0}
+.order-extra-quantity .order-extra-decrease span{display:block;width:9px;height:1px;border-radius:5px;background:white}
+.order-extra-quantity button:disabled{opacity:.5;cursor:not-allowed}
+.order-extra-check{position:absolute;top:19px;right:21px;display:flex;align-items:center;justify-content:center;width:14px;height:14px}
+.order-extra-check img{display:block;flex:none}
+.order-extras-picker-actions{display:flex;gap:15px;padding-top:10px}
+.order-extras-picker .order-extras-picker-actions button{display:flex;flex:1;align-items:center;justify-content:center;min-width:0;height:48px;padding:0 15px;border:1px solid #e5e7eb;border-radius:30px;background:white;color:var(--ink);font:inherit;font-weight:600;line-height:46px;cursor:pointer}
+.order-extras-picker .order-extras-picker-actions .is-primary{background:var(--blue);border-color:#e6edf3;color:white}
+.order-extras-picker button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.order-extras-picker>.provider-modal-close{background:#2e3b4cb3}
+.order-extras-picker>.provider-modal-close img{display:none}
+.order-extras-picker>.provider-modal-close::before,.order-extras-picker>.provider-modal-close::after{content:"";position:absolute;top:16.5px;left:10.5px;width:14px;height:1.75px;border-radius:30px;background:white;transform:rotate(45deg)}
+.order-extras-picker>.provider-modal-close::after{transform:rotate(-45deg)}
+.order-extras-empty-message{margin:0;line-height:1.5}
+@media(max-width:780px){.provider-modal.order-extras-picker{max-width:calc(100vw - 32px)}.order-extras-picker>.provider-modal-body{padding:25px 20px}.order-extras-picker h2{padding-right:25px;font-size:21px;line-height:27px}.order-extras-picker>.provider-modal-close{left:auto;right:10px;top:10px}.order-extras-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 15px}}
+@media(max-width:560px){.order-extras-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 10px}.order-extra-tile{padding-left:10px;padding-right:10px}.order-extra-quantity>span{font-size:12px}.order-extras-picker .order-extra-quantity button{flex-basis:26px;width:26px}.order-extra-tile h3{font-size:13px}}

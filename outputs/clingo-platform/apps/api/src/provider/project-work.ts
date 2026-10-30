@@ -7,7 +7,7 @@ export type ProjectEstimate = {
   estimatedWorkers: number;
 };
 export type ProjectBalance = { requiredMinutes: number; plannedMinutes: number; remainingMinutes: number; excessMinutes: number; percentage: number; state: "shortage" | "excess" | "balanced" };
-export type ProjectEdit = { at: string; actor: string; added: string[]; removed: string[]; changed: string[]; areaChanged: boolean; confirmedShortage: boolean; confirmedExcess: boolean };
+export type ProjectEdit = { at: string; actor: string; added: string[]; removed: string[]; changed: string[]; areaChanged: boolean; confirmedShortage: boolean; confirmedExcess: boolean; confirmedUnderstaffing?: boolean };
 export function projectBalance(requiredMinutes: number, sessions: Array<{ durationMinutes: number; workers: number }>): ProjectBalance {
   const plannedMinutes = Math.round(sessions.reduce((sum, row) => sum + row.durationMinutes * row.workers, 0) * 10000) / 10000;
   const difference = Math.round((requiredMinutes - plannedMinutes) * 10000) / 10000;

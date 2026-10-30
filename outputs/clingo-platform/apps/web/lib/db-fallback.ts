@@ -4,6 +4,7 @@ import type { FavoriteProviderData } from "../components/favorite-provider-card"
 import type { OrderCardData } from "../components/order-card";
 import type { ProviderProfileData } from "../components/provider-profile-view";
 import type { ReviewCardData } from "../components/review-card";
+import { ACCOUNT_REVIEWS_SQL, PROFILE_REVIEWS_SQL, RATING_TOTALS_SQL, ratingFromTotals, ratingTotalsMap, withPublicReviews, type AccountReviewRow } from "../../api/src/dashboard/review-bridge";
 
 // Catalogue fallbacks must enforce the same roster limits as API reads.
 const staffingEligibilitySql = `(p.account_id IS NULL OR EXISTS (
@@ -304,6 +305,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
       client.query<Record<string, unknown>>(`select b.*, p.service, p.area_pricing, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id where p.published = true and ${staffingEligibilitySql} order by b."orderIndex" asc`)
     ]);
 
+    const ratings=ratingTotalsMap((await client.query<{id:string;count:string;sum:string;company:boolean}>(RATING_TOTALS_SQL,[listings.rows.map(row=>String(row.id))])).rows);
     return {
       filters: filters.rows.map((filter) => ({
         id: String(filter.id),
@@ -324,8 +326,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
         modeTone: listing.modeTone as "blue" | "gray",
         price: String(listing.price),
         provider: String(listing.provider),
-        rating: Number(listing.rating),
-        reviews: Number(listing.reviews)
+        ...ratingFromTotals({rating:Number(listing.rating),reviewsCount:Number(listing.reviews)},ratings.get(String(listing.id)))
       })),
       searchFields: searchFields.rows
     };
@@ -341,7 +342,7 @@ export async function getProviderProfileFromDb(id: string): Promise<ProviderProf
       throw new Error("Provider profile not found.");
     }
 
-    return {
+    const mapped = {
       areaPricing: asJson<ProviderProfileData["areaPricing"]>(profile.area_pricing as string | null),
       bookingSettings: asJson<ProviderProfileData["bookingSettings"]>(profile.booking_settings as string | null),
       completedOrders: Number(profile.completedOrders),
@@ -367,5 +368,7 @@ export async function getProviderProfileFromDb(id: string): Promise<ProviderProf
       tags: asJson<ProviderProfileData["tags"]>(profile.tags as string) ?? [],
       verified: Boolean(profile.verified)
     };
+    const rows=(await client.query<AccountReviewRow>(profile.account_id?ACCOUNT_REVIEWS_SQL:PROFILE_REVIEWS_SQL,[profile.account_id??id])).rows;
+    return withPublicReviews(mapped,rows,!!profile.account_id);
   });
 }

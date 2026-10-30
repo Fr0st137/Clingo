@@ -40,14 +40,14 @@ export function ReviewEditorModal({ mode, review }: { mode: "add" | "edit"; revi
     setSaving(true);
     try {
       await accountRequest(`reviews/${review.id}`, "PUT", { rating, content, images: photos.map(photo => photo.dataUrl ? { dataUrl: photo.dataUrl } : { id: photo.id }) });
-      router.push("/opinie"); router.refresh();
+      window.location.assign("/opinie");
     } catch (error) { setStatus(error instanceof Error ? error.message : "Nie udało się zapisać opinii."); }
     finally { setSaving(false); }
   }
   async function remove() {
     if (!confirmDelete) { setConfirmDelete(true); return; }
     setSaving(true); setStatus("");
-    try { await accountRequest(`reviews/${review.id}`, "DELETE"); router.push("/opinie"); router.refresh(); }
+    try { await accountRequest(`reviews/${review.id}`, "DELETE"); window.location.assign("/opinie"); }
     catch (error) { setStatus(error instanceof Error ? error.message : "Nie udało się usunąć opinii."); }
     finally { setSaving(false); }
   }

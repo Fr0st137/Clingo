@@ -1,0 +1,54 @@
+{
+  "images": [
+    {
+      "src": "/figma-assets/orders/single/add.svg",
+      "width": 14,
+      "height": 14,
+      "transform": "none",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/single/empty-services.png",
+      "width": 100,
+      "height": 85,
+      "transform": "none",
+      "naturalWidth": 188,
+      "naturalHeight": 160
+    },
+    {
+      "src": "/figma-assets/orders/single/trash.svg",
+      "width": 14,
+      "height": 14,
+      "transform": "none",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    },
+    {
+      "src": "/figma-assets/orders/single/add-position.svg",
+      "width": 19.7989501953125,
+      "height": 19.798980712890625,
+      "transform": "matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0)",
+      "naturalWidth": 14,
+      "naturalHeight": 14
+    }
+  ],
+  "fields": [
+    {
+      "width": 320,
+      "height": 39
+    },
+    {
+      "width": 70,
+      "height": 39
+    },
+    {
+      "width": 70,
+      "height": 39
+    },
+    {
+      "width": 50,
+      "height": 39
+    }
+  ]
+}

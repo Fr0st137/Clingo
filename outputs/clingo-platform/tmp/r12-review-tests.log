@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: review image proxy requires its own provider session and canonical IDs
+ok 1 - review image proxy requires its own provider session and canonical IDs
+  ---
+  duration_ms: 4.2337
+  type: 'test'
+  ...
+# Subtest: review image proxy forwards provider authentication and streams private image bytes
+ok 2 - review image proxy forwards provider authentication and streams private image bytes
+  ---
+  duration_ms: 3.2319
+  type: 'test'
+  ...
+# Subtest: review image proxy preserves access failures and reports an unavailable API
+ok 3 - review image proxy preserves access failures and reports an unavailable API
+  ---
+  duration_ms: 1.2176
+  type: 'test'
+  ...
+# Subtest: review reports accept only a boolean and a positive revision
+ok 4 - review reports accept only a boolean and a positive revision
+  ---
+  duration_ms: 1.3333
+  type: 'test'
+  ...
+# Subtest: reviews are private to one provider account
+ok 5 - reviews are private to one provider account
+  ---
+  duration_ms: 1.2838
+  type: 'test'
+  ...
+# Subtest: owners and admins can report a review with optimistic locking
+ok 6 - owners and admins can report a review with optimistic locking
+  ---
+  duration_ms: 0.7046
+  type: 'test'
+  ...
+# Subtest: rating summary uses only the signed-in company and handles no reviews
+ok 7 - rating summary uses only the signed-in company and handles no reviews
+  ---
+  duration_ms: 0.3301
+  type: 'test'
+  ...
+# Subtest: live customer reviews join legacy reviews without duplication and keep report permissions/revisions
+ok 8 - live customer reviews join legacy reviews without duplication and keep report permissions/revisions
+  ---
+  duration_ms: 1.1809
+  type: 'test'
+  ...
+# Subtest: linked company ratings use shared real votes without adding catalogue seed counts
+ok 9 - linked company ratings use shared real votes without adding catalogue seed counts
+  ---
+  duration_ms: 15.0162
+  type: 'test'
+  ...
+# Subtest: public and provider views share content but separate photos and private reporting metadata
+ok 10 - public and provider views share content but separate photos and private reporting metadata
+  ---
+  duration_ms: 0.4906
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2022.9843

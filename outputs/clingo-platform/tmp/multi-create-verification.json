@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "geometry": {
+    "modal": {
+      "width": 600,
+      "height": 770,
+      "x": 660,
+      "y": 73
+    },
+    "images": [
+      {
+        "src": "/figma-assets/orders/multi-create/client.svg",
+        "width": 20,
+        "height": 23,
+        "naturalWidth": 20,
+        "naturalHeight": 23
+      },
+      {
+        "src": "/figma-assets/orders/multi-create/next.svg",
+        "width": 8.75,
+        "height": 14,
+        "naturalWidth": 9,
+        "naturalHeight": 14
+      },
+      {
+        "src": "/figma-assets/orders/multi-create/area.svg",
+        "width": 14,
+        "height": 14,
+        "naturalWidth": 14,
+        "naturalHeight": 14
+      },
+      {
+        "src": "/figma-assets/orders/multi-create/next.svg",
+        "width": 8.75,
+        "height": 14,
+        "naturalWidth": 9,
+        "naturalHeight": 14
+      },
+      {
+        "src": "/figma-assets/orders/multi-create/location.png",
+        "width": 17,
+        "height": 17,
+        "naturalWidth": 512,
+        "naturalHeight": 512
+      }
+    ]
+  },
+  "browserErrors": [],
+  "checks": [
+    "open from order-type menu",
+    "real client/offer options",
+    "archived offer excluded",
+    "required fields",
+    "client address/autofill and custom address",
+    "fractional area",
+    "tabs retain draft and extra quantities",
+    "discard confirmation/Escape",
+    "desktop/mobile geometry",
+    "no project created by first step"
+  ]
+}

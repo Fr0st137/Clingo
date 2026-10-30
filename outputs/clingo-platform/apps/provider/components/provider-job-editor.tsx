@@ -10,11 +10,13 @@ import { ProviderBookingDetails } from "./provider-booking-details";
 import { ProviderOrderDetails } from "./provider-order-details";
 import { ProviderOrderTypeDialog } from "./provider-order-type-dialog";
 import { ProviderSingleOrderEditor } from "./provider-single-order-editor";
+import { ProviderMultiOrderEditor } from "./provider-multi-order-editor";
 type Client = { id: string; name: string };
 export function ProviderJobEditor({ job, date, clientId, onClose, onSaved, onReloaded }: { job?: Job; date: string; clientId?: string; onClose: () => void; onSaved: (job: Job) => void; onReloaded: (job: Job) => void }) {
   const [editingJob, setEditingJob] = useState<Job | null>(null);
-  const [singleOrder, setSingleOrder] = useState(false);
-  if (!job && !singleOrder) return <ProviderOrderTypeDialog onSingle={() => setSingleOrder(true)} onClose={onClose} />;
+  const [orderType, setOrderType] = useState<"single" | "multi" | null>(null);
+  if (!job && !orderType) return <ProviderOrderTypeDialog onSingle={() => setOrderType("single")} onMulti={() => setOrderType("multi")} onClose={onClose} />;
+  if (!job && orderType === "multi") return <ProviderMultiOrderEditor clientId={clientId} date={date} onClose={onClose} />;
   if (!job) return <ProviderSingleOrderEditor date={date} clientId={clientId} onClose={onClose} onSaved={onSaved} />;
   if (job && !editingJob) return <ProviderOrderDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} onEdit={setEditingJob} />;
   return job?.source === "booking" ? <ProviderBookingDetails job={job} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} /> : <ManualJobEditor job={editingJob ?? job} date={date} clientId={clientId} onClose={onClose} onSaved={onSaved} onReloaded={onReloaded} />;

@@ -1,0 +1,358 @@
+TAP version 13
+# Subtest: own project price includes exact area, configured additions, custom rows and one discount
+ok 1 - own project price includes exact area, configured additions, custom rows and one discount
+  ---
+  duration_ms: 2.2241
+  type: 'test'
+  ...
+# Subtest: half-hour additions use the same worker workload as published offers, while custom rows have no invented duration
+ok 2 - half-hour additions use the same worker workload as published offers, while custom rows have no invented duration
+  ---
+  duration_ms: 0.3134
+  type: 'test'
+  ...
+# Subtest: own project rejects fabricated addons, quantities, prices, partial positions and over-discounting
+ok 3 - own project rejects fabricated addons, quantities, prices, partial positions and over-discounting
+  ---
+  duration_ms: 1.0552
+  type: 'test'
+  ...
+# Subtest: own project request bounds the plan and rejects ownership, money and role overrides
+ok 4 - own project request bounds the plan and rejects ownership, money and role overrides
+  ---
+  duration_ms: 1.7526
+  type: 'test'
+  ...
+# Subtest: R02: publication retains the whole configured area, even when the minimum needs several days
+ok 5 - R02: publication retains the whole configured area, even when the minimum needs several days
+  ---
+  duration_ms: 7.2334
+  type: 'test'
+  ...
+# Subtest: R02: mode follows area, staffing, extra duration and working day; multi-session projects use a single-job price
+ok 6 - R02: mode follows area, staffing, extra duration and working day; multi-session projects use a single-job price
+  ---
+  duration_ms: 1.3856
+  type: 'test'
+  ...
+# Subtest: R02: planning uses the selected late start and the next free day, preserving every required minute
+ok 7 - R02: planning uses the selected late start and the next free day, preserving every required minute
+  ---
+  duration_ms: 66.7284
+  type: 'test'
+  ...
+# Subtest: R02: fragmented windows respect existing bookings and buffers, rather than demanding a fixed-size session
+ok 8 - R02: fragmented windows respect existing bookings and buffers, rather than demanding a fixed-size session
+  ---
+  duration_ms: 84.6273
+  type: 'test'
+  ...
+# Subtest: R02: excluded days and customer hours replan the whole schedule; gaps and six-month horizon cannot be bypassed
+ok 9 - R02: excluded days and customer hours replan the whole schedule; gaps and six-month horizon cannot be bypassed
+  ---
+  duration_ms: 60.5092
+  type: 'test'
+  ...
+# Subtest: R02: a project longer than the old seven-day duration limit can still fit the reservation horizon
+ok 10 - R02: a project longer than the old seven-day duration limit can still fit the reservation horizon
+  ---
+  duration_ms: 737.1406
+  type: 'test'
+  ...
+# Subtest: R02: automatic scheduling and confirmation work for an area offer without a static multi-session tag
+ok 11 - R02: automatic scheduling and confirmation work for an area offer without a static multi-session tag
+  ---
+  duration_ms: 251.6118
+  type: 'test'
+  ...
+# Subtest: R07: completion requires an explicit confirmation and a positive integer revision
+ok 12 - R07: completion requires an explicit confirmation and a positive integer revision
+  ---
+  duration_ms: 2.0197
+  type: 'test'
+  ...
+# Subtest: R07: only sessions beginning after completion are released; original plan is preserved
+ok 13 - R07: only sessions beginning after completion are released; original plan is preserved
+  ---
+  duration_ms: 0.5233
+  type: 'test'
+  ...
+# Subtest: R07: released public sessions are cancelled history, not performed future work
+ok 14 - R07: released public sessions are cancelled history, not performed future work
+  ---
+  duration_ms: 3.2812
+  type: 'test'
+  ...
+# Subtest: R07: manual history distinguishes a released session from an unrelated cancellation
+ok 15 - R07: manual history distinguishes a released session from an unrelated cancellation
+  ---
+  duration_ms: 0.2887
+  type: 'test'
+  ...
+# Subtest: R06: workload is hours times crew; shortage/excess and percentage are not capped at 100%
+ok 16 - R06: workload is hours times crew; shortage/excess and percentage are not capped at 100%
+  ---
+  duration_ms: 1.5101
+  type: 'test'
+  ...
+# Subtest: R06: deleting a future session requires explicit shortage consent; small provider sessions are allowed
+ok 17 - R06: deleting a future session requires explicit shortage consent; small provider sessions are allowed
+  ---
+  duration_ms: 30.0183
+  type: 'test'
+  ...
+# Subtest: R06: adding/removing workers updates the balance and requires the appropriate acknowledgement
+ok 18 - R06: adding/removing workers updates the balance and requires the appropriate acknowledgement
+  ---
+  duration_ms: 16.2293
+  type: 'test'
+  ...
+# Subtest: R06: completed sessions are immutable; an ongoing session permits only its future end to change
+ok 19 - R06: completed sessions are immutable; an ongoing session permits only its future end to change
+  ---
+  duration_ms: 22.8352
+  type: 'test'
+  ...
+# Subtest: R06: changed/new times check live availability; original reservations survive later absences; pending proposals recheck everything
+ok 20 - R06: changed/new times check live availability; original reservations survive later absences; pending proposals recheck everything
+  ---
+  duration_ms: 21.646
+  type: 'test'
+  ...
+# Subtest: R06: overlap, buffers, duplicate IDs, forged crews and extra fields cannot bypass validation
+ok 21 - R06: overlap, buffers, duplicate IDs, forged crews and extra fields cannot bypass validation
+  ---
+  duration_ms: 32.9349
+  type: 'test'
+  ...
+# Subtest: R06: redistributing session prices preserves already ended amounts and exact total
+ok 22 - R06: redistributing session prices preserves already ended amounts and exact total
+  ---
+  duration_ms: 3.5524
+  type: 'test'
+  ...
+# Subtest: R06: Warsaw DST uses actual elapsed work and rejects a nonexistent local time
+ok 23 - R06: Warsaw DST uses actual elapsed work and rejects a nonexistent local time
+  ---
+  duration_ms: 7.9442
+  type: 'test'
+  ...
+# Subtest: R06: an unaccepted expired proposal may be replanned, but cannot be accepted in the past
+ok 24 - R06: an unaccepted expired proposal may be replanned, but cannot be accepted in the past
+  ---
+  duration_ms: 14.2927
+  type: 'test'
+  ...
+# Subtest: project metadata can preserve a one-minute zero-priced session without loosening standalone jobs
+ok 25 - project metadata can preserve a one-minute zero-priced session without loosening standalone jobs
+  ---
+  duration_ms: 3.4557
+  type: 'test'
+  ...
+# Subtest: job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+ok 26 - job input validates actual calendar dates, same-day times, integer amounts and all explicit references
+  ---
+  duration_ms: 1.3843
+  type: 'test'
+  ...
+# Subtest: all job operations require an authenticated managing member
+ok 27 - all job operations require an authenticated managing member
+  ---
+  duration_ms: 11.1781
+  type: 'test'
+  ...
+# Subtest: foreign jobs and references cannot be read, reassigned or attached to this account
+ok 28 - foreign jobs and references cannot be read, reassigned or attached to this account
+  ---
+  duration_ms: 4.6914
+  type: 'test'
+  ...
+# Subtest: client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+ok 29 - client contact, address and service title are snapshots; later catalogue edits do not rewrite job history
+  ---
+  duration_ms: 11.3159
+  type: 'test'
+  ...
+# Subtest: manual order location can differ from the client address and survives later edits
+ok 30 - manual order location can differ from the client address and survives later edits
+  ---
+  duration_ms: 9.9129
+  type: 'test'
+  ...
+# Subtest: same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+ok 31 - same-employee overlaps and parallel competing creates are rejected, while adjacent slots and unassigned work are allowed
+  ---
+  duration_ms: 16.8749
+  type: 'test'
+  ...
+# Subtest: cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+ok 32 - cancellation releases the slot; reopening rechecks conflicts; stale edits cannot overwrite newer changes
+  ---
+  duration_ms: 15.7653
+  type: 'test'
+  ...
+# Subtest: archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+ok 33 - archived services may remain on existing jobs but cannot be selected for new work; future jobs cannot be completed
+  ---
+  duration_ms: 5.382
+  type: 'test'
+  ...
+# Subtest: action messages preserve notes and reject overflow instead of truncating saved data
+ok 34 - action messages preserve notes and reject overflow instead of truncating saved data
+  ---
+  duration_ms: 2.0676
+  type: 'test'
+  ...
+# Subtest: completing a job releases the employee slot without removing the finished record
+ok 35 - completing a job releases the employee slot without removing the finished record
+  ---
+  duration_ms: 9.1867
+  type: 'test'
+  ...
+# Subtest: order detail actions send valid revisioned updates without changing saved client, service, time or price
+ok 36 - order detail actions send valid revisioned updates without changing saved client, service, time or price
+  ---
+  duration_ms: 23.3649
+  type: 'test'
+  ...
+# Subtest: calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+ok 37 - calendar grouping covers complete Monday-first weeks, leap days and month/year navigation
+  ---
+  duration_ms: 2.5236
+  type: 'test'
+  ...
+# Subtest: multi-session decisions accept only an explicit action and revision
+ok 38 - multi-session decisions accept only an explicit action and revision
+  ---
+  duration_ms: 2.1284
+  type: 'test'
+  ...
+# Subtest: proxy requires provider cookie and denies arbitrary upstream routes
+ok 39 - proxy requires provider cookie and denies arbitrary upstream routes
+  ---
+  duration_ms: 13.3287
+  type: 'test'
+  ...
+# Subtest: service and location writes forward only to their allowed provider endpoints
+ok 40 - service and location writes forward only to their allowed provider endpoints
+  ---
+  duration_ms: 13.6684
+  type: 'test'
+  ...
+# Subtest: staffing and absence mutations require the provider cookie and same origin
+ok 41 - staffing and absence mutations require the provider cookie and same origin
+  ---
+  duration_ms: 12.4209
+  type: 'test'
+  ...
+# Subtest: own multi-session project writes and availability are authenticated and scoped to allowed routes
+ok 42 - own multi-session project writes and availability are authenticated and scoped to allowed routes
+  ---
+  duration_ms: 5.8791
+  type: 'test'
+  ...
+# Subtest: client proxy permits authenticated reads and edits but rejects unsupported operations
+ok 43 - client proxy permits authenticated reads and edits but rejects unsupported operations
+  ---
+  duration_ms: 2.0662
+  type: 'test'
+  ...
+# Subtest: writes reject foreign or missing Origin, cross-site requests and invalid payloads
+ok 44 - writes reject foreign or missing Origin, cross-site requests and invalid payloads
+  ---
+  duration_ms: 1.3497
+  type: 'test'
+  ...
+# Subtest: login sets a separate HttpOnly cookie and never exposes the token in JSON
+ok 45 - login sets a separate HttpOnly cookie and never exposes the token in JSON
+  ---
+  duration_ms: 3.1822
+  type: 'test'
+  ...
+# Subtest: proxy forwards only the provider session, path and validated body
+ok 46 - proxy forwards only the provider session, path and validated body
+  ---
+  duration_ms: 1.2419
+  type: 'test'
+  ...
+# Subtest: expired sessions clear the cookie; service outages return an explicit error
+ok 47 - expired sessions clear the cookie; service outages return an explicit error
+  ---
+  duration_ms: 1.1245
+  type: 'test'
+  ...
+# Subtest: settings routes are authenticated and password rotation replaces the HttpOnly cookie
+ok 48 - settings routes are authenticated and password rotation replaces the HttpOnly cookie
+  ---
+  duration_ms: 4.7595
+  type: 'test'
+  ...
+# Subtest: R04: solo is always one; team is bounded by declaration, roster and the existing system maximum
+ok 49 - R04: solo is always one; team is bounded by declaration, roster and the existing system maximum
+  ---
+  duration_ms: 1.0317
+  type: 'test'
+  ...
+# Subtest: R04: explicit excess tiers reject without mutation; bootstrap draft is possible but empty roster cannot publish
+ok 50 - R04: explicit excess tiers reject without mutation; bootstrap draft is possible but empty roster cannot publish
+  ---
+  duration_ms: 3.2218
+  type: 'test'
+  ...
+# Subtest: R04: reducing the team is blocked by current drafts and publications, while archives do not prevent removal
+ok 51 - R04: reducing the team is blocked by current drafts and publications, while archives do not prevent removal
+  ---
+  duration_ms: 0.6151
+  type: 'test'
+  ...
+# Subtest: R03: only matching service and full-shift availability count; hidden calendar rows still work
+ok 52 - R03: only matching service and full-shift availability count; hidden calendar rows still work
+  ---
+  duration_ms: 197.7323
+  type: 'test'
+  ...
+# Subtest: R03: roster determines early/late hours and capacity for a stable crew, rounding to quarter-hours
+ok 53 - R03: roster determines early/late hours and capacity for a stable crew, rounding to quarter-hours
+  ---
+  duration_ms: 1.2367
+  type: 'test'
+  ...
+# Subtest: R03: concurrent work uses different employees; exhausted capacity rejects and legacy unassigned blocks everyone
+ok 54 - R03: concurrent work uses different employees; exhausted capacity rejects and legacy unassigned blocks everyone
+  ---
+  duration_ms: 30.201
+  type: 'test'
+  ...
+# Subtest: R03/R05: partial absence blocks only selected people; buffers use the greater of both offers
+ok 55 - R03/R05: partial absence blocks only selected people; buffers use the greater of both offers
+  ---
+  duration_ms: 24.4143
+  type: 'test'
+  ...
+# Subtest: R03: multi-session planner keeps the whole crew for each session, instead of mixing incompatible shifts
+ok 56 - R03: multi-session planner keeps the whole crew for each session, instead of mixing incompatible shifts
+  ---
+  duration_ms: 445.8173
+  type: 'test'
+  ...
+# Subtest: R03: sessions preserve all minutes, buffers, excluded days, max gaps and required crew count
+ok 57 - R03: sessions preserve all minutes, buffers, excluded days, max gaps and required crew count
+  ---
+  duration_ms: 685.9701
+  type: 'test'
+  ...
+# Subtest: R03: spare employees allow parallel orders, while sessions of one project remain sequential
+ok 58 - R03: spare employees allow parallel orders, while sessions of one project remain sequential
+  ---
+  duration_ms: 503.7471
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7785.4945

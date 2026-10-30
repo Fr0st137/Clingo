@@ -8,7 +8,7 @@ const {defaultOfferConfiguration}=require('../apps/api/dist/provider/provider-of
 const {localDate,addLocalDays,warsawDate}=require('../apps/api/dist/dashboard/booking');
 const run=randomUUID(),emails=['owner','customer','foreign'].map(role=>`r04-${role}-${run}@example.test`),accounts=[],profiles=[];
 const db=new Client({host:'127.0.0.1',port:55432,database:'clingo',user:'clingo',password:'clingo'});
-const fallback={exports:{}};new Function('module','exports','require',ts.transpileModule(readFileSync('apps/web/lib/db-fallback.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(fallback,fallback.exports,require);
+const fallback={exports:{}};new Function('module','exports','require',ts.transpileModule(readFileSync('apps/web/lib/db-fallback.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(fallback,fallback.exports,name=>name==='../../api/src/dashboard/review-bridge'?require('../apps/api/dist/dashboard/review-bridge'):require(name));
 async function request(path,token,body,method=body===undefined?'GET':'POST') {const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await response.json()};}
 async function ok(...args){const result=await request(...args);assert.ok(result.status<300,JSON.stringify(result));return result.data;}
 async function main(){await db.connect();let browser;try{

@@ -8,6 +8,8 @@
     "multer": "2.3.0"
   },
   "scripts": {
+    "test:manual-projects": "npm run build:api && node --test scripts/manual-project.test.cjs scripts/project-editor.test.cjs scripts/project-completion.test.cjs scripts/provider-multi-orders.test.cjs scripts/provider-proxy.test.cjs",
+    "verify:manual-projects": "npm run build:api && node scripts/verify-manual-project.cjs",
     "dev:web": "npm --workspace apps/web run dev",
     "dev:provider": "npm --workspace apps/provider run dev",
     "dev:api": "npm --workspace apps/api run start:dev",
@@ -23,6 +25,8 @@
     "test:projects": "npm run build:api && node --test scripts/project-editor.test.cjs scripts/project-completion.test.cjs",
     "verify:projects": "npm run build:api && node scripts/verify-project-editor.cjs",
     "verify:project-completion": "npm run build:api && node scripts/verify-project-completion.cjs",
+    "verify:review-bridge": "npm run build:api && node scripts/verify-review-bridge.cjs",
+    "test:review-bridge": "npm run build:api && node --test scripts/provider-reviews.test.cjs scripts/review-bridge.test.cjs scripts/provider-review-images.test.cjs scripts/provider-proxy.test.cjs",
     "verify:account": "node scripts/verify-account.cjs",
     "verify:booking": "node scripts/verify-booking.cjs",
     "verify:booking-bridge": "npm run build:api && node scripts/verify-booking-bridge.cjs",
@@ -31,7 +35,7 @@
     "test:order-api": "node --test scripts/order-api.test.cjs",
     "test:offer-request": "node --test scripts/offer-request.test.cjs",
     "test:provider-search": "node --test scripts/provider-search.test.cjs",
-    "test:provider-team": "npm run build:api && node --test scripts/provider-team.test.cjs scripts/provider-proxy.test.cjs scripts/provider-settings.test.cjs scripts/provider-clients.test.cjs scripts/provider-offers.test.cjs scripts/provider-jobs.test.cjs scripts/provider-reviews.test.cjs scripts/provider-multi-orders.test.cjs",
+    "test:provider-team": "npm run build:api && node --test scripts/provider-team.test.cjs scripts/provider-proxy.test.cjs scripts/provider-settings.test.cjs scripts/provider-clients.test.cjs scripts/provider-offers.test.cjs scripts/provider-jobs.test.cjs scripts/provider-reviews.test.cjs scripts/provider-multi-orders.test.cjs scripts/review-bridge.test.cjs scripts/provider-review-images.test.cjs",
     "verify:provider-team": "npm run build:api && node scripts/verify-provider-team.cjs",
     "verify:provider-service-config": "node scripts/verify-provider-service-config.cjs",
     "test:provider-analytics": "node --test scripts/provider-analytics.test.cjs scripts/provider-analytics-dashboard.test.cjs"

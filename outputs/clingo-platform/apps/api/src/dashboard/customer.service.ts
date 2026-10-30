@@ -10,13 +10,13 @@ import { CustomerFavoriteEntity } from "./customer-favorite.entity";
 import { CustomerReviewEntity, CustomerReviewImageEntity } from "./customer-review.entity";
 import { OrderEntity } from "./order.entity";
 import { ProviderProfileEntity } from "./provider-profile.entity";
+import { ACCOUNT_REVIEWS_SQL, PROFILE_REVIEWS_SQL, RATING_TOTALS_SQL, ratingFromTotals, ratingTotalsMap, withPublicReviews, type AccountReviewRow, type RatingExtra } from "./review-bridge";
 
 // An elapsed date alone is not proof of completion. Cancellation always excludes reviewing.
 function completed(order: OrderEntity) {
   return !/odwo|anul|cancel|niewykon/i.test(order.status) && /^(wykonane zlecenie|zakończone zlecenie|zakończone|wykonane|completed|done)$/i.test(order.status.trim());
 }
-function authorName(user: UserEntity) { return [user.firstName || "Klient", user.lastName ? `${user.lastName[0]}.` : ""].filter(Boolean).join(" "); }
-function reviewDate(date: Date) { return date.toLocaleDateString("pl-PL", { day: "numeric", month: "short", year: "numeric" }); }
+function reviewDate(date: Date) { return date.toLocaleDateString("pl-PL", { day: "numeric", month: "short", year: "numeric",timeZone:"Europe/Warsaw" }); }
 
 @Injectable()
 export class CustomerService {
@@ -97,9 +97,11 @@ export class CustomerService {
       if (!locked || !completed(locked) || !locked.providerId) throw new BadRequestException("Usługa nie kwalifikuje się do oceny.");
       const old = await manager.findOneBy(CustomerReviewEntity, { orderId, userId: user.id });
       for (const image of prepared) if (!image.data && !old?.images.some(item => item.id === image.id)) throw new BadRequestException("Zdjęcie nie należy do tej opinii.");
+      const changed=!old||old.rating!==input.rating||old.content!==(input.content as string).trim()||old.images.length!==prepared.length||old.images.some((image,index)=>image.id!==prepared[index]?.id);
+      if(old&&!changed)return this.toCard(old,locked);
       const review = await manager.save(CustomerReviewEntity, manager.create(CustomerReviewEntity, {
         ...(old ?? {}), orderId, userId: user.id, providerId: locked.providerId, rating: input.rating as number, content: (input.content as string).trim(),
-        images: prepared.map(({ data, ...image }) => image)
+        images: prepared.map(({ data, ...image }) => image),providerReported:false,revision:old?old.revision+1:1
       }));
       for (const image of prepared) if (image.data) await manager.insert(CustomerReviewImageEntity, { id: image.id, orderId, data: image.data });
       const removed = (old?.images ?? []).filter(image => !prepared.some(item => item.id === image.id));
@@ -109,9 +111,13 @@ export class CustomerService {
   }
 
   async deleteReview(user: UserEntity, orderId: string) {
-    const deleted = await this.reviews.delete({ orderId, userId: user.id });
-    if (!deleted.affected) throw new NotFoundException("Nie znaleziono opinii.");
-    return { message: "Usunięto opinię i jej zdjęcia." };
+    return this.orders.manager.transaction(async manager=>{
+      const order=await manager.findOne(OrderEntity,{where:{id:orderId,userEmail:user.email},lock:{mode:"pessimistic_write"}});
+      if(!order)throw new NotFoundException("Nie znaleziono opinii.");
+      const deleted = await manager.delete(CustomerReviewEntity,{ orderId, userId: user.id });
+      if (!deleted.affected) throw new NotFoundException("Nie znaleziono opinii.");
+      return { message: "Usunięto opinię i jej zdjęcia." };
+    });
   }
 
   async reviewImage(id: string) {
@@ -121,22 +127,14 @@ export class CustomerService {
   }
 
   async ratingTotals(ids: string[]) {
-    if (!ids.length) return new Map<string, { count: number; sum: number }>();
-    const rows = await this.reviews.createQueryBuilder("r").select("r.providerId", "id").addSelect("COUNT(*)", "count").addSelect("SUM(r.rating)", "sum")
-      .where("r.providerId IN (:...ids)", { ids }).groupBy("r.providerId").getRawMany();
-    return new Map<string, { count: number; sum: number }>(rows.map(row => [row.id, { count: Number(row.count), sum: Number(row.sum) }]));
+    if (!ids.length) return new Map<string,RatingExtra>();
+    return ratingTotalsMap(await this.reviews.manager.query(RATING_TOTALS_SQL,[ids]));
   }
-  rating(provider: { rating: number; reviewsCount: number }, extra?: { count: number; sum: number }) {
-    const count = provider.reviewsCount + (extra?.count ?? 0);
-    return { rating: count ? Math.round((Number(provider.rating) * provider.reviewsCount + (extra?.sum ?? 0)) / count * 10) / 10 : 0, reviews: count };
+  rating(provider: { rating: number; reviewsCount: number }, extra?: RatingExtra) {
+    return ratingFromTotals(provider,extra);
   }
   async publicProfile(profile: ProviderProfileEntity) {
-    const reviews = await this.reviews.find({ where: { providerId: profile.id }, relations: { user: true }, order: { createdAt: "DESC" } });
-    const rating = this.rating(profile, { count: reviews.length, sum: reviews.reduce((sum, review) => sum + review.rating, 0) });
-    const reviewsCount = rating.reviews;
-    return { ...profile, rating: rating.rating, reviewsCount,
-      metrics: profile.metrics.map(metric => metric.id === "rating" ? { ...metric, value: String(rating.rating) } : metric),
-      overview: profile.overview?.map(metric => metric.id === "rating" ? { ...metric, value: String(rating.rating) } : metric.id === "reviews" ? { ...metric, value: String(reviewsCount) } : metric),
-      reviews: [...reviews.map(review => ({ id: review.orderId, author: authorName(review.user), content: review.content, rating: review.rating, date: reviewDate(review.updatedAt), images: review.images })), ...profile.reviews] };
+    const rows:AccountReviewRow[]=await this.reviews.manager.query(profile.accountId?ACCOUNT_REVIEWS_SQL:PROFILE_REVIEWS_SQL,[profile.accountId??profile.id]);
+    return withPublicReviews(profile,rows,!!profile.accountId);
   }
 }

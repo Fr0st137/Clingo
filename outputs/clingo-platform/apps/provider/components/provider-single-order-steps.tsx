@@ -9,15 +9,17 @@ const summaryPrice = (minor: number) => `${new Intl.NumberFormat("pl-PL", { maxi
 export type InvoiceDraft = { company: string; taxId: string; address: string };
 export type DiscountDraft = { mode: "percent" | "amount"; value: string };
 
-export function SingleOrderExtras({ extras, quantities, onQuantity, positions, onPositions }: {
+export function SingleOrderExtras({ extras, quantities, onQuantity, positions, onPositions, idPrefix = "single", onOpenPicker }: {
   extras: OfferAddOn[]; quantities: Record<string, number>; onQuantity: (id: string, count: number) => void;
   positions: AdditionalPosition[]; onPositions: (rows: AdditionalPosition[]) => void;
+  idPrefix?: string;
+  onOpenPicker?: () => void;
 }) {
   const [picker, setPicker] = useState(false);
   const selected = extras.filter(row => quantities[row.id] > 0);
   const update = (id: string, key: "title" | "quantity" | "price", value: string) => onPositions(positions.map(row => row.id === id ? { ...row, [key]: value } : row));
-  return <div className="single-continuation" role="tabpanel" id="single-extras" aria-labelledby="single-extras-tab">
-    <div className="single-extras-services"><button type="button" className="single-step-add" aria-expanded={picker} onClick={() => setPicker(value => !value)}>Dodaj<img src={asset("add.svg")} alt="" /></button>
+  return <div className="single-continuation" role="tabpanel" id={`${idPrefix}-extras`} aria-labelledby={`${idPrefix}-extras-tab`}>
+    <div className="single-extras-services"><button type="button" className="single-step-add" aria-haspopup={onOpenPicker ? "dialog" : undefined} aria-expanded={picker} onClick={onOpenPicker ?? (() => setPicker(value => !value))}>Dodaj<img src={asset("add.svg")} alt="" /></button>
       {picker && <div className="single-extras-picker">{extras.length ? extras.map(row => <label key={row.id}><span>{row.title}<small>{offerPrice(row.priceMinor)} / {row.billingUnit === "halfHour" ? "30 min" : "szt."}</small></span><input type="number" aria-label={`Ilość: ${row.title}`} min={0} max={100} step={1} value={quantities[row.id] ?? 0} onChange={event => { const count = Number(event.target.value); if (Number.isInteger(count) && count >= 0 && count <= 100) onQuantity(row.id, count); }} /></label>) : <p>Wybrana usługa nie ma dodatków. Możesz wpisać własne pozycje poniżej.</p>}</div>}
       {selected.length ? <div className="single-selected-extras">{selected.map(row => <div key={row.id}><span>{row.title} × {quantities[row.id]}</span><strong>{offerPrice(row.priceMinor * quantities[row.id])}</strong><button type="button" aria-label={`Usuń usługę: ${row.title}`} onClick={() => onQuantity(row.id, 0)}><img src={asset("trash.svg")} alt="" /></button></div>)}</div> : <div className="single-extras-empty"><img src={asset("empty-services.png")} width="100" height="85" alt="" /><span>Dodaj usługę</span></div>}
     </div>

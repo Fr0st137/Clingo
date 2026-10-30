@@ -21,10 +21,11 @@ export function useSettingsResource<T>(path: string) {
     };
     void fetchData();
     const refresh = () => { void fetchData(true); };
-    const live = path === "jobs";
+    const live = path === "jobs" || path === "reviews" || path === "reviews/summary";
+    const changedEvent = path === "jobs" ? "provider-bookings-changed" : "provider-reviews-changed";
     const timer = live ? window.setInterval(refresh, 15000) : undefined;
-    if (live) { window.addEventListener("focus", refresh); window.addEventListener("provider-bookings-changed", refresh); }
-    return () => { controller.abort(); if (timer) window.clearInterval(timer); if (live) { window.removeEventListener("focus", refresh); window.removeEventListener("provider-bookings-changed", refresh); } };
+    if (live) { window.addEventListener("focus", refresh); window.addEventListener(changedEvent, refresh); }
+    return () => { controller.abort(); if (timer) window.clearInterval(timer); if (live) { window.removeEventListener("focus", refresh); window.removeEventListener(changedEvent, refresh); } };
   }, [path, attempt]);
   return { data, setData, loading, error, reload: () => setAttempt(value => value + 1) };
 }

@@ -12,6 +12,8 @@ export class CustomerReviewEntity {
   @Index() @Column({ type: "uuid", name: "user_id" }) userId!: string;
   @Index() @Column({ name: "provider_id" }) providerId!: string;
   @Column({ type: "int" }) rating!: number;
+  @Column({ type: "boolean", name: "provider_reported", default: false }) providerReported!: boolean;
+  @Column({ type: "integer", default: 1 }) revision!: number;
   @Column({ type: "text" }) content!: string;
   @Column({ type: "jsonb", default: () => "'[]'::jsonb" }) images!: Array<{ id: string; label: string; url: string }>;
   @CreateDateColumn({ type: "timestamptz", name: "created_at" }) createdAt!: Date;

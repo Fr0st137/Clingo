@@ -13,15 +13,15 @@ import {SettingsLoadState,useSettingsResource,useUnsavedSettings} from "./provid
 
 type Person={id:string;name:string};
 const minutes=(value:string)=>Number(value.slice(0,2))*60+Number(value.slice(3));
-function SessionFields({row,index,project,all,disabled,onChange,onRemove}:{row:ProjectSession;index:number;project:Project;all:ProjectSession[];disabled:boolean;onChange:(patch:Partial<ProjectSession>)=>void;onRemove:()=>void}){
+export function ProjectSessionFields({row,index,project,all,disabled,onChange,onRemove,createOfferId}:{row:ProjectSession;index:number;project:Pick<Project,"source"|"id"|"revision"|"canEdit"|"bufferMinutes">;all:ProjectSession[];disabled:boolean;onChange:(patch:Partial<ProjectSession>)=>void;onRemove:()=>void;createOfferId?:string}){
   const[available,setAvailable]=useState<Person[]>([]),[error,setError]=useState(""),[loading,setLoading]=useState(false),[retry,setRetry]=useState(0);
   useEffect(()=>{
     if(row.state!=="future"||!project.canEdit)return;
     const controller=new AbortController();setLoading(true);setError("");
-    const timer=window.setTimeout(()=>{void providerApi<{available:Person[]}>(`projects/${project.source}/${project.id}/availability`,"POST",{revision:project.revision,date:row.date,startMinute:row.startMinute,endMinute:row.endMinute},controller.signal)
+    const timer=window.setTimeout(()=>{void providerApi<{available:Person[]}>(createOfferId?"multi-orders/availability":`projects/${project.source}/${project.id}/availability`,"POST",{...(createOfferId?{offerId:createOfferId}:{revision:project.revision}),date:row.date,startMinute:row.startMinute,endMinute:row.endMinute},controller.signal)
       .then(result=>setAvailable(result.available)).catch(error=>{if(error.name!=="AbortError"){setAvailable([]);setError(error.message);}}).finally(()=>{if(!controller.signal.aborted)setLoading(false);});},250);
     return()=>{window.clearTimeout(timer);controller.abort();};
-  },[row.date,row.startMinute,row.endMinute,row.state,project.source,project.id,project.revision,project.canEdit,retry]);
+  },[row.date,row.startMinute,row.endMinute,row.state,project.source,project.id,project.revision,project.canEdit,retry,createOfferId]);
   const people=Array.from(new Map([...row.employees,...available].map(person=>[person.id,person])).values());
   const occupied=(id:string)=>all.some(other=>other.id!==row.id&&other.date===row.date&&other.employeeIds.includes(id)&&row.startMinute<other.endMinute+project.bufferMinutes&&other.startMinute<row.endMinute+project.bufferMinutes);
   return <fieldset className="project-session" aria-label={`Sesja ${index+1}`} disabled={disabled}>
@@ -75,7 +75,7 @@ export function ProviderProjectEditor({source,id,onClose,onSaved}:{source:Projec
       {preview?<section className="project-balance" aria-label="Bilans roboczogodzin"><div className="project-metrics">{[["Wymagane",preview.requiredMinutes],["Zaplanowane",preview.plannedMinutes],["Pozostało",preview.remainingMinutes],["Nadmiar",preview.excessMinutes]].map(([label,value])=><p key={label}><span>{label}</span><strong>{workLabel(Number(value))}</strong></p>)}</div><p>Pokrycie wymaganej pracy: <strong>{preview.percentage}%</strong></p><div className={`project-progress is-${preview.state}`} role="progressbar" aria-label="Pokrycie wymaganej pracy" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100,preview.percentage)} aria-valuetext={`${preview.percentage}%`}><span style={{width:`${Math.min(100,preview.percentage)}%`}}/></div></section>:<p role="alert" className="provider-feedback is-error">Podaj poprawną powierzchnię projektu.</p>}
       {project.hasLongGap&&<p className="team-help">W harmonogramie są przerwy dłuższe niż dwa pełne dni. Uzgodnij te terminy z klientem.</p>}
       {dirty&&<p className="project-warning">Przed zmianą harmonogramu uzgodnij terminy z klientem telefonicznie lub na czacie. Zapis aktualizuje terminy na jego koncie.</p>}
-      <div className="project-session-list">{rows.map((row,index)=><SessionFields key={row.id} row={row} index={index} all={rows} project={project} disabled={busy||!project.canEdit} onChange={patch=>change(rows.map(candidate=>candidate.id===row.id?{...candidate,...patch}:candidate))} onRemove={()=>change(rows.filter(candidate=>candidate.id!==row.id))}/>)}</div>
+      <div className="project-session-list">{rows.map((row,index)=><ProjectSessionFields key={row.id} row={row} index={index} all={rows} project={project} disabled={busy||!project.canEdit} onChange={patch=>change(rows.map(candidate=>candidate.id===row.id?{...candidate,...patch}:candidate))} onRemove={()=>change(rows.filter(candidate=>candidate.id!==row.id))}/>)}</div>
       <button className="settings-button" type="button" disabled={busy||!project.canEdit||rows.length>=186} onClick={add}>Dodaj sesję</button>
       {project.canEdit&&preview?.state==="shortage"&&<label className="project-warning"><input type="checkbox" checked={under} disabled={busy} onChange={event=>setUnder(event.target.checked)}/> Zaplanowano za mało pracy. Potwierdzam realizację mimo brakujących {workLabel(preview.remainingMinutes)} na własne ryzyko.</label>}
       {project.canEdit&&preview?.state==="excess"&&<label className="project-warning"><input type="checkbox" checked={over} disabled={busy} onChange={event=>setOver(event.target.checked)}/> Potwierdzam nadmiar zaplanowanej pracy: {workLabel(preview.excessMinutes)}.</label>}

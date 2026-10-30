@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProviderShell } from "./provider-shell";
+import { ProviderAbsenceDialog } from "./provider-absence-dialog";
 import { TeamState, useEmployees } from "./provider-team-data";
 import { dayMinutes, hoursLabel, initials, minutes, weekMinutes } from "../lib/provider-client";
 import { monthMinutes, parseDay, scheduleCsv, scheduleOn, shiftDate, warsawToday, weekDates } from "../lib/provider-schedule";
@@ -16,6 +17,7 @@ function Schedules() {
   const [view, setView] = useState<"day" | "week">("day");
   const [selected, setSelected] = useState("");
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [absenceOpen, setAbsenceOpen] = useState(false);
   useEffect(() => { setSelected(new URLSearchParams(window.location.search).get("employee") ?? ""); }, []);
   const employees = state.employees.filter(employee => (!selected || employee.id === selected) && (employee.showInCalendar || employee.id === selected));
   const dates = view === "week" ? weekDates(date) : [date];
@@ -41,7 +43,7 @@ function Schedules() {
       <div className="schedule-actions">
         <button type="button" disabled title="Kopiowanie grafików na konkretne daty nie jest jeszcze dostępne"><img src={asset("copy")} alt="" />Skopiuj na inne dni</button>
         <button type="button" onClick={download} disabled={state.loading || !!state.error || !employees.length}><img src={asset("download")} alt="" />Pobierz</button>
-        <button className="schedule-absence" type="button" disabled title="Rejestrowanie nieobecności nie jest jeszcze dostępne">Nieobecność<img src={asset("plus")} alt="" /></button>
+        <button className="schedule-absence" type="button" aria-haspopup="dialog" aria-expanded={absenceOpen} onClick={() => setAbsenceOpen(true)}>Nieobecność<img src={asset("plus")} alt="" /></button>
       </div>
     </div>
     <div className={`schedule-scale ${view === "week" ? "is-week" : ""}`} aria-hidden="true"><div style={{ transform: `translateX(-${scrollLeft}px)`, width: view === "day" ? timelineWidth : 7 * 180 }}>{view === "day" ? hours.map(hour => <span key={hour}>{hourLabel(hour)}</span>) : dates.map(day => <span key={day}>{dateLabel(day)}</span>)}</div></div>
@@ -64,6 +66,7 @@ function Schedules() {
         </div>
       </div>
     </div></div>}
+    {absenceOpen && <ProviderAbsenceDialog date={date} onClose={() => setAbsenceOpen(false)} />}
   </section>;
 }
 export function ProviderWorkSchedulesPage() { return <ProviderShell active="Grafiki pracy" figmaNode="5754:9678"><Schedules /></ProviderShell>; }
