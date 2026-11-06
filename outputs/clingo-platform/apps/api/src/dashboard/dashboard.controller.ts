@@ -49,6 +49,11 @@ export class DashboardController {
     return (await this.dashboardService.getOrder(id, email))!;
   }
 
+  @Get("orders/:id/photos/:photoId")
+  async photo(@Param("id", new ParseUUIDPipe()) id: string, @Param("photoId", new ParseUUIDPipe()) photoId: string, @Headers("authorization") authorization?: string) {
+    return new StreamableFile(await this.booking.photo(id, photoId, await this.auth.sessionEmail(authorization)), { type: "image/webp" });
+  }
+
   @Get("orders/:id")
   async getOrder(@Param("id", new ParseUUIDPipe()) id: string, @Headers("authorization") authorization?: string): Promise<DashboardOrder> {
     const email = await this.auth.sessionEmail(authorization);

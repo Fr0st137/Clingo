@@ -1,3 +1,6 @@
+import { prepareBookingPhotos, bookingPhoto } from "./booking-photos";
+import { BookingPhotoEntity } from "./booking-photo.entity";
+import { isAccessMethod } from "./booking-access";
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { DataSource, EntityManager } from "typeorm";
 import { createHash, randomUUID } from "crypto";
@@ -164,6 +167,12 @@ export class BookingService {
     };
   }
 
+  async photo(orderId: string, photoId: string, email: string) {
+    const order = await this.db.manager.findOneBy(OrderEntity, { id: orderId, userEmail: email });
+    if (!order) throw new NotFoundException("Nie znaleziono zamówienia.");
+    return bookingPhoto(this.db.manager, orderId, photoId);
+  }
+
   async create(input: BookingInput, email: string) {
     const required = (value: unknown, label: string, max: number) => {
       if (typeof value !== "string" || !value.trim() || value.trim().length > max) throw new BadRequestException(`Uzupełnij poprawnie pole: ${label}.`);
@@ -173,6 +182,8 @@ export class BookingService {
     const contactName = required(input.contactName, "imię i nazwisko", 150);
     const contactPhone = required(input.contactPhone, "numer telefonu", 30);
     if (!/^[+\d ()-]+$/.test(contactPhone) || !/^\d{9,15}$/.test(contactPhone.replace(/\D/g, ""))) throw new BadRequestException("Podaj poprawny numer telefonu.");
+    if (!isAccessMethod(input.accessMethod)) throw new BadRequestException("Wybierz sposób udostępnienia lokalu.");
+    const accessMethod = input.accessMethod;
     const apartment = typeof input.apartment === "string" ? input.apartment.trim() : "";
     const notes = typeof input.notes === "string" ? input.notes.trim() : "";
     if (apartment.length > 30 || notes.length > 2000) throw new BadRequestException("Numer mieszkania lub uwagi są zbyt długie.");
@@ -183,6 +194,7 @@ export class BookingService {
       invoice = { companyName: required(input.invoice.companyName, "nazwa firmy", 200), taxId: required(input.invoice.taxId, "NIP", 20).replace(/[ -]/g, ""), address: required(input.invoice.address, "adres firmy", 350) };
       if (!/^\d{10}$/.test(invoice.taxId)) throw new BadRequestException("NIP powinien zawierać 10 cyfr.");
     }
+    const photos = await prepareBookingPhotos(input.photos);
     const fingerprint = createHash("sha256").update(JSON.stringify({ ...input, requestId: undefined })).digest("hex");
     return this.db.transaction(async manager => {
       // One provider lock serializes reservations, including concurrent requests from other clients.
@@ -194,6 +206,7 @@ export class BookingService {
         if (previous.selectedOptions?.requestHash !== fingerprint) throw new ConflictException("To zamówienie zostało już zapisane z innymi danymi. Rozpocznij nową rezerwację.");
         return previous.id;
       }
+      if (offer.requiresClientPhotos && !photos.length) throw new BadRequestException("Dodaj co najmniej jedno zdjęcie obszaru objętego usługą.");
       const coverage = serviceAreaStatus(offer.metrics, address);
       if (coverage === "unsupported") throw new BadRequestException("Lokalizacja poza zasięgiem. Ten wykonawca nie realizuje usług pod wskazanym adresem. Podaj adres razem z miejscowością.");
       if (coverage !== "supported") throw new BadRequestException("Nie możemy potwierdzić obsługi tej lokalizacji. Wróć do ogłoszenia i sprawdź adres.");
@@ -269,9 +282,11 @@ export class BookingService {
           ...(offer.areaPricing ? { projectEstimate: { source: "area" as const, areaSquareMeters: Number(quote.pricingId.slice(5)), workMinutesPerSquareMeter: offer.areaPricing.minutesPer100 / 100,
             fixedWorkMinutes: (input.addOns ?? []).reduce((sum, row) => sum + (offer.addOns?.find(addOn => addOn.id === row.id)?.durationMinutes ?? 0) * (row.quantity ?? 0), 0) * (quote.estimatedWorkers ?? 1),
             requiredWorkMinutes: Math.round((Number(quote.pricingId.slice(5)) * offer.areaPricing.minutesPer100 / 100 + (input.addOns ?? []).reduce((sum, row) => sum + (offer.addOns?.find(addOn => addOn.id === row.id)?.durationMinutes ?? 0) * (row.quantity ?? 0), 0) * (quote.estimatedWorkers ?? 1)) * 10000) / 10000,
-            estimatedWorkers: quote.estimatedWorkers ?? 1 } } : {}), contactName, contactPhone, apartment, notes, invoice, sessions, requestId, requestHash: fingerprint }
+            estimatedWorkers: quote.estimatedWorkers ?? 1 } } : {}), photos: photos.map(({ id, label }) => ({ id, label })), contactName, contactPhone, accessMethod, apartment, notes, invoice, sessions, requestId, requestHash: fingerprint }
       });
-      return (await manager.save(order)).id;
+      const saved = await manager.save(order);
+      for (const photo of photos) await manager.insert(BookingPhotoEntity, { id: photo.id, orderId: saved.id, data: photo.data });
+      return saved.id;
     });
   }
 

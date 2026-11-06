@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { writeFileSync } = require('node:fs');
@@ -11,7 +12,7 @@ const db = new Client({ host: '127.0.0.1', port: 55432, database: 'clingo', user
 const accountIds = [], profileIds = [];
 async function api(path, token, body, method = body === undefined ? 'GET' : 'POST') {
   const response = await fetch('http://localhost:4000' + path, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-  const data = await response.json(); assert.ok(response.ok, JSON.stringify(data)); return data;
+  const data = await finishFixtureRegistration(path, await response.json()); assert.ok(response.ok, JSON.stringify(data)); return data;
 }
 async function main() {
   await db.connect(); let browser;
@@ -36,9 +37,15 @@ async function main() {
     await page.getByLabel('Metraż', { exact: true }).selectOption('500');
     await page.getByText('Wielosesyjne', { exact: true }).first().waitFor();
     assert.equal(await page.getByText('Częstotliwość sprzątania', { exact: true }).count(), 0);
-    const availableResponse = page.waitForResponse(r => r.url().includes('/api/booking/multi-availability') && r.request().method() === 'POST');
-    await page.getByRole('link', { name: 'Przejdź do zamówienia', exact: true }).click();
-    const available = await (await availableResponse).json(); const day = available.days.find(day => day.slots.length); assert.ok(day);
+    await page.getByLabel('Sposób udostępnienia lokalu', { exact: true }).selectOption('phone-contact');
+    const photoBuffer = await require('sharp')({ create: { width: 80, height: 60, channels: 3, background: '#57a5d3' } }).png().toBuffer();
+    await page.getByLabel('Zdjęcia do zamówienia', { exact: true }).setInputFiles({ name: 'obszar.png', mimeType: 'image/png', buffer: photoBuffer });
+    await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).waitFor();
+    const [availableResponse] = await Promise.all([
+      page.waitForResponse(r => r.url().includes('/api/booking/multi-availability') && r.request().method() === 'POST'),
+      page.getByRole('link', { name: 'Przejdź do zamówienia', exact: true }).click()
+    ]);
+    const available = await availableResponse.json(); const day = available.days.find(day => day.slots.length); assert.ok(day);
     await page.getByRole('button', { name: `${day.date}, dostępny`, exact: true }).click();
     const slot = day.slots[0], hour = Number(slot.time.slice(0, 2));
     await page.getByRole('button', { name: hour < 12 ? 'Rano' : hour < 17 ? 'Południe' : 'Wieczór', exact: true }).click();
@@ -63,13 +70,17 @@ async function main() {
     await page.getByLabel('Imię i nazwisko', { exact: true }).fill('Klient projektu R02');
     await page.getByLabel('Telefon', { exact: true }).fill('500600700');
     await page.getByLabel('Adres', { exact: true }).fill('Testowa 1, Warszawa');
+    assert.equal(await page.getByLabel('Sposób udostępnienia lokalu', { exact: true }).inputValue(), 'phone-contact');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await page.getByLabel('Sposób udostępnienia lokalu', { exact: true }).locator('..').screenshot({ path: 'tmp/k05-mobile-access.png' });
     const saved = await page.evaluate(() => Object.keys(sessionStorage).filter(k => k.startsWith('clingo-multi-session:')).map(k => JSON.parse(sessionStorage.getItem(k))));
     assert.ok(saved.some(s => s.excludedDates?.includes(excludedDate)));
     await page.screenshot({ path: 'tmp/r02-summary-mobile.png', fullPage: true });
     const confirmedResponse = page.waitForResponse(r => r.url().includes('/api/booking/confirm') && r.request().method() === 'POST');
     await page.getByRole('button', { name: 'Potwierdź i zamów', exact: true }).click();
-    const confirmed = await confirmedResponse; const order = await confirmed.json(); assert.ok(confirmed.ok(), JSON.stringify(order)); assert.equal(order.mode, 'Wielosesyjne');
+    const confirmed = await confirmedResponse; const order = await confirmed.json(); assert.ok(confirmed.ok(), JSON.stringify(order)); assert.equal(order.mode, 'Wielosesyjne'); assert.equal(order.bookingDetails.accessMethod, 'phone-contact'); assert.equal(order.bookingDetails.photos.length, 1);
     const jobs = (await api('/provider/jobs', owner.token)).filter(row => row.bookingId === order.id);
+    assert.ok(jobs.every(row => row.accessMethod === 'phone-contact'));
     assert.equal(jobs.length, regenerated.sessions.length); assert.equal(jobs.reduce((sum, row) => sum + row.durationMinutes, 0), 900);
     assert.equal(jobs.reduce((sum, row) => sum + row.priceMinor, 0), 75000);
     const providerContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -80,6 +91,12 @@ async function main() {
     await providerPage.screenshot({ path: 'tmp/r02-provider-project.png', fullPage: true });
     await providerPage.getByRole('link', { name: /Klient projektu R02.*sesji/ }).click();
     await providerPage.getByRole('heading', { name: 'Edytor projektu', exact: true }).waitFor();
+    assert.equal((await api(`/provider/projects/booking/${order.id}`, owner.token)).accessMethod, 'phone-contact');
+    await providerPage.getByText('Prośba o kontakt telefoniczny w celu ustalenia sposobu udostępnienia lokalu objętego usługą.', { exact: false }).waitFor();
+    await providerPage.screenshot({ path: 'tmp/k05-provider-project.png', fullPage: true });
+    const image = providerPage.getByRole('img', { name: 'Zdjęcie obszaru objętego usługą 1', exact: true });
+    await image.waitFor(); await providerPage.waitForFunction(() => [...document.images].some(img => img.alt === 'Zdjęcie obszaru objętego usługą 1' && img.naturalWidth > 0));
+    await providerPage.screenshot({ path: 'tmp/k06-provider-project.png', fullPage: true });
     const group = providerPage.getByRole('group', { name: 'Sesja 1', exact: true });
     const boxes = group.getByRole('checkbox');
     await boxes.first().waitFor();
@@ -114,6 +131,7 @@ async function main() {
     assert.deepEqual(errors, []);
     const message = 'PASS: real PostgreSQL/API/browser; area switches single -> multi; full 900-minute schedule; exclude date regenerates all sessions; mobile layout; reload preserves schedule; contact form submits; provider sees all sessions and exact price; staffing changes save; absence form saves and manager lists it; no JavaScript errors.';
     writeFileSync('tmp/r02-ui.log', message); console.log(message);
+    writeFileSync('tmp/k05-multi-integration.json', JSON.stringify({ status: 'PASS', checks: ['multi-session profile requires an access choice', 'choice survives scheduling and summary reload on mobile', 'saved customer order and all provider sessions retain the choice', 'provider project API and editor display the choice', 'staffing edits preserve booking data', 'no JavaScript errors'] }, null, 2));
   } finally {
     if (browser) await browser.close();
     await db.query('DELETE FROM orders WHERE provider_id=ANY($1)', [profileIds]);

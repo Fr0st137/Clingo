@@ -1,4 +1,6 @@
 "use client";
+import { accessMethodLabel } from "../../api/src/dashboard/booking-access";
+import { BookingPhotoGallery } from "../../web/components/booking-photo-gallery";
 import { useState } from "react";
 import { providerApi, ApiError } from "../lib/provider-client";
 import { jobStatuses, timeLabel, type Job } from "../lib/provider-jobs";
@@ -25,6 +27,8 @@ export function ProviderBookingDetails({ job, onClose, onSaved, onReloaded }: { 
     <p><strong>{current.clientName}</strong><br />{current.address}</p>
     <p>{current.clientPhone && <><a href={`tel:${current.clientPhone.replace(/[^+\d]/g, "")}`}>{current.clientPhone}</a><br /></>}{current.clientEmail && <a href={`mailto:${current.clientEmail}`}>{current.clientEmail}</a>}</p>
     {current.summary && <><h3>Podsumowanie całej rezerwacji</h3>{current.summary.lines.map(line => <p key={line.id}>{line.label}: {line.value}</p>)}<p><strong>Razem: {current.summary.total}</strong> · {current.summary.duration}</p></>}
+    <p><strong>Sposób udostępnienia lokalu</strong><br />{accessMethodLabel(current.accessMethod)}</p>
+    {!!current.customerPhotos?.length && current.bookingId && <section><h3>Zdjęcia od klienta</h3><BookingPhotoGallery photos={current.customerPhotos} orderId={current.bookingId} provider /></section>}
     {current.notes && <p style={{ whiteSpace: "pre-wrap" }}><strong>Uwagi klienta</strong><br />{current.notes}</p>}
     {current.invoice && <p><strong>Dane do faktury</strong><br />{current.invoice.companyName}<br />NIP: {current.invoice.taxId}<br />{current.invoice.address}</p>}
     <p className="team-help">Status jest wspólny z kontem klienta i dotyczy całej rezerwacji, łącznie ze wszystkimi sesjami. Kwota nie potwierdza otrzymania płatności.</p>

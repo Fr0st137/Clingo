@@ -74,7 +74,7 @@ test('R01: reservation persists the duration and staffing estimate, keeping its 
   const current = { ...offer, id: 'profile', provider: 'Zespół', service: 'Sprzątanie', metrics: [{ id: 'location', label: 'Obszar', value: 'Warszawa' }], bookingSettings: { days: [0,1,2,3,4,5,6], startHour: 8, endHour: 20, bufferMinutes: 0, leadHours: 0 } };
   service.offer = async () => current; service.busy = async () => [];
   const date = addLocalDays(localDate(new Date()), 1), start = warsawDate(date, '08:00');
-  await service.create({ providerId: 'profile', pricingId: 'area-100', frequencyId: 'once', addOns: [], startsAt: start.toISOString(), address: 'Testowa 1, Warszawa', contactName: 'Anna', contactPhone: '500600700', requestId: '22222222-2222-4222-8222-222222222222', expectedTotal: 237 }, 'customer@example.test');
+  await service.create({ providerId: 'profile', pricingId: 'area-100', frequencyId: 'once', addOns: [], startsAt: start.toISOString(), address: 'Testowa 1, Warszawa', contactName: 'Anna', accessMethod: 'someone-present', contactPhone: '500600700', requestId: '22222222-2222-4222-8222-222222222222', expectedTotal: 237 }, 'customer@example.test');
   assert.equal(saved.endsAt.getTime() - saved.startsAt.getTime(), 90 * 60_000);
   assert.equal(saved.selectedOptions.estimatedWorkers, 2);
   const revised = { ...current, areaPricing: { ...pricing, workerTiers: pricing.workerTiers.map(row => ({ ...row, workers: 1 })) } };

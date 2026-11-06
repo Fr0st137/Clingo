@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert=require('node:assert/strict');
 const {randomUUID}=require('node:crypto');
 const {writeFileSync}=require('node:fs');
@@ -9,7 +10,7 @@ const {localDate,addLocalDays,warsawDate}=require('../apps/api/dist/dashboard/bo
 const run=randomUUID(),emails=['owner','customer','foreign'].map(role=>`r04-${role}-${run}@example.test`),accounts=[],profiles=[];
 const db=new Client({host:'127.0.0.1',port:55432,database:'clingo',user:'clingo',password:'clingo'});
 const fallback={exports:{}};new Function('module','exports','require',ts.transpileModule(readFileSync('apps/web/lib/db-fallback.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(fallback,fallback.exports,name=>name==='../../api/src/dashboard/review-bridge'?require('../apps/api/dist/dashboard/review-bridge'):require(name));
-async function request(path,token,body,method=body===undefined?'GET':'POST') {const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await response.json()};}
+async function request(path,token,body,method=body===undefined?'GET':'POST') {const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await finishFixtureRegistration(path, await response.json())};}
 async function ok(...args){const result=await request(...args);assert.ok(result.status<300,JSON.stringify(result));return result.data;}
 async function main(){await db.connect();let browser;try{
   const users=[];for(const email of emails)users.push(await ok('/auth/register',null,{email,password:`Test only ${run}`}));const[owner,customer,foreign]=users;
@@ -19,7 +20,7 @@ async function main(){await db.connect();let browser;try{
   let settings=await state();assert.equal(settings.limit,1);assert.equal(settings.employeeCount,0);
   for(const declaredStaff of[0,51,1.5,'2'])assert.equal((await request('/provider/settings/staffing',owner.token,{mode:'team',declaredStaff,revision:settings.revision},'PUT')).status,400);
   assert.equal((await request('/provider/settings/staffing',owner.token,{mode:'team',declaredStaff:2,revision:settings.revision,accountId:accounts[1]},'PUT')).status,400);
-  const configuration=workers=>({...defaultOfferConfiguration(),standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers}]});
+  const configuration=workers=>({...defaultOfferConfiguration(),requiresClientPhotos:false,standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers}]});
   const input={title:'Usługa limitów QA',category:'homes',description:'Test widełek i obsady.',priceMinor:15000,durationMinutes:60,status:'draft'};
   let offer=await ok('/provider/services',owner.token,input);const profileId=`service-${offer.id}`;profiles.push(profileId);
   assert.ok(offer.configuration.areaTiers.every(row=>row.workers===1),'Bootstrap defaults use one person');
@@ -63,7 +64,7 @@ async function main(){await db.connect();let browser;try{
   assert.equal((await request('/provider/settings/staffing',owner.token,{mode:'team',declaredStaff:2,revision:settings.revision},'PUT')).status,400);
   await saveOffer(3,'published');
   const startsAt=warsawDate(addLocalDays(localDate(new Date()),2),'09:00').toISOString();
-  const order=await ok('/dashboard/orders',customer.token,{providerId:profileId,pricingId:'area-100',frequencyId:'once',addOns:[],startsAt,address:'Testowa 1, Warszawa',contactName:'Klient limitu',contactPhone:'500600700',requestId:randomUUID()});
+  const order=await ok('/dashboard/orders',customer.token,{providerId:profileId,pricingId:'area-100',frequencyId:'once',addOns:[],startsAt,address:'Testowa 1, Warszawa',contactName:'Klient limitu',accessMethod: 'someone-present', contactPhone: '500600700',requestId:randomUUID()});
   const snapshot=(await db.query('SELECT selected_options,summary FROM orders WHERE id=$1',[order.id])).rows[0];
   assert.equal(JSON.parse(snapshot.selected_options).estimatedWorkers,3);
   await saveOffer(1,'published');

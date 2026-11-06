@@ -1,9 +1,10 @@
+import { parsedAddOnQuantities } from "./add-on-selection";
 import type { ProviderProfileData } from "../components/provider-profile-view";
 import { serviceAreaStatus } from "../../api/src/dashboard/service-area";
 import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
 import { bookingMode, durationMinutes } from "../../api/src/dashboard/booking-policy";
 
-export type OfferRequest = { area?: string; address?: string; pricing?: string; frequency?: string; addons?: string };
+export type OfferRequest = { area?: string; address?: string; pricing?: string; frequency?: string; access?: string; photoDraft?: string; addons?: string };
 export type OfferRequestState = "missing" | "unknown-area" | "unsupported-location" | "ready";
 
 export function numericArea(value: string) {
@@ -50,10 +51,8 @@ export function offerRequestState(profile: Pick<ProviderProfileData, "metrics" |
 
 export function offerAddOnQuantities(profile: Pick<ProviderProfileData, "addOns">, value = "") {
   const result: Record<string, number> = {};
-  for (const entry of value.split(",")) {
-    const [id, rawQuantity] = entry.split(":");
-    const quantity = Number(rawQuantity);
-    if (profile.addOns?.some(item => item.id === id) && Number.isInteger(quantity) && quantity > 0 && quantity <= 20) result[id] = quantity;
+  for (const [id, quantity] of parsedAddOnQuantities(value)) {
+    if (profile.addOns?.some(item => item.id === id)) result[id] = quantity;
   }
   return result;
 }

@@ -1,3 +1,4 @@
+import { bookingPhoto } from "../dashboard/booking-photos";
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { AuthService, objectInput } from "../auth/auth.service";
@@ -36,6 +37,10 @@ export class ProviderBookingsService {
     const rows = (await this.forAccount(accountId)).filter(row => row.bookingId === id);
     if (!rows.length) throw new NotFoundException("Nie znaleziono rezerwacji.");
     return rows;
+  }
+  async photo(authorization: string | undefined, id: string, photoId: string) {
+    await this.get(authorization, id);
+    return bookingPhoto(this.db.manager, id, photoId);
   }
   private staffingIndex(order: OrderEntity, value: unknown) {
     const index = value === undefined ? 0 : value;

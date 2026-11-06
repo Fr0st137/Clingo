@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Award, Check, CheckCircle2, ChevronLeft, Clock, Heart, MapPin, ShieldCheck, Sparkles, Star } from "lucide-react";
 
 export interface ProviderProfileData {
+  requiresClientPhotos?: boolean;
   areaPricing?: import("../../api/src/dashboard/area-pricing").AreaPricing | null;
   bookingSettings?: import("../../api/src/dashboard/booking-policy").WorkingHours | null;
   id: string;

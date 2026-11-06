@@ -41,7 +41,7 @@ export async function publishOffer(manager: EntityManager, offer: ProviderOfferE
     addOns: config.addOns.map(addOn => ({ id: addOn.id, label: addOn.title, description: addOn.billingUnit === "halfHour" ? "Cena za 30 minut" : "Cena za sztukę",
       priceValue: addOn.priceMinor / 100, price: money(addOn.priceMinor / 100), durationMinutes: addOn.billingUnit === "halfHour" ? 30 : 0 })),
     standards: ["Usługa zgodna z opisem i zaakceptowanym standardem.", config.vacuumIncluded ? "Wykonawca przywozi odkurzacz." : "Odkurzacz zapewnia klient.",
-      ...(config.requiresClientPhotos ? ["Wykonawca prosi o zdjęcia przed wizytą; uzgodnij ich przekazanie po rezerwacji."] : [])],
+      ...(config.requiresClientPhotos ? ["Przed złożeniem zamówienia dodaj zdjęcia obszaru objętego usługą."] : [])],
     bookingSettings: { ...defaultWorkingHours, bufferMinutes: config.bufferEnabled ? config.bufferMinutes : 0, leadHours: config.leadTimeEnabled ? config.leadHours : 0 },
     summary: { duration: pricing.duration, total: pricing.price, lines: [{ id: pricing.id, label: pricing.label, value: pricing.price }] }
   });

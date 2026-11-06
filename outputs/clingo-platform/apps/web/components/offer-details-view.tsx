@@ -1,4 +1,8 @@
 "use client";
+import { useBookingPhotos } from "../lib/booking-photos";
+import { BookingPhotosEditor } from "./booking-photos-editor";
+import { BookingAccessField } from "./booking-access-field";
+import { isAccessMethod, type AccessMethod } from "../../api/src/dashboard/booking-access";
 import { ReviewPhotos } from "./review-photos";
 import { ProviderOfferDescription } from "../../provider/components/provider-offer-description";
 
@@ -14,6 +18,7 @@ import { numericArea, offerAddOnQuantities, offerRequestState, pricingArea, prof
 import type { OfferRequest } from "../lib/offer-request";
 import { declaredServiceAreas } from "../../api/src/dashboard/service-area";
 import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
+import { calculateBookingQuote, BookingQuoteError } from "../../api/src/dashboard/booking-quote";
 
 type AddOn = NonNullable<ProviderProfileData["addOns"]>[number];
 type Frequency = NonNullable<ProviderProfileData["frequencies"]>[number];
@@ -82,9 +87,9 @@ function FrequencyPricingTable({
   });
 
   return (
-    <section className="rounded-[30px] border border-[#e6edf3] bg-white p-[30px] shadow-[0px_2px_7px_rgba(0,0,0,0.04)]" data-node-id="831:775">
+    <section className="min-w-0 rounded-[30px] border border-[#e6edf3] bg-white p-[20px] sm:p-[30px] shadow-[0px_2px_7px_rgba(0,0,0,0.04)]" data-node-id="831:775">
       <h2 className="m-0 text-[20px] font-bold leading-[28px] text-[#2e3b4c]">Częstotliwość sprzątania</h2>
-      <div className="mt-[20px] grid auto-cols-[166px] grid-flow-col gap-[15px] overflow-x-auto rounded-[20px] bg-[#f9fafb] p-[15px] sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]" data-node-id="858:808">
+      <div className="mt-[20px] grid min-w-0 grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[15px] rounded-[20px] bg-[#f9fafb] p-[15px]" data-node-id="858:808">
         {ordered.map((frequency) => {
           const discount = frequencyDiscount(frequency.discount);
           const selected = frequency.id === selectedId;
@@ -122,7 +127,7 @@ function FrequencyPricingTable({
 
 function SectionCard({ children, title }: { children: ReactNode; title?: string }) {
   return (
-    <section className="rounded-[30px] border border-[#e5e7eb] bg-white p-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)]">
+    <section className="min-w-0 rounded-[30px] border border-[#e5e7eb] bg-white p-[20px] sm:p-[30px] shadow-[0px_4px_18px_0px_rgba(15,23,42,0.08)]">
       {title ? <h2 className="m-0 text-[22px] font-bold leading-5 text-[#2e3b4c]">{title}</h2> : null}
       {children}
     </section>
@@ -301,6 +306,9 @@ function selectedQuantityEntries(addOns: AddOn[], quantities: Record<string, num
 
 export function OfferDetailsView({ profile, initialRequest = {} }: { profile: ProviderProfileData; initialRequest?: OfferRequest }) {
   const headerImage = profileHeaderImage(profile.id);
+  const photoDraft = useBookingPhotos(profile.id, initialRequest.photoDraft);
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const photosReady = photoDraft.ready && !photosBusy && (!profile.requiresClientPhotos || photoDraft.photos.length > 0);
   const photos: Array<{ id: string; label: string; gradient: string; image?: string }> = profile.photos?.length
     ? profile.photos
     : profile.gallery;
@@ -318,9 +326,10 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const [address, setAddress] = useState(initialRequest.address ?? "");
   const [selectedPricingId, setSelectedPricingId] = useState(() =>
     profilePricing(profile, initialRequest.area ?? "", initialRequest.pricing)?.id ?? "");
-  const [selectedFrequencyId, setSelectedFrequencyId] = useState(() => frequencies.find(item => item.id === initialRequest.frequency)?.id ?? frequencies[0]?.id ?? "");
+  const [selectedFrequencyId, setSelectedFrequencyId] = useState(() => frequencies.find(item => item.id === initialRequest.frequency)?.id ?? frequencies.find(item => item.id === "once")?.id ?? frequencies[0]?.id ?? "");
+  const [accessMethod, setAccessMethod] = useState<AccessMethod | "">(() => isAccessMethod(initialRequest.access) ? initialRequest.access : "");
   const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => offerAddOnQuantities(profile, initialRequest.addons));
-  const requestState = offerRequestState(profile, area, address);
+  const locationState = offerRequestState(profile, area, address);
   const coveredAreas = declaredServiceAreas(profile.metrics);
   const pricingAreas = pricing.map(pricingArea).filter((value): value is number => value !== null);
   const maximumArea = profile.areaPricing?.maximum ?? Math.max(0, ...pricingAreas);
@@ -341,20 +350,34 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   const selectedPricing = profilePricing(profile, area, selectedPricingId) ?? areaOption ?? pricing[0];
   const isMultiSession = profileBookingMode(profile, { pricingId: selectedPricing?.id, addOns: selectedAddOnItems.map(({ addOn, quantity }) => ({ id: addOn.id, quantity })) }) === "multi";
   const selectedFrequency = (isMultiSession && profile.areaPricing ? frequencies.find(item => item.id === "once") : frequencies.find((item) => item.id === selectedFrequencyId)) ?? frequencies[0];
-  const discount = frequencyDiscount(selectedFrequency?.discount ?? "0%");
-  const baseTotal = selectedPricing?.priceValue ?? priceFromText(profile.summary.total);
-  const discountedBase = Math.round(baseTotal * (1 - discount / 100) * 100) / 100;
-  const liveTotal = discountedBase + selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.priceValue * quantity, 0);
-  const addOnDuration = selectedAddOnItems.reduce((sum, { addOn, quantity }) => sum + addOn.durationMinutes * quantity, 0);
+  const previewQuote = useMemo(() => {
+    try {
+      return calculateBookingQuote(profile, {
+        pricingId: selectedPricing?.id,
+        frequencyId: selectedFrequency?.id,
+        addOns: selectedAddOnItems.map(({ addOn, quantity }) => ({ id: addOn.id, quantity }))
+      });
+    } catch (error) {
+      if (error instanceof BookingQuoteError) return undefined;
+      throw error;
+    }
+  }, [profile, selectedPricing?.id, selectedFrequency?.id, selectedAddOnItems]);
+  const requestState = previewQuote ? locationState : "missing";
+  const baseTotal = selectedPricing?.priceValue ?? 0;
+  const discountedBase = previewQuote?.baseValue ?? 0;
+  const liveTotal = previewQuote?.totalValue ?? 0;
+  const liveDuration = previewQuote?.summary.duration ?? profile.summary.duration;
   const checkoutHref = useMemo(() => {
     const params = new URLSearchParams({
       frequency: selectedFrequency?.id ?? "",
       pricing: selectedPricing?.id ?? "",
       provider: profile.id,
       area,
+      access: accessMethod,
       address: address.trim()
     });
 
+    if (photoDraft.photos.length) params.set("photoDraft", photoDraft.draftId);
     if (selectedAddOnItems.length > 0) {
       params.set(
         "addons",
@@ -363,13 +386,13 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
     }
 
     return `/zamowienie?${params.toString()}`;
-  }, [profile.id, selectedAddOnItems, selectedFrequency?.id, selectedPricing?.id, area, address]);
+  }, [profile.id, selectedAddOnItems, selectedFrequency?.id, selectedPricing?.id, area, address, accessMethod, photoDraft.draftId, photoDraft.photos.length]);
 
   useEffect(() => {
     // Preserve the user's choices through refresh, copied links and checkout.
     const url = new URL(window.location.href);
     const request = new URL(checkoutHref, window.location.origin).searchParams;
-    for (const key of ["area", "address", "pricing", "frequency", "addons"]) {
+    for (const key of ["area", "address", "pricing", "frequency", "addons", "access", "photoDraft"]) {
       const value = request.get(key);
       if (value) url.searchParams.set(key, value); else url.searchParams.delete(key);
     }
@@ -393,7 +416,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
   };
 
   return (
-    <section className="mx-auto grid w-full max-w-[1200px] gap-[20px] pb-[60px] xl:grid-cols-[800px_380px]" data-node-id="812:1568">
+    <section className="mx-auto grid w-full min-w-0 max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-[20px] pb-[60px] xl:grid-cols-[800px_380px]" data-node-id="812:1568">
       <section aria-label="Dane do wyceny" className="grid gap-[15px] rounded-[20px] border border-[#e5e7eb] bg-white p-[20px] shadow-[0_4px_18px_0_rgba(15,23,42,0.08)] sm:grid-cols-[200px_minmax(0,1fr)] xl:col-span-2">
         <label className="min-w-0 text-[12px] text-[#7c8691]">
           Metraż
@@ -414,15 +437,15 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <span id="offer-location-help" className="mt-2 block">Podaj adres z miejscowością, np. Warszawa, Floriańska 48.{coveredAreas.length ? ` Obsługiwany obszar: ${coveredAreas.join(", ")}.` : ""}</span>
         </label>
       </section>
-      <main className="grid w-full gap-[20px] xl:w-[800px]">
+      <main className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-[20px] xl:w-[800px]">
         <SectionCard>
-          <div className="flex items-start gap-[20px]">
+          <div className="flex flex-col items-start gap-[20px] sm:flex-row">
             <div className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#ffd6e6] shadow-[inset_0px_2px_4px_0px_rgba(0,0,0,0.15)]">
               <Image width={104} height={104} sizes="104px" priority alt="" className={`absolute inset-0 h-full w-full ${headerImage.fit}`} src={headerImage.src} />
             </div>
             <div className="min-w-0 flex-1 pt-[4px]">
               <div className="flex flex-wrap items-center gap-[10px]">
-                <h1 className="m-0 text-[28px] font-bold leading-[34px] text-[#2e3b4c]">{profile.provider}</h1>
+                <h1 className="m-0 break-words text-[28px] font-bold leading-[34px] text-[#2e3b4c]">{profile.provider}</h1>
                 {profile.verified ? (
                   <span className="inline-flex h-[25px] items-center gap-[8px] rounded-[30px] bg-[#e9f5ff] px-[10px] text-[12px] font-normal leading-[15px] text-[#0079de]">
                     <img alt="" className="h-[12px] w-[12px]" src="/figma-assets/board-check.svg" />
@@ -435,7 +458,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
                 <img alt="" className="h-[12px] w-[12px]" src="/figma-assets/order-map.svg" />
                 {profile.location}
               </p>
-              <div className="mt-[12px] flex items-center gap-[8px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
+              <div className="mt-[12px] flex flex-wrap items-center gap-[8px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
                 <RatingStars rating={profile.rating} />
                 <span className="font-semibold">{profile.rating.toFixed(1)}</span>
                 <span className="text-[#0079de]">({profile.reviewsCount} ocen)</span>
@@ -445,7 +468,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
 
           <div className="mt-[20px] grid grid-cols-2 gap-[15px] md:grid-cols-4">
             {overview.map((item) => (
-              <article className="h-[82px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[14px]" key={item.id}>
+              <article className="min-h-[82px] min-w-0 break-words rounded-[15px] bg-[#f7f9fc] px-[15px] py-[14px]" key={item.id}>
                 <p className="m-0 text-[12px] font-normal leading-[16px] text-[#7c8691]">{item.label}</p>
                 <p className="m-0 mt-[8px] text-[18px] font-bold leading-6 text-[#2e3b4c]">{item.value}</p>
               </article>
@@ -495,7 +518,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <div className="mt-[15px] grid gap-[15px]">
             {profile.reviews.slice(0, 2).map((review) => (
               <article className="rounded-[15px] border border-[#e6edf3] bg-white p-[15px]" key={review.id}>
-                <div className="flex items-start justify-between gap-[15px]">
+                <div className="flex flex-wrap items-start justify-between gap-[15px]">
                   <div>
                     <h3 className="m-0 text-[15px] font-bold leading-5 text-[#2e3b4c]">{review.author}</h3>
                     <p className="m-0 mt-[4px] text-[12px] font-normal leading-4 text-[#7c8691]">{review.date}</p>
@@ -516,8 +539,16 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           selectedId={selectedFrequency?.id}
         />}
 
+        <SectionCard title="Udostępnienie lokalu">
+          <div className="mt-[20px]"><BookingAccessField value={accessMethod} onChange={setAccessMethod} /></div>
+        </SectionCard>
+
+        <SectionCard title="Zdjęcia obszaru objętego usługą">
+          <div className="mt-[20px]"><BookingPhotosEditor photos={photoDraft.photos} onChange={photoDraft.change} required={profile.requiresClientPhotos} disabled={!photoDraft.ready} onBusyChange={setPhotosBusy} />{photoDraft.error && <p role="alert" className="text-[13px] text-[#b52a35]">{photoDraft.error}</p>}</div>
+        </SectionCard>
+
         <SectionCard title="Usługi dodatkowe">
-          <div className="mt-[20px] grid gap-x-[17px] gap-y-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}>
+          <div className="mt-[20px] grid gap-x-[15px] gap-y-[18px] sm:gap-x-[17px]" style={{ gridTemplateColumns: "repeat(auto-fill, 150px)" }}>
             {addOns.map((addOn) => (
               <AddOnTile
                 addOn={addOn}
@@ -535,7 +566,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <div className="mt-[20px] grid gap-[15px]">
             {profile.reviews.map((review) => (
               <article className="rounded-[15px] bg-[#f7f9fc] p-[15px]" key={review.id}>
-                <div className="flex items-start justify-between gap-[15px]">
+                <div className="flex flex-wrap items-start justify-between gap-[15px]">
                   <div>
                     <h3 className="m-0 text-[15px] font-bold leading-5 text-[#2e3b4c]">{review.author}</h3>
                     <p className="m-0 mt-[4px] text-[12px] font-normal leading-4 text-[#7c8691]">{review.date}</p>
@@ -550,12 +581,12 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
         </SectionCard>
       </main>
 
-      <aside className="self-start xl:sticky xl:top-[96px]">
+      <aside className="min-w-0 self-start xl:sticky xl:top-[96px]">
         {requestState !== "ready" ? (
           <OfferSummaryUnavailable
             state={requestState}
             area={Number.isFinite(requestedArea) ? String(requestedArea) : ""}
-            duration={`${selectedPricing?.duration ?? profile.summary.duration}${addOnDuration ? ` + ${addOnDuration} min` : ""}`}
+            duration={liveDuration}
             basePrice={formatPrice(discountedBase - priceFromText(profile.summary.lines.find(line => line.id === "travel")?.value ?? "0"))}
             travelPrice={profile.summary.lines.find(line => line.id === "travel")?.value ?? "W cenie usługi"}
             total={formatPrice(liveTotal)}
@@ -567,8 +598,7 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
           <div className="mt-[20px] rounded-[15px] bg-[#f7f9fc] px-[15px] py-[15px]">
             <p className="m-0 text-[14px] font-normal leading-5 text-[#2e3b4c]">Szacowany czas realizacji</p>
             <p className="m-0 mt-[5px] inline-flex min-h-[32px] items-center rounded-[10px] border border-[#e5e7eb] bg-white px-[20px] text-[14px] font-normal leading-5 text-[#2e3b4c]">
-              {selectedPricing?.duration ?? profile.summary.duration}
-              {addOnDuration ? ` + ${addOnDuration} min` : ""}
+              {liveDuration}
             </p>
             {areaOption && <p className="mb-0 mt-[8px] text-[12px] leading-5 text-[#7c8691]">Czas realizacji obliczony dla {areaOption.estimatedWorkers} {areaOption.estimatedWorkers === 1 ? "pracownika" : "pracowników"}.</p>}
             {isMultiSession && <p className="mb-0 mt-[8px] text-[13px] leading-5 text-[#0079de]">Realizacja w kilku sesjach. W kolejnym kroku wybierzesz początek i wygenerujesz harmonogram.</p>}
@@ -596,12 +626,12 @@ export function OfferDetailsView({ profile, initialRequest = {} }: { profile: Pr
             </div>
           </dl>
 
-          <Link
+          {isAccessMethod(accessMethod) && photosReady ? <Link
             className="mt-[20px] flex h-[46px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white"
             href={checkoutHref}
           >
             Przejdź do zamówienia
-          </Link>
+          </Link> : <><button type="button" disabled className="mt-[20px] flex h-[46px] w-full cursor-not-allowed items-center justify-center rounded-[100px] bg-[#0079de] text-[15px] font-bold leading-5 text-white opacity-40">Przejdź do zamówienia</button><p className="mb-0 mt-[10px] text-[13px] leading-5 text-[#7c8691]">{!isAccessMethod(accessMethod) ? "Wybierz sposób udostępnienia lokalu, aby przejść dalej." : profile.requiresClientPhotos && !photoDraft.photos.length ? "Dodaj wymagane zdjęcie obszaru objętego usługą, aby przejść dalej." : "Poczekaj na przygotowanie zdjęć."}</p></>}
 
           <p className="m-0 mt-[18px] text-[12px] font-normal leading-[18px] text-[#7c8691]">
             Rozliczenie odbywa się bezpośrednio z Wykonawcą poza platformą.

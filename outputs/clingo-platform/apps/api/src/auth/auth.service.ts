@@ -1,3 +1,4 @@
+import { EmailVerificationService } from "./email-verification.service";
 import { BadRequestException, ConflictException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import Redis from "ioredis";
 import { REDIS_CLIENT } from "../redis/redis.module";
@@ -10,7 +11,7 @@ import { dummyPasswordCheck, hashPassword, passwordInput, verifyPassword } from 
 import { RateLimitService } from "./rate-limit.service";
 
 function emailInput(value: unknown) {
-  if (typeof value !== "string" || value.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) throw new BadRequestException("Wpisz poprawny adres e-mail.");
+  if (typeof value !== "string" || value.length > 320 || /[\x00-\x1f\x7f]/.test(value) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) throw new BadRequestException("Wpisz poprawny adres e-mail.");
   return value.trim().toLowerCase();
 }
 export function objectInput(value: unknown): Record<string, unknown> {
@@ -36,7 +37,7 @@ function toProfile(user: UserEntity) {
     apartment: user.apartment, city: user.city, companyName: user.companyName, email: user.email,
     firstName: user.firstName, id: user.id, initials: name.split(/\s+/).slice(0, 2).map(part => part[0].toUpperCase()).join("") || "U",
     lastName: user.lastName, name, phone: user.phone, postalCode: user.postalCode, street: user.street,
-    notifications: user.notificationPreferences
+    emailVerified: user.emailVerified, notifications: user.notificationPreferences
   };
 }
 @Injectable()
@@ -45,6 +46,7 @@ export class AuthService {
     @InjectRepository(UserEntity) private readonly users: Repository<UserEntity>,
     @InjectRepository(AuthSessionEntity) private readonly sessions: Repository<AuthSessionEntity>,
     private readonly limits: RateLimitService,
+    private readonly verification: EmailVerificationService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis
   ) {}
   async lookupEmail(value: unknown) {
@@ -62,8 +64,8 @@ export class AuthService {
     const { hash, salt } = await hashPassword(password);
     try {
       return await this.users.manager.transaction(async manager => {
-        const user = await manager.save(UserEntity, manager.create(UserEntity, { ...profile, email, passwordHash: hash, passwordSalt: salt }));
-        return { user: toProfile(user), token: await this.createSession(manager, email) };
+        const user = await manager.save(UserEntity, manager.create(UserEntity, { ...profile, email, passwordHash: hash, passwordSalt: salt, emailVerified: false, emailVerificationRequired: true }));
+        return this.verification.issue(manager, user);
       });
     } catch (error) {
       if ((error as { code?: string }).code === "23505") throw new ConflictException("Konto z tym adresem już istnieje.");
@@ -83,6 +85,7 @@ export class AuthService {
         throw new UnauthorizedException("Nieprawidłowy adres e-mail lub hasło.");
       }
       if (!await verifyPassword(password, user.passwordHash, user.passwordSalt)) throw new UnauthorizedException("Nieprawidłowy adres e-mail lub hasło.");
+      if (user.emailVerificationRequired && !user.emailVerified) return this.verification.issue(manager, user);
       if (!user.passwordHash.startsWith("scrypt$")) {
         // Old accounts used trimmed passwords; preserve compatibility only during upgrade.
         const upgraded = await hashPassword(password.trim());
@@ -91,6 +94,12 @@ export class AuthService {
       return { user: toProfile(user), token: await this.createSession(manager, email) };
     });
   }
+  async verifyEmail(value: unknown) {
+    const input = objectInput(value);
+    return this.verification.verify(input.verificationToken, input.code, async (manager, user) => ({ user: toProfile(user), token: await this.createSession(manager, user.email) }));
+  }
+  async verificationStatus(value: unknown) { return this.verification.status(objectInput(value).verificationToken); }
+  async resendVerification(value: unknown) { return this.verification.resend(objectInput(value).verificationToken); }
   private async createSession(manager: EntityManager, email: string) {
     const token = randomBytes(32).toString("hex");
     await manager.save(AuthSessionEntity, { tokenHash: createHash("sha256").update(token).digest("hex"), email,
@@ -105,6 +114,8 @@ export class AuthService {
   async sessionEmail(authorization?: string, manager = this.sessions.manager) {
     const session = await manager.findOneBy(AuthSessionEntity, { tokenHash: this.tokenHash(authorization) });
     if (!session || session.expiresAt.getTime() <= Date.now()) throw new UnauthorizedException("Sesja wygasła. Zaloguj się ponownie.");
+    const user = await manager.findOneBy(UserEntity, { email: session.email });
+    if (!user || user.emailVerificationRequired && !user.emailVerified) throw new UnauthorizedException("Potwierdź adres e-mail przed zalogowaniem.");
     return session.email;
   }
   async sessionUser(authorization?: string) {

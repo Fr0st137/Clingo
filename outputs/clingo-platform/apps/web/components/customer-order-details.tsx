@@ -1,3 +1,5 @@
+import { BookingPhotoGallery } from "./booking-photo-gallery";
+import { accessMethodLabel } from "../../api/src/dashboard/booking-access";
 import Link from "next/link";
 import type { OrderCardData } from "./order-card";
 import { OrderSessionTimeline } from "./order-session-timeline";
@@ -85,8 +87,10 @@ export function CustomerOrderDetails({ order }: { order: OrderCardData }) {
         </dl> : <p className="m-0 rounded-[15px] bg-[#f4f6f9] p-[15px] text-[#7c8691]">Brak zapisanego podsumowania kosztów.</p>}
       </section>
 
-      {details?.contactName || details?.contactPhone || details?.notes || details?.invoice ? <section className="grid gap-[15px] border-t border-[#e6edf3] pt-[20px]">
+      {!!details?.photos?.length && order.id && <section className="grid gap-[15px] border-t border-[#e6edf3] pt-[20px]"><h2 className="m-0 text-[16px] font-medium">Zdjęcia obszaru objętego usługą</h2><BookingPhotoGallery photos={details.photos} orderId={order.id} /></section>}
+      {details?.contactName || details?.contactPhone || details?.accessMethod || details?.notes || details?.invoice ? <section className="grid gap-[15px] border-t border-[#e6edf3] pt-[20px]">
         {details.contactName || details.contactPhone ? <div><h2 className="m-0 text-[16px] font-medium">Kontakt do zamawiającego</h2>{details.contactName ? <p className="mb-0 mt-[10px]">{details.contactName}</p> : null}{details.contactPhone ? <p className="m-0">{details.contactPhone}</p> : null}</div> : null}
+        {details.accessMethod ? <div><h2 className="m-0 text-[16px] font-medium">Sposób udostępnienia lokalu</h2><p className="mb-0 mt-[10px]">{accessMethodLabel(details.accessMethod)}</p></div> : null}
         {details.notes ? <div><h2 className="m-0 text-[16px] font-medium">Uwagi do zamówienia</h2><p className="mb-0 mt-[10px] whitespace-pre-wrap break-words">{details.notes}</p></div> : null}
         {details.invoice ? <div><h2 className="m-0 text-[16px] font-medium">Dane do faktury</h2><p className="mb-0 mt-[10px]">{details.invoice.companyName}<br />NIP: {details.invoice.taxId}<br />{details.invoice.address}</p></div> : null}
       </section> : null}

@@ -1,3 +1,4 @@
+import { isAccessMethod } from "../../api/src/dashboard/booking-access";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { AccountProfile } from "./account";
@@ -11,7 +12,7 @@ export async function loadBookingPage(params: Record<string, string | string[] |
   const providerId = read("provider");
   if (!providerId) redirect("/tablica-ogloszen");
   const query = new URLSearchParams();
-  for (const key of ["provider", "pricing", "frequency", "addons", "address", "area", "mode"]) if (read(key)) query.set(key, read(key));
+  for (const key of ["provider", "pricing", "frequency", "addons", "address", "area", "mode", "access", "photoDraft"]) if (read(key)) query.set(key, read(key));
   const cookieStore = await cookies();
   const email = decodeURIComponent(cookieStore.get("clingo-user-email")?.value ?? "");
   const loginUrl = `/logowanie?next=${encodeURIComponent(`${path}?${query}`)}`;
@@ -21,7 +22,8 @@ export async function loadBookingPage(params: Record<string, string | string[] |
     fetchPrivateJson<{ user: AccountProfile }>("/auth/profile").then(result => result.user)
   ]);
   if (!profile) notFound();
-  if (offerRequestState(profile, read("area"), read("address")) !== "ready") {
+  const accessMethod = read("access");
+  if (offerRequestState(profile, read("area"), read("address")) !== "ready" || !isAccessMethod(accessMethod)) {
     query.delete("provider");
     redirect(`/profil-ogloszeniowy/${encodeURIComponent(providerId)}?${query}`);
   }
@@ -33,7 +35,7 @@ export async function loadBookingPage(params: Record<string, string | string[] |
   const multi = profileBookingMode(profile, { pricingId, addOns, splitIntoSessions }) === "multi";
   const frequencyId = multi && profile.areaPricing ? profile.frequencies?.find(row => row.id === "once")?.id ?? "once" : read("frequency") || profile.frequencies?.[0]?.id || "";
   query.set("frequency", frequencyId);
-  return { profile, user, query: query.toString(), initialAddress: read("address"), selection: {
+  return { profile, user, query: query.toString(), initialAddress: read("address"), initialAccessMethod: accessMethod, photoDraft: read("photoDraft"), selection: {
     providerId, pricingId, frequencyId, addOns, ...(splitIntoSessions ? { splitIntoSessions: true } : {})
   } };
 }

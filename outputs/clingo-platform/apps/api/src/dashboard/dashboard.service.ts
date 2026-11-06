@@ -132,7 +132,7 @@ function toDashboardOrder(order: OrderEntity): DashboardOrder {
     range: lines.length === 2,
     actions: orderActions(order),
     summary: order.summary,
-    bookingDetails: order.selectedOptions ? { addOns: order.selectedOptions.addOns, contactName: order.selectedOptions.contactName, contactPhone: order.selectedOptions.contactPhone,
+    bookingDetails: order.selectedOptions ? { photos: order.selectedOptions.photos, addOns: order.selectedOptions.addOns, contactName: order.selectedOptions.contactName, contactPhone: order.selectedOptions.contactPhone, accessMethod: order.selectedOptions.accessMethod,
       frequencyLabel: order.selectedOptions.frequencyLabel, estimatedWorkers: order.selectedOptions.estimatedWorkers, notes: order.selectedOptions.notes, invoice: order.selectedOptions.invoice,
       completedAt:order.selectedOptions.projectCompletion?.at,
       sessions: order.selectedOptions.sessions?.map(({ id, startsAt, endsAt, workers },index) => ({ id, startsAt, endsAt, workers,releasedByCompletion:order.selectedOptions?.projectCompletion?.releasedSessionIds.includes(id??String(index+1))??false })) } : undefined,
@@ -453,7 +453,7 @@ export class DashboardService implements OnModuleInit {
       this.boardSearchFieldsRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardFiltersRepository.find({ order: { orderIndex: "ASC" } }),
       this.boardListingsRepository.find({ order: { orderIndex: "ASC" } }),
-      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "accountId", "bookingSettings", "addOns", "service", "areaPricing"] })
+      this.providerProfilesRepository.find({ where: { published: true }, select: ["id", "accountId", "bookingSettings", "addOns", "service", "metrics", "areaPricing", "pricing", "frequencies", "tags"] })
     ]);
     const profilesById = new Map((await Promise.all(providerProfiles.map(profile => withRosterHours(this.providerProfilesRepository.manager, profile)))).map((profile) => [profile.id, profile]));
 
@@ -464,8 +464,14 @@ export class DashboardService implements OnModuleInit {
       filters: filters.map(({ id, title, options }) => ({ id, title, options })),
       listings: listings.filter((listing) => profilesById.has(listing.id) && profilesById.get(listing.id)?.staffingValid !== false).map((listing) => ({
         service: profilesById.get(listing.id)?.service,
+        serviceCategory: profilesById.get(listing.id)?.serviceCategory,
+        serviceMetrics: profilesById.get(listing.id)?.metrics ?? [],
         areaPricing: profilesById.get(listing.id)?.areaPricing,
-        addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })) ?? [],
+        pricing: profilesById.get(listing.id)?.pricing?.map(({ id, label, priceValue, duration }) => ({ id, label, priceValue, duration })) ?? [],
+        frequencies: profilesById.get(listing.id)?.frequencies?.map(({ id, label, discount }) => ({ id, label, discount })) ?? [],
+        bookingSettings: profilesById.get(listing.id)?.bookingSettings,
+        tags: profilesById.get(listing.id)?.tags,
+        addOns: profilesById.get(listing.id)?.addOns?.map(({ id, label, durationMinutes, priceValue }) => ({ id, label, durationMinutes, priceValue })) ?? [],
         id: listing.id,
         provider: listing.provider,
         ...this.customer.rating({ rating: Number(listing.rating), reviewsCount: listing.reviews }, ratings.get(listing.id)),

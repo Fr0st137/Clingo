@@ -14,7 +14,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Prov
   const { id } = await params;
   const query = await searchParams;
   const read = (key: string) => typeof query[key] === "string" ? query[key] as string : "";
-  const initialRequest = { area: read("area"), address: read("address") || read("location"), pricing: read("pricing"), frequency: read("frequency"), addons: read("addons") };
+  const initialRequest = { area: read("area"), address: read("address") || read("location"), pricing: read("pricing"), frequency: read("frequency"), addons: read("addons"), access: read("access"), photoDraft: read("photoDraft") };
 
   try {
     const providerProfile = await getProviderProfile(id);

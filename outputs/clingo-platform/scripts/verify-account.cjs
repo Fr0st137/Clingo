@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID, createHash, scryptSync } = require('node:crypto');
 const { Client } = require('pg');
@@ -13,7 +14,7 @@ const db = new Client({ host: process.env.POSTGRES_HOST || '127.0.0.1', port: Nu
 const accounts = [];
 async function request(path, body, token, method = 'GET') {
   const response = await fetch(`${base}${path}`, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(method !== 'GET' ? { body: JSON.stringify(body ?? {}) } : {}) });
-  return { status: response.status, data: await response.json() };
+  return { status: response.status, data: await finishFixtureRegistration(path, await response.json()) };
 }
 async function expect(path, method, body, token, status) {
   const result = await request(path, body, token, method);

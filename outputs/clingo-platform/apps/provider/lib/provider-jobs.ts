@@ -1,10 +1,11 @@
 import { parseDay, shiftDate, weekDates, warsawToday } from "./provider-schedule";
-export type Job = { id: string; clientId: string; offerId: string; employeeId: string | null; date: string; startMinute: number; durationMinutes: number; priceMinor: number; notes: string; status: "scheduled" | "completed" | "cancelled"; revision: number; clientName: string; clientPhone: string; clientEmail: string; address: string; serviceTitle: string; employeeName: string; multiOrderId?: string | null; sessionIndex?: number | null; sessionCount?: number | null;
+export type Job = { customerPhotos?: import("../../api/src/dashboard/booking-photo.types").BookingPhotoRef[]; id: string; clientId: string; offerId: string; employeeId: string | null; date: string; startMinute: number; durationMinutes: number; priceMinor: number; notes: string; status: "scheduled" | "completed" | "cancelled"; revision: number; clientName: string; clientPhone: string; clientEmail: string; address: string; serviceTitle: string; employeeName: string; multiOrderId?: string | null; sessionIndex?: number | null; sessionCount?: number | null;
   source?: "booking"; bookingId?: string; startsAt?: string; endsAt?: string;
   summary?: { duration: string; total: string; lines: Array<{ id: string; label: string; value: string }> } | null;
   addOns?: Array<{ id: string; label: string; quantity: number }>;
   invoice?: { companyName: string; taxId: string; address: string } | null;
   frequencyLabel?: string | null;
+  accessMethod?: import("../../api/src/dashboard/booking-access").AccessMethod;
   estimatedWorkers?: number;
   isProject?: boolean;
   releasedByCompletion?: boolean;

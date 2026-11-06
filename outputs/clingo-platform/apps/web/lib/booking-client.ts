@@ -1,3 +1,4 @@
+import type { AccessMethod } from "../../api/src/dashboard/booking-access";
 import type { AccountProfile } from "./account";
 import type { ProviderProfileData } from "../components/provider-profile-view";
 
@@ -5,8 +6,8 @@ export type BookingSelection = { providerId: string; pricingId: string; frequenc
 export type BookingQuote = { mode?: "single" | "multi"; durationMinutes: number; estimatedWorkers?: number; totalValue: number; frequencyLabel: string; summary: { duration: string; total: string; lines: Array<{ id: string; label: string; value: string }> } };
 export type BookingSlot = { time: string; startsAt: string; endsAt: string };
 export type BookingAvailability = { days: Array<{ date: string; slots: BookingSlot[] }>; quote: BookingQuote; today: string; maxDate: string };
-export type BookingPageProps = { selection: BookingSelection; query: string; profile: ProviderProfileData; user: AccountProfile; initialAddress: string };
-export type BookingDraft = { startsAt: string; address: string; apartment: string; notes: string; contactName: string; contactPhone: string; invoiceRequested: boolean; companyName: string; taxId: string; invoiceAddress: string; requestId: string };
+export type BookingPageProps = { selection: BookingSelection; query: string; profile: ProviderProfileData; user: AccountProfile; initialAddress: string; initialAccessMethod: AccessMethod; photoDraft?: string };
+export type BookingDraft = { accessMethod: AccessMethod | ""; startsAt: string; address: string; apartment: string; notes: string; contactName: string; contactPhone: string; invoiceRequested: boolean; companyName: string; taxId: string; invoiceAddress: string; requestId: string };
 
 export class BookingError extends Error {
   constructor(message: string, public status: number) { super(message); }

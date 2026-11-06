@@ -1,9 +1,10 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const { randomUUID } = require('node:crypto');
 const { readFileSync, writeFileSync, rmSync, mkdirSync } = require('node:fs');
 const { resolve, dirname } = require('node:path');
 const { Client } = require('pg');
 const file = resolve(__dirname, '../tmp/provider-week-visual-fixture.json');
-async function request(path, method='GET', token, body) { const response = await fetch(`http://localhost:4000${path}`, { method, headers: { 'Content-Type':'application/json', ...(token ? { Authorization:`Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body:JSON.stringify(body) }) }); const data = await response.json(); if (!response.ok) throw new Error(`${path}: ${response.status} ${JSON.stringify(data)}`); return data; }
+async function request(path, method='GET', token, body) { const response = await fetch(`http://localhost:4000${path}`, { method, headers: { 'Content-Type':'application/json', ...(token ? { Authorization:`Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body:JSON.stringify(body) }) }); const data = await finishFixtureRegistration(path, await response.json()); if (!response.ok) throw new Error(`${path}: ${response.status} ${JSON.stringify(data)}`); return data; }
 async function cleanup(email) { const db = new Client({host:'127.0.0.1',port:55432,database:'clingo',user:'clingo',password:'clingo'}); await db.connect(); try { const user=(await db.query('SELECT id FROM users WHERE email=$1',[email])).rows[0]; if(!user)return; const membership=(await db.query('SELECT account_id FROM provider_memberships WHERE user_id=$1',[user.id])).rows[0]; if(membership){ for(const table of ['provider_jobs','provider_clients','provider_offers','provider_employees']) await db.query(`DELETE FROM ${table} WHERE account_id=$1`,[membership.account_id]); await db.query('DELETE FROM provider_memberships WHERE account_id=$1',[membership.account_id]); await db.query('DELETE FROM provider_accounts WHERE id=$1',[membership.account_id]); } await db.query('DELETE FROM auth_sessions WHERE email=$1',[email]); await db.query('DELETE FROM users WHERE id=$1',[user.id]); } finally { await db.end(); } }
 async function main(){
   if(process.argv[2]==='setup'){

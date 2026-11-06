@@ -17,7 +17,7 @@ export type Staffing = { employees: ProviderEmployeeEntity[]; occupied: Occupied
 async function roster(manager: EntityManager, profile: ProviderProfileEntity) {
   const employees = await manager.find(ProviderEmployeeEntity, { where: { accountId: profile.accountId! }, order: { id: "ASC" } });
   const source = /^service-[a-f0-9-]{36}$/i.test(profile.id) ? await manager.findOneBy(ProviderOfferEntity, { id: profile.id.slice(8), accountId: profile.accountId! }) : null;
-  return { employees, category: source?.category };
+  return { employees, category: source?.category, requiresClientPhotos: source?.configuration.requiresClientPhotos ?? false };
 }
 
 export function rosterHours(employees: ProviderEmployeeEntity[], base: WorkingHours) {
@@ -47,7 +47,7 @@ export async function withRosterHours(manager: EntityManager, profile: ProviderP
   const account = await manager.findOneBy(ProviderAccountEntity, { id: profile.accountId });
   const limit = staffingLimit(account ?? { staffingMode: "team", declaredStaff: null }, staff.employees.length);
   const staffingValid = staff.employees.length > 0 && !(account?.staffingMode === "solo" && staff.employees.length > 1) && (profile.areaPricing?.workerTiers ?? []).every(row => row.workers <= limit);
-  return { ...profile, staffingValid, bookingSettings: rosterHours(eligible, profile.bookingSettings ?? defaultWorkingHours),
+  return { ...profile, staffingValid, serviceCategory: staff.category, requiresClientPhotos: staff.requiresClientPhotos, bookingSettings: rosterHours(eligible, profile.bookingSettings ?? defaultWorkingHours),
     areaPricing: profile.areaPricing ? { ...profile.areaPricing, dailyCapacityByWorkers: Object.fromEntries([...new Set([1, ...(profile.areaPricing.workerTiers?.map(row => row.workers) ?? [])])].map(workers => [String(workers), rosterCapacity(eligible, workers)])) } : null };
 }
 

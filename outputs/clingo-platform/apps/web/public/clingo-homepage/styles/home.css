@@ -1144,6 +1144,9 @@ body.addons-open .home-page__search-stage {
 
   .home-page__search-service-dropdown {
     grid-template-columns: 1fr;
+    max-height: min(60dvh, 480px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .home-page__search-footer {

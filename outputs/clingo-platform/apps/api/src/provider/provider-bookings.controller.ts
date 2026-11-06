@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Post, Put } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Post, Put, StreamableFile } from "@nestjs/common";
 import { ProviderBookingsService } from "./provider-bookings.service";
 @Controller("provider/bookings")
 export class ProviderBookingsController {
   constructor(private readonly bookings: ProviderBookingsService) {}
   @Get("profiles") profiles(@Headers("authorization") auth?: string) { return this.bookings.profiles(auth); }
+  @Get(":id/photos/:photoId") photo(@Headers("authorization") auth: string | undefined, @Param("id", new ParseUUIDPipe()) id: string, @Param("photoId", new ParseUUIDPipe()) photoId: string) { return this.bookings.photo(auth, id, photoId).then(data => new StreamableFile(data, { type: "image/webp" })); }
   @Get(":id") get(@Headers("authorization") auth: string | undefined, @Param("id", new ParseUUIDPipe()) id: string) { return this.bookings.get(auth, id); }
   @Post(":id/staffing") staffing(@Headers("authorization") auth: string | undefined, @Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.bookings.staffing(auth, id, body); }
   @Put(":id/staffing") assign(@Headers("authorization") auth: string | undefined, @Param("id", new ParseUUIDPipe()) id: string, @Body() body: unknown) { return this.bookings.assign(auth, id, body); }

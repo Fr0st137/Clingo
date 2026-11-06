@@ -17,6 +17,8 @@ export type DashboardOrder = {
     addOns?: Array<{ id: string; label: string; quantity: number }>;
     contactName?: string;
     contactPhone?: string;
+    photos?: import("./booking-photo.types").BookingPhotoRef[];
+    accessMethod?: import("./booking-access").AccessMethod;
     frequencyLabel?: string;
     estimatedWorkers?: number;
     notes?: string;
@@ -129,8 +131,14 @@ export type FilterGroup = {
 
 export type BoardListing = {
   service?: string;
+  serviceCategory?: string;
+  serviceMetrics?: Array<{ id: string; label: string; value: string }>;
   areaPricing?: import("./area-pricing").AreaPricing | null;
-  addOns?: Array<{ id: string; label: string; durationMinutes?: number }>;
+  pricing?: Array<{ id: string; label: string; priceValue: number; duration: string }> | null;
+  frequencies?: Array<{ id: string; label: string; discount: string }> | null;
+  bookingSettings?: import("./booking-policy").WorkingHours | null;
+  tags?: string[];
+  addOns?: Array<{ id: string; label: string; durationMinutes: number; priceValue: number }>;
   id: string;
   provider: string;
   rating: number;
@@ -152,6 +160,7 @@ export type BoardPayload = {
 };
 
 export type ProviderProfile = {
+  requiresClientPhotos?: boolean;
   areaPricing?: import("./area-pricing").AreaPricing | null;
   id: string;
   provider: string;

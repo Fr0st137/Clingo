@@ -1,3 +1,4 @@
+const { createVerifiedFixture } = require('./test-registration.cjs');
 const { chromium } = require(process.env.CLINGO_PLAYWRIGHT || 'C:/Users/pc/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const { Client } = require('pg');
 const { randomUUID } = require('node:crypto');
@@ -24,7 +25,8 @@ const db = new Client({ host: '127.0.0.1', port: 55432, database: 'clingo', user
       assert.ok(response.ok(), `${path}: ${response.status()} ${await response.text()}`);
       return response.json();
     }
-    await request('auth/register', 'POST', { email, password });
+    await createVerifiedFixture({ email, password });
+    await request('auth/login', 'POST', { email, password });
     await request('account', 'POST', { name: 'Test projektu usług' });
     const offers = [];
     for (const [category, title] of [['homes', 'Sprzątanie obiektów'], ['offices', 'Sprzątanie obiektów'], ['pressure', 'Mycie ciśnieniowe'], ['painting', 'Malowanie pow.']]) offers.push(await request('services', 'POST', { category, title, description: '', priceMinor: 14990, durationMinutes: 90, status: 'draft' }));

@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 // Full HTTP/SQL verification in a disposable schema; never uses application rows.
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
@@ -51,7 +52,7 @@ async function main() {
     const origin = await app.getUrl();
     async function request(path, method = 'GET', token, body) {
       const response = await fetch(origin + path, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-      return { status: response.status, data: await response.json() };
+      return { status: response.status, data: await finishFixtureRegistration(path, await response.json()) };
     }
     async function register(tag) {
       const testPassword = `test only ${randomUUID()}`;

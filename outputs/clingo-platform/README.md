@@ -1,5 +1,9 @@
 # Clingo Platform
 
+Aktywacja nowych kont (K07): [opis, konfiguracja poczty i testy](docs/k07-aktywacja-konta-2026-11-06.md). Rejestracja wymaga rzeczywistego potwierdzenia kodu z e-maila. Lokalnie wiadomości przechwytuje Mailpit (`docker compose up -d mailpit`, skrzynka `http://localhost:8025`). Przed wdrożeniem zastosuj `apps/api/src/database/migrations/20261106-email-verification.sql` i skonfiguruj docelowy SMTP. Testy: `npm run test:email-verification` oraz `npm run verify:email-verification`.
+
+Zdjęcia klienta do zamówienia (K06): [opis działania i testów](docs/k06-zdjecia-klienta-2026-11-06.md). Przy wyłączonej synchronizacji schematu zastosuj `apps/api/src/database/migrations/20261106-booking-photos.sql`. Lokalnie: `node scripts/migrate-booking-photos.cjs`. Sprawdzenie: `npm run test:booking-photos` i `npm run verify:booking-photos`.
+
 Własne zlecenia wielosesyjne: formularz, wybór dodatków z Figmy, planowanie sesji i atomowy zapis są opisane w [dokumentacji](docs/wlasne-zlecenia-wielosesyjne.md). Weryfikacja: `npm run test:manual-projects` oraz `npm run verify:manual-projects`. Przed uruchomieniem na istniejącej bazie zastosuj `apps/api/src/database/migrations/20261030-manual-projects.sql` po migracjach R06/R07.
 
 Notatki z tytułami i prywatne zdjęcia projektów wymagają również `apps/api/src/database/migrations/20261030-project-notes-photos.sql`. Sprawdzenie reguł i całego przebiegu: `npm run test:project-notes`, `npm run verify:project-notes`.
@@ -21,7 +25,7 @@ npm run dev:provider
 npm run dev:api
 ```
 
-Optional local services:
+Local development services:
 
 ```bash
 docker compose up -d
@@ -41,7 +45,7 @@ The provider search in the public header suggests matching profiles by person or
 
 ## Customer reservations
 
-The current single-visit checkout is connected to PostgreSQL: offer selection, available date/time, address/contact/invoice details, notes, server-calculated summary, confirmation, and the customer's reservations list. Drafts survive refresh/back navigation in the same browser tab. A server-issued session is required; users of the old preview must sign in again. Registration currently creates a local account directly; email verification is not implemented and no activation message is claimed.
+The current single-visit checkout is connected to PostgreSQL: offer selection, available date/time, address/contact/invoice details, notes, server-calculated summary, confirmation, and the customer's reservations list. Drafts survive refresh/back navigation in the same browser tab. A server-issued session is required; users of the old preview must sign in again. New registrations require an emailed activation code before a full session is created. Local messages are captured by Mailpit; production delivery requires SMTP configuration. See the K07 report linked above.
 
 Availability uses the provider's existing reservations and optional `provider_profiles.booking_settings` JSON (`days`: Sunday=0, `startHour`, `endHour`, `bufferMinutes`, `leadHours`). Without configuration the development default is Monday–Saturday, 08:00–20:00, one simultaneous reservation per provider. Times are interpreted in Europe/Warsaw, in 15-minute start intervals, up to six months ahead. The complete service must fit within working hours. Employee schedules and multi-session planning are not implemented yet. Frequency selection stores the chosen preference/discount for this visit; it does not automatically book subsequent visits.
 
@@ -69,7 +73,7 @@ The integration check uses isolated temporary accounts and a cloned test provide
 
 ## Account settings, favorites and reviews
 
-The customer account now persists personal/contact details, address and email/SMS preferences in PostgreSQL. The email address is read-only until verified email changes are implemented. Saving notification preferences does not send messages: SMTP/SMS integrations and OAuth account connections remain unavailable, explicitly labeled in settings. Forgotten-password recovery and account activation are separate, unfinished email/SMS flows.
+The customer account now persists personal/contact details, address and email/SMS preferences in PostgreSQL. The email address is read-only until verified email changes are implemented. Saving notification preferences does not send order notifications: those deliveries, SMS and OAuth account connections remain unfinished. Registration activation now uses the separate SMTP verification flow described above; forgotten-password recovery is still unfinished.
 
 Password changes require the current password and matching new passwords (15–128 characters). New passwords are not trimmed. Only salted, versioned scrypt hashes are stored (`N=131072, r=8, p=1`, 32-byte derived key, independent 16-byte random salt); raw passwords and session tokens are not stored in the database. Legacy scrypt hashes are upgraded on successful login. Password rotation locks the account, updates the hash and invalidates all previous sessions in one transaction; the current browser receives a new HttpOnly cookie. Logout revokes its server session. Authentication and review-write rate limits are atomic PostgreSQL counters, shared across server instances, with expired buckets cleaned periodically. Password derivations are asynchronous with a bounded concurrency of two per process.
 

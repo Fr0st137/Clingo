@@ -112,6 +112,14 @@ const closeSearchDropdowns = () => {
   collapseLocationMenuState();
 };
 
+listen(document, "keydown", event => {
+  if (event.key !== "Escape") return;
+  const serviceWasOpen = serviceMenu?.classList.contains("is-open");
+  closeSearchDropdowns();
+  setAddonsPanelOpen(false);
+  if (serviceWasOpen) serviceTrigger?.focus();
+});
+
 const setHeaderMobileMenuOpen = (isOpen) => {
   if (!headerElement || !headerMobileToggle) {
     return;

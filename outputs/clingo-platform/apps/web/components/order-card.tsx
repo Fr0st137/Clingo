@@ -19,6 +19,8 @@ export type OrderCardData = {
     addOns?: Array<{ id: string; label: string; quantity: number }>;
     contactName?: string;
     contactPhone?: string;
+    photos?: import("../../api/src/dashboard/booking-photo.types").BookingPhotoRef[];
+    accessMethod?: import("../../api/src/dashboard/booking-access").AccessMethod;
     frequencyLabel?: string;
     estimatedWorkers?: number;
     notes?: string;

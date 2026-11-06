@@ -45,6 +45,9 @@ export class UserEntity {
   @Column({ default: false, name: "email_verified", type: "boolean" })
   emailVerified!: boolean;
 
+  @Column({ default: true, name: "email_verification_required", type: "boolean" })
+  emailVerificationRequired!: boolean;
+
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
 

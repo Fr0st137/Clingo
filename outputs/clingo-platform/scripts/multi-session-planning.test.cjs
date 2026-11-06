@@ -77,7 +77,7 @@ test('R02: automatic scheduling and confirmation work for an area offer without 
   const selection = { providerId: 'profile', pricingId: 'area-500', frequencyId: 'weekly', addOns: [] };
   const generated = await service.multiSchedule({ ...selection, startsAt: start });
   assert.equal(generated.quote.mode, 'multi'); assert.equal(generated.quote.frequencyId, 'once');
-  const booking = { ...selection, requestId: '22222222-2222-4222-8222-222222222222', address: 'Testowa 1, Warszawa', contactName: 'Anna', contactPhone: '500600700', expectedTotal: 750 };
+  const booking = { ...selection, requestId: '22222222-2222-4222-8222-222222222222', address: 'Testowa 1, Warszawa', contactName: 'Anna', accessMethod: 'someone-present', contactPhone: '500600700', expectedTotal: 750 };
   await assert.rejects(() => service.create({ ...booking, startsAt: start }, 'a@example.test'), /wymaga harmonogramu/);
   await service.create({ ...booking, sessions: generated.sessions }, 'a@example.test');
   assert.equal(saved.mode, 'Wielosesyjne'); assert.equal(bookingJobs(saved).length, generated.sessions.length);

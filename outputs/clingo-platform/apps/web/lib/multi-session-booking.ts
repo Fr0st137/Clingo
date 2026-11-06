@@ -21,7 +21,7 @@ export type MultiSessionBookingState = {
 };
 
 export function multiSessionStorageKey(props: BookingPageProps) {
-  return `clingo-multi-session:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}`;
+  return `clingo-multi-session:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}:${props.initialAccessMethod}`;
 }
 
 export function multiSessionDateValue(displayDate: string) {

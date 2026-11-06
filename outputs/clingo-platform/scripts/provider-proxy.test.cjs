@@ -15,6 +15,19 @@ function call(path, method = 'GET', options = {}) {
     ...(method !== 'GET' ? { body: options.body ?? '{}' } : {}) });
   return route.exports[method](request, { params: Promise.resolve({ path: path.split('/') }) });
 }
+test('K07: provider registration and activation keep pending credentials separate from full sessions', async t => {
+  t.mock.method(global, 'fetch', async () => Response.json({ verificationRequired: true, verificationToken: 'a'.repeat(64), email: 'test@example.test' }, { status: 201 }));
+  const pending = await call('auth/register', 'POST');
+  assert.equal((await pending.json()).verificationToken, undefined);
+  assert.match(pending.headers.getSetCookie().find(value => value.startsWith('clingo-provider-verification=')), /HttpOnly/);
+  assert.match(pending.headers.getSetCookie().find(value => value.startsWith('clingo-provider-session=')), /Max-Age=0/);
+  assert.equal((await call('auth/verify-email', 'POST', { body: JSON.stringify({ verificationToken: 'forged', code: '1234' }) })).status, 401);
+  let body;
+  t.mock.method(global, 'fetch', async (_url, init) => { body = JSON.parse(init.body); return Response.json({ user: { email: 'test@example.test' }, token: 'b'.repeat(64) }, { status: 201 }); });
+  const activated = await call('auth/verify-email', 'POST', { headers: { cookie: 'clingo-provider-verification=' + 'a'.repeat(64) }, body: JSON.stringify({ code: '1234', verificationToken: 'forged' }) });
+  assert.equal(body.verificationToken, 'a'.repeat(64)); assert.equal((await activated.json()).token, undefined);
+  assert.match(activated.headers.getSetCookie().find(value => value.startsWith('clingo-provider-session=')), /HttpOnly/);
+});
 test('proxy requires provider cookie and denies arbitrary upstream routes', async () => {
   assert.equal((await call('employees')).status, 401);
   assert.equal((await call('../auth/profile')).status, 404);

@@ -1,9 +1,10 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert=require('node:assert/strict');const{randomUUID}=require('node:crypto');const fs=require('node:fs');const{Client}=require('pg');
 const{chromium}=require('C:/Users/pc/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const{defaultOfferConfiguration}=require('../apps/api/dist/provider/provider-offers.input');const{localDate,addLocalDays,warsawDate}=require('../apps/api/dist/dashboard/booking');
 const run=randomUUID(),emails=['owner','customer','foreign'].map(role=>`r06-${role}-${run}@example.test`),accounts=[],profiles=[];
 const db=new Client({host:'127.0.0.1',port:55432,database:'clingo',user:'clingo',password:'clingo'});
-async function request(path,token,body,method=body===undefined?'GET':'POST'){const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await response.json()};}
+async function request(path,token,body,method=body===undefined?'GET':'POST'){const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await finishFixtureRegistration(path, await response.json())};}
 async function ok(...args){const result=await request(...args);assert.ok(result.status<300,JSON.stringify(result));return result.data;}
 const payload=project=>({revision:project.revision,areaSquareMeters:project.estimate.areaSquareMeters,sessions:project.sessions.map(({id,date,startMinute,endMinute,employeeIds})=>({id,date,startMinute,endMinute,employeeIds}))});
 const time=minute=>`${String(Math.floor(minute/60)).padStart(2,'0')}:${String(minute%60).padStart(2,'0')}`;
@@ -12,11 +13,11 @@ async function main(){await db.connect();let browser;try{
  for(const user of[owner,foreign])accounts.push((await ok('/provider/account',user.token,{name:`Projekty R06 ${run}`})).account.id);
  await ok('/provider/settings/location',owner.token,{street:'Testowa 1',city:'Warszawa',postalCode:'00-001',radiusKm:25,revision:1},'PUT');
  const employees=[];for(const name of['Anna projektu','Barbara projektu','Celina projektu'])employees.push(await ok('/provider/employees',owner.token,{name,email:'',phone:'',services:['homes'],showInCalendar:true,schedule:Array.from({length:7},(_,day)=>({day,enabled:true,start:'08:00',end:'20:00'}))}));
- const input={title:'Sprzątanie projektu R06',category:'homes',description:'Test pełnej edycji projektu.',priceMinor:15000,durationMinutes:60,status:'draft',configuration:{...defaultOfferConfiguration(),standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers:2}]}};
+ const input={title:'Sprzątanie projektu R06',category:'homes',description:'Test pełnej edycji projektu.',priceMinor:15000,durationMinutes:60,status:'draft',configuration:{...defaultOfferConfiguration(),requiresClientPhotos:false,standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers:2}]}};
  let offer=await ok('/provider/services',owner.token,input);offer=await ok(`/provider/services/${offer.id}`,owner.token,{...input,status:'published',revision:offer.revision},'PUT');const profileId=`service-${offer.id}`;profiles.push(profileId);
  const date=addLocalDays(localDate(new Date()),2),selection={providerId:profileId,pricingId:'area-1000',frequencyId:'once',addOns:[]};
  const generated=await ok('/dashboard/booking/multi-schedule',null,{...selection,startsAt:warsawDate(date,'08:00').toISOString()});
- const order=await ok('/dashboard/orders',customer.token,{...selection,sessions:generated.sessions,address:'Testowa 1, Warszawa',contactName:'Klient projektu R06',contactPhone:'500600700',requestId:randomUUID()});
+ const order=await ok('/dashboard/orders',customer.token,{...selection,sessions:generated.sessions,address:'Testowa 1, Warszawa',contactName:'Klient projektu R06',accessMethod: 'someone-present', contactPhone: '500600700',requestId:randomUUID()});
  const path=`/provider/projects/booking/${order.id}`,get=()=>ok(path,owner.token),save=value=>ok(path,owner.token,value,'PUT');
  let project=await get();assert.equal(project.balance.requiredMinutes,1800);assert.equal(project.balance.plannedMinutes,1800);assert.equal(project.sessions.length,2);assert.equal(project.estimate.source,'area');
  for(const method of['GET','PUT'])assert.equal((await request(path,foreign.token,method==='GET'?undefined:payload(project),method)).status,404);
@@ -39,7 +40,7 @@ async function main(){await db.connect();let browser;try{
  const concurrent=payload(project),first=structuredClone(concurrent),second=structuredClone(concurrent);first.sessions[0].endMinute=600;second.sessions[0].endMinute=675;
  const race=await Promise.all([request(path,owner.token,{...first,confirmOverplanned:true,confirmUnderplanned:true},'PUT'),request(path,owner.token,{...second,confirmOverplanned:true,confirmUnderplanned:true},'PUT')]);assert.deepEqual(race.map(row=>row.status).sort(),[200,409]);project=await get();
  const occupiedDate=addLocalDays(project.sessions[0].date,1);
- await ok('/dashboard/orders',customer.token,{...selection,pricingId:'area-100',startsAt:warsawDate(occupiedDate,'08:00').toISOString(),address:'Testowa 2, Warszawa',contactName:'Inny klient R06',contactPhone:'500600701',requestId:randomUUID()});
+ await ok('/dashboard/orders',customer.token,{...selection,pricingId:'area-100',startsAt:warsawDate(occupiedDate,'08:00').toISOString(),address:'Testowa 2, Warszawa',contactName:'Inny klient R06',accessMethod: 'someone-present', contactPhone: '500600701',requestId:randomUUID()});
  const collision=payload(project);collision.sessions[0].date=occupiedDate;assert.equal((await request(path,owner.token,{...collision,confirmOverplanned:true,confirmUnderplanned:true},'PUT')).status,409);
  const absence=await ok('/provider/absences',owner.token,{start:`${project.sessions[0].date}T08:00`,end:`${project.sessions[0].date}T20:00`,reason:'L4',employeeIds:[project.sessions[0].employeeIds[0]]});
  project=await save({...payload(project),areaSquareMeters:project.balance.plannedMinutes/1.8});assert.equal(project.balance.state,'balanced','An unchanged reservation survives a later absence');
@@ -87,7 +88,7 @@ async function main(){await db.connect();let browser;try{
  // Exercise the data backfill on isolated legacy-shaped fixtures, including numeric PostgreSQL fields.
  const historicId=await proposal(25);await db.query('UPDATE provider_multi_orders SET area_square_meters=100.25 WHERE id=$1',[historicId]);
  const historicDate=addLocalDays(date,20),historicSchedule=await ok('/dashboard/booking/multi-schedule',null,{...selection,startsAt:warsawDate(historicDate,'08:00').toISOString()});
- const historicOrder=await ok('/dashboard/orders',customer.token,{...selection,sessions:historicSchedule.sessions,address:'Testowa 1, Warszawa',contactName:'Historia R06',contactPhone:'500600700',requestId:randomUUID()});
+ const historicOrder=await ok('/dashboard/orders',customer.token,{...selection,sessions:historicSchedule.sessions,address:'Testowa 1, Warszawa',contactName:'Historia R06',accessMethod: 'someone-present', contactPhone: '500600700',requestId:randomUUID()});
  const historicRow=(await db.query('SELECT selected_options,summary FROM orders WHERE id=$1',[historicOrder.id])).rows[0],historicOptions=JSON.parse(historicRow.selected_options);delete historicOptions.projectEstimate;historicOptions.sessions.forEach(row=>{delete row.id;delete row.priceMinor;});
  await db.query('UPDATE orders SET selected_options=$2 WHERE id=$1',[historicOrder.id,JSON.stringify(historicOptions)]);
  const {execFileSync}=require('node:child_process'),migrationLogs=[];for(let run=0;run<2;run++)migrationLogs.push(execFileSync(process.execPath,['scripts/migrate-project-estimates.cjs'],{stdio:'pipe',timeout:30000}).toString());fs.writeFileSync('tmp/r06-migration-fixtures.log',migrationLogs.join('\n'));

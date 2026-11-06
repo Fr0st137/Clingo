@@ -1,5 +1,7 @@
 "use client";
 import "../app/project-editor.css";
+import {BookingPhotoGallery} from "../../web/components/booking-photo-gallery";
+import {accessMethodLabel} from "../../api/src/dashboard/booking-access";
 import {useEffect,useMemo,useState} from "react";
 import {ApiError,providerApi} from "../lib/provider-client";
 import {timeLabel} from "../lib/provider-jobs";
@@ -74,6 +76,8 @@ export function ProviderProjectEditor({source,id,onClose,onSaved}:{source:Projec
     <header className="project-editor-heading"><div><h2 id="project-editor-title">Edytor projektu</h2><p>{project?.clientName} · {project?.title}</p></div><button className="settings-button" type="button" disabled={busy} onClick={()=>{if(!dirty||window.confirm("Odrzucić niezapisane zmiany?"))onClose();}}>Zamknij</button></header>
     {resource.loading||resource.error?<SettingsLoadState loading={resource.loading} error={resource.error} retry={resource.reload}/>:project&&<>
       {project.completion&&<p className="project-warning" role="status">Projekt zakończony {new Date(project.completion.at).toLocaleString("pl-PL")}. Zwolnione przyszłe sesje: {project.completion.releasedSessionIds.length}. Poniżej zachowano ostatni plan; jego godziny i procent opisują planowanie, a nie czas faktycznie wykonanej pracy.</p>}
+      {source==="booking"&&<p><strong>Sposób udostępnienia lokalu</strong><br />{accessMethodLabel(project.accessMethod)}</p>}
+      {source==="booking"&&!!project.customerPhotos?.length&&<section><h3>Zdjęcia od klienta</h3><BookingPhotoGallery photos={project.customerPhotos} orderId={id} provider /></section>}
       <div className="project-overview"><label>Powierzchnia projektu (m²)<input type="number" min="0.01" max="10000" step="0.01" value={area} disabled={busy||!project.canEdit||project.estimate.workMinutesPerSquareMeter===null} onChange={event=>{setArea(event.target.value);setUnder(false);setOver(false);setMessage("");}}/></label><p>Uzgodniona kwota: <strong>{offerPrice(project.priceMinor)}</strong><small>Zmiana powierzchni przelicza wymagane godziny. Kwotę uzgodnij z klientem oddzielnie.</small></p></div>
       {project.estimate.source==="historical-plan"&&<p className="team-help">Wymaganą pracę odtworzono z pierwotnego harmonogramu. {project.estimate.workMinutesPerSquareMeter===null?"Brak zapisanej podstawy do zmiany powierzchni.":"Zmiana powierzchni przelicza ją proporcjonalnie."}</p>}
       {preview?<section className="project-balance" aria-label="Bilans roboczogodzin"><div className="project-metrics">{[["Wymagane",preview.requiredMinutes],["Zaplanowane",preview.plannedMinutes],["Pozostało",preview.remainingMinutes],["Nadmiar",preview.excessMinutes]].map(([label,value])=><p key={label}><span>{label}</span><strong>{workLabel(Number(value))}</strong></p>)}</div><p>Pokrycie wymaganej pracy: <strong>{preview.percentage}%</strong></p><div className={`project-progress is-${preview.state}`} role="progressbar" aria-label="Pokrycie wymaganej pracy" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100,preview.percentage)} aria-valuetext={`${preview.percentage}%`}><span style={{width:`${Math.min(100,preview.percentage)}%`}}/></div></section>:<p role="alert" className="provider-feedback is-error">Podaj poprawną powierzchnię projektu.</p>}

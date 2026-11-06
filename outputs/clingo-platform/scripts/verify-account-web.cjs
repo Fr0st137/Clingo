@@ -1,3 +1,4 @@
+const { latestActivation, deleteActivationMessage } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID, createHash } = require('node:crypto');
 const { Client } = require('pg');
@@ -19,7 +20,14 @@ async function main() {
     assert.equal((await req('/api/auth/register', 'POST', { email, password }, null)).response.status, 403);
     const registered = await req('/api/auth/register', 'POST', { email, password });
     assert.equal(registered.response.status, 201); assert.equal(registered.data.token, undefined);
-    const setCookie = registered.response.headers.getSetCookie().find(value => value.startsWith('clingo-session='));
+    assert.equal(registered.data.verificationRequired, true); assert.equal(registered.data.verificationToken, undefined);
+    const pendingCookie = registered.response.headers.getSetCookie().find(value => value.startsWith('clingo-verification='));
+    assert.match(pendingCookie, /HttpOnly/i);
+    const message = await latestActivation(email);
+    const activated = await req('/api/auth/verify-email', 'POST', { code: message.code }, base, pendingCookie.split(';')[0]);
+    assert.equal(activated.response.status, 201); assert.equal(activated.data.token, undefined);
+    await deleteActivationMessage(message.id);
+    const setCookie = activated.response.headers.getSetCookie().find(value => value.startsWith('clingo-session='));
     assert.match(setCookie, /HttpOnly/i); assert.match(setCookie, /SameSite=lax/i);
     cookie = setCookie.split(';')[0];
     assert.equal((await req('/api/account/profile')).data.user.email, email);

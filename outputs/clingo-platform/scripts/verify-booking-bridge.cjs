@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 // Real HTTP/SQL end-to-end check. Only uniquely named fixtures are removed.
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
@@ -10,7 +11,7 @@ const db = new Client({host:process.env.POSTGRES_HOST || '127.0.0.1',port:Number
 const accountIds = [];
 async function request(path, token, body, method = body === undefined ? 'GET' : 'POST') {
   const result = await fetch(base + path, {method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body === undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});
-  return {status:result.status,data:await result.json()};
+  return {status:result.status,data:await finishFixtureRegistration(path, await result.json())};
 }
 async function main() {
   await db.connect();
@@ -19,9 +20,10 @@ async function main() {
     for (const email of emails) { const result = await request('/auth/register',undefined,{email,password:`test only ${run}`}); assert.equal(result.status,201,JSON.stringify(result.data)); users.push(result.data); }
     const [customer,owner,other] = users;
     for (const user of [owner,other]) { const result=await request('/provider/account',user.token,{name:`Bridge QA ${run}`}); assert.equal(result.status,201); accountIds.push(result.data.account.id); }
+    const employee = await request('/provider/employees', owner.token, { name: 'Pracownik integracji', email: '', phone: '', showInCalendar: true, services: ['homes'], schedule: Array.from({ length: 7 }, (_, day) => ({ day, enabled: true, start: '08:00', end: '20:00' })) }); assert.equal(employee.status, 201, JSON.stringify(employee.data));
     const pricing=[{id:'base',label:'Sprzątanie 30m²',description:'QA',duration:'2 godz.',price:'120,01 zł',priceValue:120.01}];
     for (const id of profiles) await db.query(`INSERT INTO provider_profiles SELECT * FROM jsonb_populate_record(NULL::provider_profiles,
-      (SELECT to_jsonb(p) || jsonb_build_object('id',$1::text,'account_id',$2::uuid,'reviews','[]'::text,'booking_settings',$3::text,'pricing',$4::text,'frequencies',$5::text,'tags','["Jednosesyjne","Wielosesyjne"]'::text,'metrics',$6::text) FROM provider_profiles p WHERE id='paulina-jagielska'))`,
+      (SELECT to_jsonb(p) || jsonb_build_object('id',$1::text,'account_id',$2::uuid,'reviews','[]'::text,'booking_settings',$3::text,'pricing',$4::text,'frequencies',$5::text,'tags','["Jednosesyjne"]'::text,'metrics',$6::text) FROM provider_profiles p WHERE id='paulina-jagielska'))`,
       [id,accountIds[0],JSON.stringify({days:[0,1,2,3,4,5,6],startHour:8,endHour:20,bufferMinutes:0,leadHours:0}),JSON.stringify(pricing),JSON.stringify([{id:'once',label:'Jednorazowo',discount:'0%',description:'QA'}]),JSON.stringify([{id:'location',label:'Obsługiwany obszar',value:'Warszawa'}])]);
     const selection={providerId:profiles[0],pricingId:'base',frequencyId:'once',addOns:[]};
     let month=localDate(new Date()).slice(0,7);
@@ -29,10 +31,10 @@ async function main() {
     let slots=(await availability()).data.days.flatMap(day=>day.slots);
     if(!slots.length){month=addLocalDays(localDate(new Date()),7).slice(0,7);slots=(await availability()).data.days.flatMap(day=>day.slots);}
     const first=slots[0];assert.ok(first);
-    const draft={...selection,startsAt:first.startsAt,address:'Warszawa, Testowa 10',contactName:'Klient integracji',contactPhone:'500600700',notes:'Uwagi testu integracji',requestId:randomUUID()};
+    const draft={...selection,startsAt:first.startsAt,address:'Warszawa, Testowa 10',contactName:'Klient integracji',accessMethod: 'someone-present', contactPhone: '500600700',notes:'Uwagi testu integracji',requestId:randomUUID()};
     const created=await request('/dashboard/orders',customer.token,draft);assert.equal(created.status,201,JSON.stringify(created.data));const id=created.data.id;
     const jobs=()=>request('/provider/jobs',owner.token);
-    let job=(await jobs()).data.find(row=>row.bookingId===id);assert.ok(job);assert.equal(job.clientName,draft.contactName);assert.equal(job.notes,draft.notes);assert.equal(job.priceMinor,12001);assert.equal(job.revision,1);
+    let job=(await jobs()).data.find(row=>row.bookingId===id);assert.ok(job);assert.equal(job.clientName,draft.contactName);assert.equal(job.accessMethod,draft.accessMethod);assert.equal(job.notes,draft.notes);assert.equal(job.priceMinor,12001);assert.equal(job.revision,1);
     assert.equal((await request('/provider/bookings/profiles',owner.token)).data.length,2);
     assert.deepEqual((await request('/provider/jobs',other.token)).data,[]);
     assert.equal((await request(`/provider/bookings/${id}`,other.token)).status,404);
@@ -43,7 +45,7 @@ async function main() {
     assert.equal((await request(`/provider/bookings/${id}`,owner.token,{status:'cancelled',revision:1,accountId:accountIds[1]},'PUT')).status,400);
     assert.ok(!(await availability(profiles[1])).data.days.flatMap(day=>day.slots).some(slot=>slot.startsAt===first.startsAt),'Linked offers must share availability');
     const next=(await availability()).data.days.flatMap(day=>day.slots).find(slot=>slot.startsAt>first.endsAt);assert.ok(next);
-    assert.equal((await request(`/dashboard/orders/${id}/reschedule`,customer.token,{startsAt:next.startsAt,endsAt:next.endsAt},'PATCH')).status,200);
+    assert.equal((await request(`/dashboard/orders/${id}/reschedule`,customer.token,{startsAt:next.startsAt,endsAt:next.endsAt,revision:1},'PATCH')).status,200);
     job=(await jobs()).data.find(row=>row.bookingId===id);assert.equal(job.startsAt,next.startsAt);assert.equal(job.revision,2);
     assert.equal((await request(`/provider/bookings/${id}`,owner.token,{status:'cancelled',revision:1},'PUT')).status,409);
     const client=(await request('/provider/clients',owner.token,{name:'Klient ręczny QA',email:emails[0],phone:'500600700',street:'Testowa 10',city:'Warszawa',postalCode:'00-001',notes:''}));assert.equal(client.status,201,JSON.stringify(client.data));
@@ -62,6 +64,7 @@ async function main() {
     assert.equal(race.filter(r=>r.status===201).length,1,JSON.stringify(race));
     if(race[0].status===201) await request(`/provider/jobs/${race[0].data.id}`,owner.token,{...manual,status:'cancelled',revision:1},'PUT');
     else await request(`/dashboard/orders/${race[1].data.id}/cancel`,customer.token,{},'PATCH');
+    await db.query('UPDATE provider_profiles SET tags=$1, pricing=$3 WHERE id=ANY($2)', [JSON.stringify(['Wielosesyjne']), profiles, JSON.stringify([{...pricing[0], duration:'20 godz.'}])]);
     const schedule=await request('/dashboard/booking/multi-schedule',undefined,{...selection,startsAt:first.startsAt});assert.equal(schedule.status,201,JSON.stringify(schedule.data));
     const multi=await request('/dashboard/orders',customer.token,{...draft,startsAt:undefined,sessions:schedule.data.sessions,requestId:randomUUID()});assert.equal(multi.status,201,JSON.stringify(multi.data));
     let multiJobs=(await jobs()).data.filter(row=>row.bookingId===multi.data.id);assert.equal(multiJobs.length,schedule.data.sessions.length);assert.equal(multiJobs.reduce((sum,row)=>sum+row.priceMinor,0),12001);
@@ -73,6 +76,7 @@ async function main() {
     assert.match((await request(`/dashboard/orders/${id}`,customer.token)).data.status,/Wykonane/);
     assert.equal((await request(`/dashboard/orders/${id}/cancel`,customer.token,{},'PATCH')).status,400);
     assert.equal((await db.query('SELECT revision FROM orders WHERE id=$1',[id])).rows[0].revision,4);
+    await db.query('UPDATE provider_profiles SET tags=$1, pricing=$3 WHERE id=ANY($2)', [JSON.stringify(['Jednosesyjne']), profiles, JSON.stringify(pricing)]);
     const free=(await availability()).data.days.flatMap(day=>day.slots)[0];assert.ok(free);
     const actionBooking=await request('/dashboard/orders',customer.token,{...draft,startsAt:free.startsAt,requestId:randomUUID()});assert.equal(actionBooking.status,201);
     const actionId=actionBooking.data.id;

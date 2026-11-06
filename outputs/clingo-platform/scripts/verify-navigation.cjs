@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { performance } = require('node:perf_hooks');
@@ -18,11 +19,11 @@ async function main() {
     const registration = await fetch(`${api}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: `LocalTest-${randomUUID()}`, firstName: 'Test', lastName: 'Nawigacji' }), signal: AbortSignal.timeout(10_000) });
     assert.equal(registration.status, 201);
-    const { token } = await registration.json();
+    const { token } = await finishFixtureRegistration('/auth/register', await registration.json());
     const cookie = `clingo-auth=1; clingo-session=${token}; clingo-user-email=${encodeURIComponent(email)}`;
     const routes = ['/home', '/tablica-ogloszen', '/profil-ogloszeniowy/paulina-jagielska', '/wykonawcy/paulina-jagielska',
       '/logowanie', '/zamowienia', '/ulubione', '/chat', '/opinie', '/ustawienia', '/standardy-uslug', '/regulaminy',
-      '/zamowienie?provider=paulina-jagielska&pricing=single-62&area=62&address=Warszawa%2C%20Testowa%201'];
+      '/zamowienie?provider=paulina-jagielska&pricing=single-62&access=someone-present&area=62&address=Warszawa%2C%20Testowa%201'];
     const report = [];
     for (const path of routes) {
       const times = [];

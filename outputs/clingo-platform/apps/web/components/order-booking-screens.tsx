@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useBookingPhotos } from "../lib/booking-photos";
+import { BookingPhotosEditor } from "./booking-photos-editor";
+import { BookingAccessField } from "./booking-access-field";
+import { isAccessMethod } from "../../api/src/dashboard/booking-access";
 import Image from "next/image";
 
 import { ArrowRight, CalendarCheck, Check, ChevronLeft, ChevronRight, Mail, Smartphone } from "lucide-react";
@@ -17,21 +21,22 @@ import { isMultiSessionBookingState, multiSessionDateValue, multiSessionIso, mul
 import { profileBookingMode } from "../lib/offer-request";
 
 function useDraft(props: BookingPageProps) {
-  const key = `clingo-booking:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}`;
+  const key = `clingo-booking:${props.user.id}:${JSON.stringify(props.selection)}:${props.initialAddress}:${props.initialAccessMethod}`;
   const [ready, setReady] = useState(false);
   const [draft, setDraft] = useState<BookingDraft>({ startsAt: "", address: props.initialAddress || [props.user.street, props.user.postalCode, props.user.city].filter(Boolean).join(", "),
-    apartment: props.user.apartment ?? "", notes: "", contactName: [props.user.firstName, props.user.lastName].filter(Boolean).join(" "), contactPhone: props.user.phone ?? "",
+    accessMethod: props.initialAccessMethod, apartment: props.user.apartment ?? "", notes: "", contactName: [props.user.firstName, props.user.lastName].filter(Boolean).join(" "), contactPhone: props.user.phone ?? "",
     invoiceRequested: false, companyName: props.user.companyName ?? "", taxId: "", invoiceAddress: "", requestId: "" });
   useEffect(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem(key) ?? "null");
       setDraft(current => {
-        const next = { ...current, requestId: crypto.randomUUID() };
+        const next = { ...current, accessMethod: props.initialAccessMethod, requestId: crypto.randomUUID() };
         if (saved && typeof saved === "object") {
           for (const field of Object.keys(next) as Array<keyof BookingDraft>) {
             if (typeof saved[field] === typeof next[field]) Object.assign(next, { [field]: saved[field] });
           }
         }
+        if (!isAccessMethod(next.accessMethod)) next.accessMethod = props.initialAccessMethod;
         return next;
       });
     } catch { setDraft(current => ({ ...current, requestId: crypto.randomUUID() })); }
@@ -172,6 +177,9 @@ function FloatingField({ label, value, onChange, required = false, placeholder, 
 }
 
 function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
+  const photoDraft = useBookingPhotos(props.profile.id, props.photoDraft);
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const photosReady = photoDraft.ready && !photosBusy && (!props.profile.requiresClientPhotos || photoDraft.photos.length > 0);
   const router = useRouter();
   const { draft, update, ready, save, key } = useDraft(props);
   const [sessions, setSessions] = useState<MultiSessionBookingSession[] | null>(null);
@@ -208,7 +216,7 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (inFlight.current || !quote || !sessions?.length) return;
+    if (inFlight.current || !quote || !sessions?.length || !isAccessMethod(draft.accessMethod) || !photosReady) return;
     const bookingSessions = sessions.map((session) => {
       const startsAt = multiSessionIso(session.date, session.start);
       const rawEndsAt = multiSessionIso(session.date, session.end);
@@ -236,12 +244,15 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
         apartment: draft.apartment,
         contactName: draft.contactName,
         contactPhone: draft.contactPhone,
+        accessMethod: draft.accessMethod,
+        photos: photoDraft.photos.map(({ dataUrl }) => ({ dataUrl })),
         notes: draft.notes,
         requestId: draft.requestId,
         expectedTotal: quote.totalValue,
         invoice: draft.invoiceRequested ? { companyName: draft.companyName, taxId: draft.taxId, address: draft.invoiceAddress } : null
       });
       if (!order.id) throw new Error("Brak potwierdzenia zapisu. Spróbuj ponownie.");
+      photoDraft.clear();
       try {
         sessionStorage.removeItem(key);
         sessionStorage.removeItem(scheduleKey);
@@ -305,6 +316,8 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
           <FloatingField label="Imię i nazwisko" value={draft.contactName} onChange={contactName => update({ contactName })} required maxLength={150} />
           <FloatingField label="Telefon" value={draft.contactPhone} onChange={contactPhone => update({ contactPhone })} required type="tel" pattern="[+0-9 ()-]{9,30}" maxLength={30} />
         </div></SummarySection>
+        <SummarySection title="Zdjęcia obszaru objętego usługą"><BookingPhotosEditor photos={photoDraft.photos} required={props.profile.requiresClientPhotos} disabled={!photoDraft.ready || submitting} onBusyChange={setPhotosBusy} onChange={photos => { photoDraft.change(photos); update({}); }} />{photoDraft.error && <p role="alert" className="text-[13px] text-[#b52a35]">{photoDraft.error}</p>}</SummarySection>
+        <SummarySection title="Udostępnienie lokalu"><BookingAccessField value={draft.accessMethod} onChange={accessMethod => update({ accessMethod })} /></SummarySection>
         <SummarySection title="Uwagi do zamówienia">
           <textarea aria-label="Uwagi do zamówienia" className="h-[111px] w-full resize-none rounded-[15px] border border-[#e5e7eb] bg-white p-[15px] text-[14px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af] focus:border-[#0079de]" maxLength={2000} onChange={(event) => update({ notes: event.target.value })} placeholder="Wpisz jeżeli masz jakieś dodatkowe uwagi…" value={draft.notes} />
         </SummarySection>
@@ -317,7 +330,7 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
           <div className="rounded-[15px] bg-[#f4f6f9] p-[15px] text-[14px] leading-[22px] text-[#2e3b4c]"><strong>UWAGA!</strong><br />Rozliczenie odbywa się bezpośrednio z Wykonawcą (poza platformą), a szczegóły usługi możesz ustalić po złożeniu zamówienia.</div>
           <ErrorNotice message={error} status={errorStatus} backHref={`/zamowienie/podsumowanie?${props.query}`} />
           {errorStatus === 409 ? <button className="text-[14px] font-medium text-[#0079de]" onClick={editSchedule} type="button">Powrót do harmonogramu</button> : null}
-          <button className="h-[48px] w-full rounded-[30px] bg-[#0079de] text-[14px] font-medium text-white disabled:opacity-40" disabled={!quote || submitting || !draft.address || !draft.contactName || !draft.contactPhone} type="submit">{submitting ? "Zapisywanie zamówienia…" : "Potwierdź i zamów"}</button>
+          <button className="h-[48px] w-full rounded-[30px] bg-[#0079de] text-[14px] font-medium text-white disabled:opacity-40" disabled={!photosReady || !quote || submitting || !draft.address || !draft.contactName || !draft.contactPhone} type="submit">{submitting ? "Zapisywanie zamówienia…" : "Potwierdź i zamów"}</button>
         </section>
 
         <section className="rounded-[30px] border border-[#e6edf3] bg-white/60 p-[30px] text-[14px] leading-[22px] text-[#2e3b4c] shadow-[0_0_14px_rgba(0,0,0,0.04)]">
@@ -330,6 +343,9 @@ function MultiSessionOrderSummaryScreen(props: BookingPageProps) {
 }
 
 function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
+  const photoDraft = useBookingPhotos(props.profile.id, props.photoDraft);
+  const [photosBusy, setPhotosBusy] = useState(false);
+  const photosReady = photoDraft.ready && !photosBusy && (!props.profile.requiresClientPhotos || photoDraft.photos.length > 0);
   const router = useRouter();
   const { draft, update, ready, save, key } = useDraft(props);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
@@ -351,13 +367,14 @@ function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
   const editDate = () => { save(); router.push(backHref); };
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (inFlight.current || !quote || !accepted || !validStart) return;
+    if (inFlight.current || !quote || !accepted || !validStart || !isAccessMethod(draft.accessMethod) || !photosReady) return;
     inFlight.current = true; setSubmitting(true); setError(""); setErrorStatus(undefined); save();
     try {
       const order = await postBooking<OrderCardData>("confirm", { ...props.selection, startsAt: draft.startsAt, address: draft.address, apartment: draft.apartment,
-        contactName: draft.contactName, contactPhone: draft.contactPhone, notes: draft.notes, requestId: draft.requestId, expectedTotal: quote.totalValue,
+        contactName: draft.contactName, contactPhone: draft.contactPhone, accessMethod: draft.accessMethod, photos: photoDraft.photos.map(({ dataUrl }) => ({ dataUrl })), notes: draft.notes, requestId: draft.requestId, expectedTotal: quote.totalValue,
         invoice: draft.invoiceRequested ? { companyName: draft.companyName, taxId: draft.taxId, address: draft.invoiceAddress } : null });
       if (!order.id) throw new Error("Brak potwierdzenia zapisu. Spróbuj ponownie.");
+      photoDraft.clear();
       try { sessionStorage.removeItem(key); } catch { /* The server deduplicates retries. */ }
       router.replace(`/zamowienie/potwierdzenie?id=${encodeURIComponent(order.id)}`); router.refresh();
     } catch (err) {
@@ -388,6 +405,8 @@ function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
           <label className="flex items-center gap-2 text-[14px] text-[#2e3b4c]"><input className="accent-[#0079de]" type="checkbox" checked={draft.invoiceRequested} onChange={e => update({ invoiceRequested: e.target.checked })} />Chcę otrzymać fakturę od wykonawcy</label>
           {draft.invoiceRequested ? <div className="mt-2 grid gap-[20px]"><FloatingField label="Nazwa firmy" value={draft.companyName} onChange={companyName => update({ companyName })} required maxLength={200} /><FloatingField label="NIP" value={draft.taxId} onChange={taxId => update({ taxId })} required maxLength={20} /><FloatingField label="Adres firmy" value={draft.invoiceAddress} onChange={invoiceAddress => update({ invoiceAddress })} required /></div> : null}
         </SummarySection>
+        <SummarySection title="Zdjęcia obszaru objętego usługą"><BookingPhotosEditor photos={photoDraft.photos} required={props.profile.requiresClientPhotos} disabled={!photoDraft.ready || submitting} onBusyChange={setPhotosBusy} onChange={photos => { photoDraft.change(photos); update({}); }} />{photoDraft.error && <p role="alert" className="text-[13px] text-[#b52a35]">{photoDraft.error}</p>}</SummarySection>
+        <SummarySection title="Udostępnienie lokalu"><BookingAccessField value={draft.accessMethod} onChange={accessMethod => update({ accessMethod })} /></SummarySection>
         <SummarySection title="Uwagi do zamówienia"><textarea aria-label="Uwagi do zamówienia" className="h-[111px] w-full resize-y rounded-[15px] border border-[#e5e7eb] bg-white p-[15px] text-[14px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af] focus:border-[#0079de]" placeholder="Wpisz jeżeli masz jakieś dodatkowe uwagi…" value={draft.notes} onChange={e => update({ notes: e.target.value })} maxLength={2000} /></SummarySection>
       </fieldset>
       <aside className="grid gap-[20px]">
@@ -398,7 +417,7 @@ function SingleSessionOrderSummaryScreen(props: BookingPageProps) {
           <label className="flex items-start gap-2 text-[13px] leading-5 text-[#2e3b4c]"><input type="checkbox" className="mt-1 accent-[#0079de]" checked={accepted} disabled={submitting} onChange={e => setAccepted(e.target.checked)} required />Potwierdzam dane i akceptuję warunki realizacji usługi.</label>
           <ErrorNotice message={error} status={errorStatus} backHref={`/zamowienie/podsumowanie?${props.query}`} />
           {errorStatus === 409 ? <button className="text-[14px] font-medium text-[#0079de]" type="button" onClick={editDate}>Powrót do kalendarza</button> : null}
-          <button className="h-[48px] w-full rounded-[30px] bg-[#0079de] text-[14px] font-medium text-white disabled:opacity-40" disabled={!quote || submitting || !accepted} type="submit">{submitting ? "Zapisywanie zamówienia…" : "Potwierdź i zamów"}</button>
+          <button className="h-[48px] w-full rounded-[30px] bg-[#0079de] text-[14px] font-medium text-white disabled:opacity-40" disabled={!photosReady || !quote || submitting || !accepted} type="submit">{submitting ? "Zapisywanie zamówienia…" : "Potwierdź i zamów"}</button>
         </section>
         <section className="rounded-[30px] border border-[#e6edf3] bg-white/60 p-[30px] text-[14px] leading-[22px] text-[#2e3b4c] shadow-[0_0_14px_rgba(0,0,0,0.04)]">Finalizując zamówienie, akceptujesz <Link href="/regulaminy" target="_blank" rel="noreferrer" className="underline">Regulamin i Politykę prywatności</Link> oraz <Link href="/standardy-uslug" target="_blank" rel="noreferrer" className="underline">Standardy usług</Link> dla wybranego typu usługi. Status rezerwacji sprawdzisz w panelu „Moje konto”.</section>
       </aside>

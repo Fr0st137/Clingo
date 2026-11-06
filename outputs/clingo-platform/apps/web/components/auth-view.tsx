@@ -3,12 +3,15 @@
 import Link from "next/link";
 
 import { Eye } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { clearAccountProfileCache } from "../lib/account";
 
 type AuthMode = "login" | "register";
+type VerificationState = { verificationRequired?: boolean; email: string; expiresAt: string; resendAt: string; expired?: boolean };
+type AuthResult = VerificationState | { user: { email: string }; verificationRequired?: false };
+
 type AuthStep = "email" | "register-details" | "activation" | "login-password";
 
 type AuthViewProps = {
@@ -205,8 +208,9 @@ function SocialButton({ brand, label }: { brand: "apple" | "facebook" | "google"
 function CodeFields({
   code,
   inputRefs,
-  onChange
+  onChange, disabled = false
 }: {
+  disabled?: boolean;
   code: string[];
   inputRefs: React.MutableRefObject<Array<HTMLInputElement | null>>;
   onChange: (index: number, value: string) => void;
@@ -218,8 +222,11 @@ function CodeFields({
           <input
             aria-label={`Cyfra kodu ${index + 1}`}
             className="h-[51px] min-w-0 flex-1 rounded-[20px] border border-[#dce0e3] bg-white text-center text-[20px] font-semibold text-[#2e3b4c] outline-none focus:border-[#0079de]"
+            onKeyDown={event => { if (event.key === "Backspace" && !digit && index > 0) inputRefs.current[index - 1]?.focus(); }}
             inputMode="numeric"
-            maxLength={1}
+            disabled={disabled}
+            autoComplete={index === 0 ? "one-time-code" : "off"}
+            maxLength={4}
             onChange={(event) => onChange(index, event.target.value)}
             ref={(element) => {
               inputRefs.current[index] = element;
@@ -248,6 +255,37 @@ export function AuthView({ nextPath }: AuthViewProps) {
   const [activationCode, setActivationCode] = useState(["", "", "", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [verification, setVerification] = useState<VerificationState | null>(null);
+  const [checkingActivation, setCheckingActivation] = useState(true);
+  const [now, setNow] = useState(Date.now());
+  const activationPending = useRef(false);
+  useEffect(() => {
+    let active = true;
+    postAuthJson<VerificationState>("/auth/verification-status", {}).then(result => { if (active) { setEmail(result.email); setVerification(result); setStep("activation"); if (result.expired) setStatusMessage("Kod wygasł. Wyślij nowy kod."); } }).catch(() => {}).finally(() => { if (active) setCheckingActivation(false); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => { if (!verification) return; const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, [verification]);
+  const resendSeconds = verification ? Math.max(0, Math.ceil((Date.parse(verification.resendAt) - now) / 1000)) : 0;
+  function requireActivation(result: AuthResult) {
+    if (!result.verificationRequired) return false;
+    setVerification(result); setEmail(result.email); setStep("activation"); setActivationCode(["", "", "", ""]); setPassword(""); setNow(Date.now());
+    clearAccountProfileCache(); window.localStorage.removeItem("clingo-auth");
+    return true;
+  }
+  async function verifyCode(digits: string) {
+    if (activationPending.current || !/^\d{4}$/.test(digits)) return;
+    activationPending.current = true; setIsSubmitting(true); setStatusMessage("");
+    try { await postAuthJson("/auth/verify-email", { code: digits }); completeAuth(); }
+    catch (failure) { setStatusMessage((failure as Error).message); setActivationCode(["", "", "", ""]); window.requestAnimationFrame(() => codeInputRefs.current[0]?.focus()); }
+    finally { activationPending.current = false; setIsSubmitting(false); }
+  }
+  async function resendCode() {
+    if (isSubmitting || resendSeconds) return;
+    setIsSubmitting(true); setStatusMessage("");
+    try { const result = await postAuthJson<VerificationState>("/auth/resend-verification", {}); setVerification(result); setActivationCode(["", "", "", ""]); setNow(Date.now()); setStatusMessage("Nowy kod został wysłany."); codeInputRefs.current[0]?.focus(); }
+    catch (failure) { setStatusMessage((failure as Error).message); }
+    finally { setIsSubmitting(false); }
+  }
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const completeAuth = () => {
@@ -280,7 +318,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
       const result = await postAuthJson<{ exists: boolean }>("/auth/lookup", { email: checkedEmail });
       setStep(result.exists ? "login-password" : "register-details");
     } catch {
-      setStatusMessage("Nie udało się sprawdzić adresu w bazie. Sprawdź, czy API i baza danych są uruchomione.");
+      setStatusMessage("Nie udało się sprawdzić adresu e-mail. Spróbuj ponownie za chwilę.");
     } finally {
       setIsSubmitting(false);
     }
@@ -292,7 +330,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
     setStatusMessage("");
 
     try {
-      await postAuthJson("/auth/register", {
+      const result = await postAuthJson<AuthResult>("/auth/register", {
         companyName,
         email,
         firstName,
@@ -300,7 +338,7 @@ export function AuthView({ nextPath }: AuthViewProps) {
         password,
         phone
       });
-      completeAuth();
+      if (!requireActivation(result)) completeAuth();
     } catch (error) {
       if ((error as AuthApiError).status === 409) {
         setStatusMessage("Konto z tym adresem już istnieje. Przenoszę do logowania.");
@@ -320,8 +358,8 @@ export function AuthView({ nextPath }: AuthViewProps) {
     setStatusMessage("");
 
     try {
-      await postAuthJson("/auth/login", { email, password });
-      completeAuth();
+      const result = await postAuthJson<AuthResult>("/auth/login", { email, password });
+      if (!requireActivation(result)) completeAuth();
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : "Nie udało się zalogować.");
     } finally {
@@ -330,19 +368,17 @@ export function AuthView({ nextPath }: AuthViewProps) {
   };
 
   const updateActivationDigit = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, "").slice(-1);
+    if (isSubmitting) return;
+    const digits = value.replace(/\D/g, "");
     const nextCode = [...activationCode];
-    nextCode[index] = digit;
+    if (digits.length > 1) for (let offset = 0; offset < Math.min(4 - index, digits.length); offset++) nextCode[index + offset] = digits[offset];
+    else nextCode[index] = digits.slice(-1);
     setActivationCode(nextCode);
-
-    if (digit && index < codeInputRefs.current.length - 1) {
-      codeInputRefs.current[index + 1]?.focus();
-    }
-
-    if (digit && nextCode.every(Boolean)) {
-      window.setTimeout(completeAuth, 150);
-    }
+    if (digits) codeInputRefs.current[Math.min(3, index + digits.length)]?.focus();
+    if (nextCode.every(Boolean)) void verifyCode(nextCode.join(""));
   };
+
+  if (checkingActivation) return <AuthShell subtitle="Sprawdzamy stan konta" title="Clingo"><p role="status">Wczytywanie…</p></AuthShell>;
 
   if (step === "register-details") {
     return (
@@ -410,24 +446,28 @@ export function AuthView({ nextPath }: AuthViewProps) {
   if (step === "activation") {
     return (
       <AuthShell subtitle="wysłaliśmy 4 cyfrowy kod aktywacyjny" title="Aktywuj konto">
-        <form className="flex w-full flex-col gap-5" onSubmit={(event) => { event.preventDefault(); completeAuth(); }}>
+        <form className="flex w-full flex-col gap-5" onSubmit={(event) => { event.preventDefault(); void verifyCode(activationCode.join("")); }}>
           <section className="flex w-full flex-col gap-5 rounded-[20px] drop-shadow-[0px_2px_7px_rgba(0,0,0,0.04)]">
             <p className="m-0 text-[14px] font-medium leading-normal text-[#2e3b4c]">Wpisz przesłany kod poniżej</p>
-            <CodeFields code={activationCode} inputRefs={codeInputRefs} onChange={updateActivationDigit} />
+            <p className="m-0 text-[14px] text-[#536479]">{email}</p>
+            <CodeFields disabled={isSubmitting} code={activationCode} inputRefs={codeInputRefs} onChange={updateActivationDigit} />
           </section>
 
           <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
             Wiadomość nie dotarła?{" "}
-            <button className="border-0 bg-transparent p-0 font-semibold text-[#0079de]" type="button">
-              Wyślij kod ponownie
+            <button disabled={isSubmitting || resendSeconds > 0} onClick={() => void resendCode()} className="border-0 bg-transparent p-0 font-semibold text-[#0079de] disabled:opacity-50" type="button">
+              Wyślij kod ponownie{resendSeconds > 0 ? ` (${resendSeconds}s)` : ""}
             </button>
           </p>
           <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
-            Podałeś zły numer?{" "}
-            <button className="border-0 bg-transparent p-0 font-semibold text-[#0079de]" onClick={() => setStep("register-details")} type="button">
-              Cofnij i zmień numer telefonu
+            Podałeś zły adres e-mail?{" "}
+            <button className="border-0 bg-transparent p-0 font-semibold text-[#0079de]" onClick={() => { setStep("email"); setStatusMessage(""); }} type="button">
+              Zmień adres e-mail
             </button>
           </p>
+          {statusMessage && <p role="status" aria-live="polite" className="m-0 text-[14px] leading-5 text-[#2e3b4c]">{statusMessage}</p>}
+          <PrimaryButton disabled={isSubmitting || activationCode.some(digit => !digit)}>{isSubmitting ? "Sprawdzanie…" : "Aktywuj konto"}</PrimaryButton>
+          <button className="border-0 bg-transparent text-[14px] font-medium text-[#0079de]" type="button" disabled={isSubmitting} onClick={() => { setStep("login-password"); setStatusMessage(""); }}>Zaloguj się ponownie</button>
           <div className="h-px w-[138px]" aria-hidden="true" />
           <p className="m-0 pl-[5px] text-[14px] leading-normal text-[#2e3b4c]">
             Po aktywacji konta strona automatycznie się odświeży. Sprawdź swoją pocztę pod wskazany wyżej adres e-mail.

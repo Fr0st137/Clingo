@@ -7,7 +7,7 @@ const routes: Record<string, string[]> = {
   "settings/staffing": ["GET", "PUT"],
   projects: ["GET"],
   "reviews/summary": ["GET"],
-  "auth/login": ["POST"], "auth/register": ["POST"], "auth/logout": ["POST"]
+  "auth/verify-email": ["POST"], "auth/resend-verification": ["POST"], "auth/verification-status": ["POST"], "auth/login": ["POST"], "auth/register": ["POST"], "auth/logout": ["POST"]
 };
 async function proxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path: segments } = await params;
@@ -17,7 +17,7 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   if (!allowed.includes(request.method)) return NextResponse.json({ message: "Nie znaleziono operacji." }, { status: 404 });
   const mutating = request.method !== "GET";
   if (mutating && (request.headers.get("origin") !== request.nextUrl.origin || request.headers.get("sec-fetch-site") === "cross-site")) return NextResponse.json({ message: "Niedozwolone źródło żądania." }, { status: 403 });
-  const publicRoute = path === "auth/login" || path === "auth/register";
+  const publicRoute = path.startsWith("auth/") && path !== "auth/logout";
   const token = request.cookies.get("clingo-provider-session")?.value;
   if (!publicRoute && !token) return NextResponse.json({ message: "Zaloguj się do panelu wykonawcy." }, { status: 401 });
   let body: string | undefined;
@@ -37,14 +37,24 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
     body = Buffer.concat(chunks).toString("utf8");
     try { JSON.parse(body); } catch { return NextResponse.json({ message: "Nieprawidłowy formularz." }, { status: 400 }); }
   }
+  if (["auth/verify-email", "auth/resend-verification", "auth/verification-status"].includes(path)) {
+    const verificationToken = request.cookies.get("clingo-provider-verification")?.value;
+    if (!verificationToken) return NextResponse.json({ message: "Sesja aktywacji wygasła. Zaloguj się ponownie." }, { status: 401 });
+    body = JSON.stringify({ ...JSON.parse(body ?? "{}"), verificationToken });
+  }
   try {
     const response = await fetch(`${process.env.API_URL ?? "http://localhost:4000"}/${path.startsWith("auth/") ? path : `provider/${path}`}`, {
       method: request.method, headers: { "Content-Type": "application/json", ...(!publicRoute ? { Authorization: `Bearer ${token}` } : {}) }, body, cache: "no-store", signal: AbortSignal.timeout(15000)
     });
     const data = await response.json();
-    const { token: newToken, ...payload } = Array.isArray(data) ? {} : data;
+    const { token: newToken, verificationToken: pendingToken, ...payload } = Array.isArray(data) ? {} : data;
     const output = NextResponse.json(Array.isArray(data) ? data : payload, { status: response.status, headers: { "Cache-Control": "private, no-store" } });
     const cookieOptions = { httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax" as const, path: "/" };
+    if (response.ok && typeof pendingToken === "string") {
+      output.cookies.set("clingo-provider-verification", pendingToken, { ...cookieOptions, maxAge: 86400 });
+      output.cookies.set("clingo-provider-session", "", { ...cookieOptions, maxAge: 0 });
+    }
+    if (response.ok && typeof newToken === "string") output.cookies.set("clingo-provider-verification", "", { ...cookieOptions, maxAge: 0 });
     if (response.ok && typeof newToken === "string") output.cookies.set("clingo-provider-session", newToken, { ...cookieOptions, maxAge: 2592000 });
     if ((!publicRoute && response.status === 401) || (path === "auth/logout" && response.ok)) output.cookies.set("clingo-provider-session", "", { ...cookieOptions, maxAge: 0 });
     return output;

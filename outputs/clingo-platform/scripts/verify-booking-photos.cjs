@@ -1,0 +1,110 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
+const assert = require('node:assert/strict'), fs = require('node:fs'), ts = require('typescript'), sharp = require('sharp');
+const { randomUUID } = require('node:crypto'), { Client } = require('pg');
+const { chromium } = require('C:/Users/pc/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { defaultOfferConfiguration } = require('../apps/api/dist/provider/provider-offers.input');
+const bridge = require('../apps/api/dist/dashboard/review-bridge');
+const fallback = { exports: {} };
+new Function('module', 'exports', 'require', ts.transpileModule(fs.readFileSync('apps/web/lib/db-fallback.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)(fallback, fallback.exports, name => name === '../../api/src/dashboard/review-bridge' ? bridge : require(name));
+const db = new Client({ host: '127.0.0.1', port: 55432, database: 'clingo', user: 'clingo', password: 'clingo' });
+const run = randomUUID(), emails = ['owner', 'other-company', 'customer', 'other-customer'].map(role => `photo-${role}-${run}@example.test`), accounts = [], profiles = [];
+async function request(path, token, body, method = body === undefined ? 'GET' : 'POST') {
+  const response = await fetch('http://localhost:4000' + path, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  return { status: response.status, data: await finishFixtureRegistration(path, await response.json()) };
+}
+async function ok(path, token, body, method) { const result = await request(path, token, body, method); assert.ok(result.status < 300, JSON.stringify(result)); return result.data; }
+async function image(path, token) { return fetch('http://localhost:4000' + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); }
+(async () => {
+  await db.connect(); let browser;
+  try {
+    const users = []; for (const email of emails) users.push(await ok('/auth/register', null, { email, password: `Photo test ${run}` }));
+    const [owner, otherCompany, customer, otherCustomer] = users;
+    for (const user of [owner, otherCompany]) accounts.push((await ok('/provider/account', user.token, { name: `K06 ${run}` })).account.id);
+    await ok('/provider/employees', owner.token, { name: 'Osoba myjąca', email: '', phone: '', showInCalendar: true, services: ['pressure'], schedule: Array.from({ length: 7 }, (_, day) => ({ day, enabled: true, start: '08:00', end: '20:00' })) });
+    await ok('/provider/settings/location', owner.token, { street: 'Testowa 1', postalCode: '00-001', city: 'Warszawa', radiusKm: 25, revision: 1 }, 'PUT');
+    const configuration = { ...defaultOfferConfiguration(), standardsAccepted: true, bufferEnabled: false, requiresClientPhotos: true, areaTiers: [{ minSquareMeters: 1, maxSquareMeters: 1000, workers: 1 }] };
+    const input = { title: 'Mycie testowe K06', category: 'pressure', description: 'Test zdjęć obszaru objętego usługą.', priceMinor: 15000, durationMinutes: 60, configuration, status: 'draft' };
+    let offer = await ok('/provider/services', owner.token, input);
+    offer = await ok(`/provider/services/${offer.id}`, owner.token, { ...input, status: 'published', revision: offer.revision }, 'PUT');
+    const id = 'service-' + offer.id; profiles.push(id);
+    assert.equal((await ok('/dashboard/provider-profiles/' + id)).requiresClientPhotos, true);
+    assert.equal((await fallback.exports.getProviderProfileFromDb(id)).requiresClientPhotos, true);
+    const selection = { providerId: id, pricingId: 'area-100', frequencyId: 'once', addOns: [] };
+    const monthKey = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Warsaw' }).format(new Date()).slice(0, 7);
+    const available = await ok('/dashboard/booking/availability', null, { ...selection, month: monthKey });
+    const slot = available.days.flatMap(day => day.slots)[0]; assert.ok(slot);
+    const booking = { ...selection, startsAt: slot.startsAt, address: 'Testowa 1, Warszawa', contactName: 'Klient zdjęć', contactPhone: '500600700', accessMethod: 'someone-present', requestId: randomUUID() };
+    for (const photos of [undefined, [], [{ id: randomUUID() }], [{ dataUrl: 'data:image/png;base64,aGVsbG8=' }]]) assert.equal((await request('/dashboard/orders', customer.token, { ...booking, photos })).status, 400);
+    assert.equal(Number((await db.query('SELECT count(*) FROM orders WHERE provider_id=$1', [id])).rows[0].count), 0);
+    browser = await chromium.launch({ channel: 'chrome', headless: true });
+    const tooLarge = await fetch('http://localhost:3000/api/booking/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:3000', Cookie: `clingo-session=${customer.token}; clingo-auth=1` }, body: JSON.stringify({ photos: 'x'.repeat(3 * 1024 * 1024) }) }); assert.equal(tooLarge.status, 413);
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } }), page = await context.newPage(), errors = [];
+    page.on('pageerror', error => errors.push(error.message)); page.setDefaultTimeout(20000);
+    await page.goto(`http://localhost:3000/profil-ogloszeniowy/${id}?area=100&address=Warszawa&access=someone-present`, { waitUntil: 'networkidle' });
+    assert.ok(await page.getByRole('button', { name: 'Przejdź do zamówienia', exact: true }).isDisabled());
+    const buffer = await sharp({ create: { width: 100, height: 70, channels: 3, background: '#4295c4' } }).png().toBuffer();
+    const file = { name: 'obszar.png', mimeType: 'image/png', buffer };
+    await page.getByLabel('Zdjęcia do zamówienia', { exact: true }).setInputFiles([file, { ...file, name: 'obszar-2.png' }]);
+    await page.getByRole('button', { name: 'Usuń zdjęcie 2', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).click();
+    await page.getByRole('button', { name: 'Podgląd zdjęcia 1', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Podgląd zdjęcia do zamówienia', exact: true }).waitFor(); await page.keyboard.press('Escape');
+    await page.waitForFunction(() => new URL(location.href).searchParams.has('photoDraft'));
+    await page.reload({ waitUntil: 'networkidle' }); await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).waitFor();
+    await page.screenshot({ path: 'tmp/k06-offer.png', fullPage: true });
+    await page.getByRole('link', { name: 'Przejdź do zamówienia', exact: true }).click(); await page.waitForURL('**/logowanie?**');
+    const next = new URL(page.url()).searchParams.get('next'); assert.ok(new URL(next, 'http://localhost:3000').searchParams.get('photoDraft'));
+    await context.addCookies([{ name: 'clingo-session', value: customer.token, url: 'http://localhost:3000', httpOnly: true }, { name: 'clingo-auth', value: '1', url: 'http://localhost:3000' }, { name: 'clingo-user-email', value: encodeURIComponent(emails[2]), url: 'http://localhost:3000' }]);
+    const [response] = await Promise.all([page.waitForResponse(r => r.url().includes('/api/booking/availability') && r.request().method() === 'POST'), page.goto('http://localhost:3000' + next)]);
+    const calendar = await response.json(), day = calendar.days.find(row => row.slots.length), time = day.slots[0];
+    const dayLabel = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Warsaw' }).format(new Date(day.date + 'T12:00:00Z'));
+    await page.getByRole('button', { name: `${dayLabel}, dostępny`, exact: true }).click();
+    const hour = Number(time.time.slice(0, 2)); await page.getByRole('button', { name: hour < 12 ? 'Rano' : hour < 17 ? 'Południe' : 'Wieczór', exact: true }).click();
+    await page.getByRole('button', { name: `Godzina ${time.time}`, exact: true }).click(); await page.getByRole('button', { name: 'Przejdź dalej', exact: true }).click();
+    await page.getByRole('heading', { name: 'Dane kontaktowe', exact: true }).waitFor(); await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).waitFor();
+    await page.getByLabel('Imię i nazwisko', { exact: true }).fill('Klient zdjęć'); await page.getByLabel('Numer telefonu', { exact: true }).fill('500600700');
+    await page.getByRole('checkbox', { name: 'Potwierdzam dane i akceptuję warunki realizacji usługi.', exact: true }).check();
+    await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).click(); assert.ok(await page.getByRole('button', { name: 'Potwierdź i zamów', exact: true }).isDisabled());
+    await page.getByLabel('Zdjęcia do zamówienia', { exact: true }).setInputFiles({ name: 'uszkodzony.png', mimeType: 'image/png', buffer: Buffer.from('broken') }); await page.getByRole('alert').waitFor();
+    await page.getByLabel('Zdjęcia do zamówienia', { exact: true }).setInputFiles(file); await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).waitFor();
+    await page.reload({ waitUntil: 'networkidle' }); await page.getByRole('button', { name: 'Usuń zdjęcie 1', exact: true }).waitFor();
+    await page.setViewportSize({ width: 390, height: 844 }); assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    await page.getByRole('checkbox', { name: 'Potwierdzam dane i akceptuję warunki realizacji usługi.', exact: true }).check();
+    await page.screenshot({ path: 'tmp/k06-summary-mobile.png', fullPage: true });
+    const [confirmed] = await Promise.all([page.waitForResponse(r => r.url().includes('/api/booking/confirm') && r.request().method() === 'POST'), page.getByRole('button', { name: 'Potwierdź i zamów', exact: true }).click()]);
+    const order = await confirmed.json(); assert.ok(confirmed.ok(), JSON.stringify(order)); assert.equal(order.bookingDetails.photos.length, 1);
+    const stored = order.bookingDetails.photos[0], customerPath = `/dashboard/orders/${order.id}/photos/${stored.id}`, providerPath = `/provider/bookings/${order.id}/photos/${stored.id}`;
+    const retry = await ok('/dashboard/orders', customer.token, confirmed.request().postDataJSON()); assert.equal(retry.id, order.id); assert.equal(retry.bookingDetails.photos[0].id, stored.id);
+    assert.equal(Number((await db.query('SELECT count(*) FROM booking_photos WHERE order_id=$1', [order.id])).rows[0].count), 1);
+    assert.equal((await image(customerPath)).status, 401); assert.equal((await image(customerPath, otherCustomer.token)).status, 404);
+    assert.equal((await image(providerPath, otherCompany.token)).status, 404); assert.equal((await image(providerPath, owner.token)).status, 200);
+    const data = await image(customerPath, customer.token); assert.equal(data.status, 200); assert.equal((await sharp(Buffer.from(await data.arrayBuffer())).metadata()).format, 'webp');
+    assert.equal((await image('/dashboard/review-images/' + stored.id)).status, 404);
+    assert.ok(!JSON.stringify(order).includes('data:image')); assert.equal((await fallback.exports.getOrderFromDb(order.id, emails[2])).bookingDetails.photos.length, 1);
+    assert.equal((await ok('/provider/bookings/' + order.id, owner.token))[0].customerPhotos[0].id, stored.id);
+    await page.waitForURL('**/zamowienie/potwierdzenie?**'); await page.goto(`http://localhost:3000/zamowienia/szczegoly?id=${order.id}`, { waitUntil: 'networkidle' });
+    await page.waitForFunction(() => [...document.images].some(img => img.alt === 'Zdjęcie obszaru objętego usługą 1' && img.naturalWidth > 0));
+    const proxy = await context.request.get(`http://localhost:3000/api/booking-photos/${order.id}/${stored.id}`); assert.equal(proxy.status(), 200); assert.match(proxy.headers()['cache-control'], /private/);
+    const providerContext = await browser.newContext(); await providerContext.addCookies([{ name: 'clingo-provider-session', value: owner.token, url: 'http://localhost:3001', httpOnly: true }]);
+    assert.equal((await providerContext.request.get(`http://localhost:3001/api/provider-booking-photos/${order.id}/${stored.id}`)).status(), 200);
+    await page.screenshot({ path: 'tmp/k06-customer-details.png', fullPage: true });
+    offer = await ok('/provider/services/' + offer.id, owner.token, { ...input, status: 'published', configuration: { ...configuration, requiresClientPhotos: false }, revision: offer.revision }, 'PUT');
+    assert.equal((await ok('/dashboard/provider-profiles/' + id)).requiresClientPhotos, false); assert.equal((await fallback.exports.getProviderProfileFromDb(id)).requiresClientPhotos, false);
+    const later = await ok('/dashboard/booking/availability', null, { ...selection, month: monthKey }); const optionalSlot = later.days.flatMap(row => row.slots)[0]; assert.ok(optionalSlot);
+    const optional = await ok('/dashboard/orders', customer.token, { ...booking, startsAt: optionalSlot.startsAt, requestId: randomUUID() }); assert.equal(optional.bookingDetails.photos.length, 0);
+    assert.equal((await image(`/dashboard/orders/${optional.id}/photos/${stored.id}`, customer.token)).status, 404);
+    assert.equal((await image(customerPath, customer.token)).status, 200);
+    assert.deepEqual(errors, []);
+    fs.writeFileSync('tmp/k06-integration.json', JSON.stringify({ status: 'PASS', checks: ['current published requirement matches API and DB fallback', 'required/malformed/borrowed photos rejected without creating orders', 'guest upload/remove/preview/reload and login return preserve photos', 'summary removal blocks confirmation and invalid file can be replaced', 'mobile summary and reload', 'photo and order persist once under repeated confirmation', 'private customer and provider proxies render WebP images', 'other customers, companies, orders and public review routes cannot read photos', 'customer details and provider booking return photo references', 'republishing requirement as optional permits booking without photos and preserves old attachments', 'no JavaScript errors'] }, null, 2));
+    console.log('PASS: K06 real API/DB/browser, photos through login and checkout, private access, retry, optional setting and cleanup.');
+  } catch (error) {
+    const page = browser?.contexts()[0]?.pages()[0]; if (page) { await page.screenshot({ path: 'tmp/k06-failure.png', fullPage: true }); fs.writeFileSync('tmp/k06-failure.txt', await page.locator('body').innerText()); }
+    throw error;
+  } finally {
+    if (browser) await browser.close();
+    await db.query('DELETE FROM orders WHERE provider_id=ANY($1::text[])', [profiles]);
+    await db.query('DELETE FROM board_listings WHERE id=ANY($1::text[])', [profiles]); await db.query('DELETE FROM provider_profiles WHERE id=ANY($1::text[])', [profiles]);
+    await db.query('DELETE FROM provider_accounts WHERE id=ANY($1::uuid[])', [accounts]); await db.query('DELETE FROM auth_sessions WHERE email=ANY($1::text[])', [emails]); await db.query('DELETE FROM users WHERE email=ANY($1::text[])', [emails]);
+    await db.end(); if (globalThis.clingoFallbackPool) await globalThis.clingoFallbackPool.end();
+  }
+})().catch(error => { console.error(error); process.exitCode = 1; });

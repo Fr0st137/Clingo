@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { Client } = require('pg');
@@ -9,7 +10,7 @@ const accounts = [], profiles = [];
 const db = new Client({ host:'127.0.0.1',port:55432,database:'clingo',user:'clingo',password:'clingo' });
 async function request(path, token, body, method = body === undefined ? 'GET' : 'POST') {
   const response = await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
-  return {status:response.status,data:await response.json()};
+  return {status:response.status,data:await finishFixtureRegistration(path, await response.json())};
 }
 async function ok(path,token,body,method) {const result=await request(path,token,body,method);assert.ok(result.status<300,JSON.stringify(result));return result.data;}
 async function main() {
@@ -23,11 +24,11 @@ async function main() {
     const employees=[];
     for(const [index,services] of [['A',['homes']],['B',['homes']],['C',['homes']],['D',['offices']]]) employees.push(await ok('/provider/employees',owner.token,{name:`Pracownik ${index}`,email:'',phone:'',showInCalendar:true,services,schedule}));
     const outsider=await ok('/provider/employees',foreign.token,{name:'Obcy',email:'',phone:'',showInCalendar:true,services:['homes'],schedule});
-    async function publish(workers) {const input={title:`Obsada ${workers} QA`,category:'homes',description:'Test dostępności zespołu.',priceMinor:15000,durationMinutes:60,status:'draft',configuration:{...defaultOfferConfiguration(),standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers}]}};const offer=await ok('/provider/services',owner.token,input);await ok(`/provider/services/${offer.id}`,owner.token,{...input,status:'published',revision:offer.revision},'PUT');const id=`service-${offer.id}`;profiles.push(id);return id;}
+    async function publish(workers) {const input={title:`Obsada ${workers} QA`,category:'homes',description:'Test dostępności zespołu.',priceMinor:15000,durationMinutes:60,status:'draft',configuration:{...defaultOfferConfiguration(),requiresClientPhotos:false,standardsAccepted:true,bufferEnabled:false,areaTiers:[{minSquareMeters:15,maxSquareMeters:1000,workers}]}};const offer=await ok('/provider/services',owner.token,input);await ok(`/provider/services/${offer.id}`,owner.token,{...input,status:'published',revision:offer.revision},'PUT');const id=`service-${offer.id}`;profiles.push(id);return id;}
     const two=await publish(2),one=await publish(1);
     const date=addLocalDays(localDate(new Date()),2), startsAt=warsawDate(date,'09:00').toISOString();
     const selection=providerId=>({providerId,pricingId:'area-100',frequencyId:'once',addOns:[]});
-    const booking=providerId=>({...selection(providerId),startsAt,requestId:randomUUID(),address:'Testowa 1, Warszawa',contactName:'Klient obsady',contactPhone:'500600700'});
+    const booking=providerId=>({...selection(providerId),startsAt,requestId:randomUUID(),address:'Testowa 1, Warszawa',contactName:'Klient obsady',accessMethod: 'someone-present', contactPhone: '500600700'});
     const first=await ok('/dashboard/orders',customer.token,booking(two));
     let jobs=await ok(`/provider/bookings/${first.id}`,owner.token);assert.equal(jobs[0].employees.length,2);assert.equal(new Set(jobs[0].employeeIds).size,2);
     assert.equal((await request('/dashboard/orders',customer.token,booking(two))).status,409);

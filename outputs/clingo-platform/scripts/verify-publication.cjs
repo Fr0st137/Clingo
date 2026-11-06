@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { readFileSync } = require('node:fs');
@@ -12,7 +13,7 @@ const db = new Client({ host: process.env.POSTGRES_HOST || '127.0.0.1', port: Nu
 const accountIds = [], profileIds = [];
 async function request(path, token, body, method = body === undefined ? 'GET' : 'POST') {
   const response = await fetch(base + path, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(20000) });
-  return { status: response.status, data: await response.json() };
+  return { status: response.status, data: await finishFixtureRegistration(path, await response.json()) };
 }
 async function main() {
   await db.connect();
@@ -31,7 +32,7 @@ async function main() {
         assert.equal(employee.status, 201, JSON.stringify(employee.data));
       }
     }
-    const configuration = { ...defaultOfferConfiguration(), standardsAccepted: true, ratePerSquareMeterMinor: 237, bufferEnabled: false, leadTimeEnabled: false };
+    const configuration = { ...defaultOfferConfiguration(),requiresClientPhotos:false, standardsAccepted: true, ratePerSquareMeterMinor: 237, bufferEnabled: false, leadTimeEnabled: false };
     const draft = { title: `Sprzątanie QA ${run}`, category: 'homes', description: 'Rzeczywisty zakres usługi testowej.', priceMinor: 15000, durationMinutes: 60, configuration, status: 'draft' };
     let offer = (await request('/provider/services', owner.token, draft)).data;
     const id = offer.id, publicId = `service-${id}`; profileIds.push(publicId);
@@ -79,7 +80,7 @@ async function main() {
     let available = (await request('/dashboard/booking/availability', undefined, { ...selection, month })).data.days.flatMap(day => day.slots);
     if (!available.length) { month = addLocalDays(localDate(new Date()), 10).slice(0,7); available = (await request('/dashboard/booking/availability', undefined, { ...selection, month })).data.days.flatMap(day => day.slots); }
     assert.ok(available.length);
-    const booking = { ...selection, startsAt: available[0].startsAt, address: 'Warszawa, Testowa 10', contactName: 'Klient publikacji', contactPhone: '500600700', notes: 'Uwagi od klienta', requestId: randomUUID(), expectedTotal: quote.data.totalValue };
+    const booking = { ...selection, startsAt: available[0].startsAt, address: 'Warszawa, Testowa 10', contactName: 'Klient publikacji', accessMethod: 'someone-present', contactPhone: '500600700', notes: 'Uwagi od klienta', requestId: randomUUID(), expectedTotal: quote.data.totalValue };
     const created = await request('/dashboard/orders', customer.token, booking);
     assert.equal(created.status, 201, JSON.stringify(created.data));
     const jobs = () => request('/provider/jobs', owner.token);

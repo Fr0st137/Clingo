@@ -17,6 +17,7 @@ function loadSource(path, dependencies = {}) {
 }
 const coverage = loadSource('../apps/api/src/dashboard/service-area.ts');
 const { offerRequestState, offerAddOnQuantities, pricingArea, requestPricing, profilePricing, profileBookingMode } = loadSource('../apps/web/lib/offer-request.ts', {
+  './add-on-selection': loadSource('../apps/web/lib/add-on-selection.ts'),
   '../../api/src/dashboard/service-area': coverage,
   '../../api/src/dashboard/booking-policy': loadSource('../apps/api/src/dashboard/booking-policy.ts'),
   '../../api/src/dashboard/area-pricing': loadSource('../apps/api/src/dashboard/area-pricing.ts')

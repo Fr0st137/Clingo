@@ -67,8 +67,9 @@ export function BoardAddOnsOverlay({ addOns, quantities, onChange, onClose }: {
   }, [onClose]);
 
   return (
-    <section aria-label="Usługi dodatkowe" className="absolute inset-x-0 top-0 z-20 min-h-[979px] overflow-hidden rounded-[20px] border border-[#e5e7eb] bg-[rgba(244,246,249,0.8)] p-[25px] shadow-[0px_2px_14px_rgba(0,0,0,0.08)] backdrop-blur-[20px]" data-node-id="1237:1641" id="board-add-ons-overlay">
-      <div className="grid grid-cols-6 gap-x-[25px] gap-y-[20px]">
+    <section aria-label="Usługi dodatkowe" className="relative z-20 rounded-[20px] border border-[#e5e7eb] bg-[rgba(244,246,249,0.8)] p-[15px] shadow-[0px_2px_14px_rgba(0,0,0,0.08)] backdrop-blur-[20px] min-[1440px]:absolute min-[1440px]:inset-x-0 min-[1440px]:top-0 min-[1440px]:min-h-[979px] min-[1440px]:p-[25px]" data-node-id="1237:1641" id="board-add-ons-overlay">
+      <button type="button" onClick={onClose} className="mb-[15px] ml-auto block rounded-[30px] border border-[#e5e7eb] bg-white px-[15px] py-[10px] text-[14px] text-[#2e3b4c] min-[1440px]:hidden">Zamknij usługi dodatkowe</button>
+      <div className="grid grid-cols-[repeat(auto-fit,150px)] justify-center gap-x-[15px] gap-y-[20px] min-[1440px]:grid-cols-6 min-[1440px]:gap-x-[25px]">
         {addOns.map(addOn => <AddOnCard addOn={addOn} key={addOn.id} onChange={quantity => onChange(addOn.id, quantity)} quantity={quantities.get(addOn.id) ?? 0} />)}
       </div>
       {addOns.length === 0 ? <p className="m-0 text-[14px] text-[#7c8691]">Brak usług dodatkowych dla tych ogłoszeń.</p> : null}

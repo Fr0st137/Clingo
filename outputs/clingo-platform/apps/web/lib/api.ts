@@ -199,12 +199,14 @@ export async function getBoard(): Promise<BoardPayload> {
     board = await getBoardFromDb();
   }
 
-  if (board.listings.every(listing => Array.isArray(listing.addOns))) return board;
+  if (board.listings.every(listing => Array.isArray(listing.addOns) && Array.isArray(listing.pricing) && Array.isArray(listing.frequencies) && listing.addOns.every(row => Number.isFinite(row.priceValue)))) return board;
 
   const listings = await Promise.all(board.listings.map(async listing => {
     try {
       const profile = await getProviderProfile(listing.id);
-      return { ...listing, addOns: profile.addOns?.map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })) ?? [] };
+      return { ...listing, areaPricing: profile.areaPricing, pricing: profile.pricing,
+        frequencies: profile.frequencies, bookingSettings: profile.bookingSettings, tags: profile.tags,
+        addOns: profile.addOns?.map(({ id, label, durationMinutes, priceValue }) => ({ id, label, durationMinutes, priceValue })) ?? [] };
     } catch {
       return { ...listing, addOns: [] };
     }

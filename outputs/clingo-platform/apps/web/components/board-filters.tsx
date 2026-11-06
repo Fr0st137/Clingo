@@ -25,12 +25,13 @@ type BoardFiltersProps = {
   groups: FilterGroupData[];
   onFiltersChange: (filters: BoardFilterState) => void;
   onToggleAddOns: () => void;
+  onShowResults: () => void;
   totalCount: number;
 };
 
 function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
-    <div className="flex h-[45px] w-[315px] items-center rounded-[20px] bg-[#f4f6f9] px-[20px]">
+    <div className="flex h-[45px] w-full items-center rounded-[20px] bg-[#f4f6f9] px-[20px]">
       <img alt="" className="h-[16px] w-[16px]" src={icon} />
       <span className="ml-[20px] text-[14px] font-normal leading-[17px] text-[#2e3b4c]">{title}</span>
     </div>
@@ -74,7 +75,7 @@ function numberValue(value: string) {
   return value.replace(/[^\d]/g, "");
 }
 
-export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFiltersChange, onToggleAddOns, totalCount }: BoardFiltersProps) {
+export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFiltersChange, onToggleAddOns, onShowResults, totalCount }: BoardFiltersProps) {
   const rating = groups[0] ?? { id: "rating", options: ["5", "4", "3", "2", "1"], title: "Ocena" };
   const price = groups[1] ?? { id: "price", options: ["od", "do"], title: "Cena" };
   const type = groups[2] ?? { id: "type", options: ["Jednosesyjne", "Wielosesyjne"], title: "Typ zlecenia" };
@@ -110,10 +111,10 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
 
   return (
     <aside
-      className="h-auto w-[345px] self-start rounded-[20px] border border-[#e6edf3] bg-white pb-[20px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+      className="h-auto w-full min-w-0 min-[1440px]:w-[345px] self-start rounded-[20px] border border-[#e6edf3] bg-white pb-[20px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
       data-node-id="1141:1456"
     >
-      <div className="mx-[15px] mt-[15px] w-[315px]">
+      <div className="mx-[15px] mt-[15px] w-[calc(100%-30px)]">
         <SectionHeader icon="/figma-assets/board-review.svg" title={rating.title} />
         <div className="mt-[10px] grid gap-[10px]">
           {rating.options.map((option) => {
@@ -122,7 +123,7 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
 
             return (
               <button
-                className="flex h-[22px] w-[315px] items-center px-[15px]"
+                className="flex h-[22px] w-full items-center px-[15px]"
                 key={option}
                 onClick={() => update({ minRating: checked ? null : ratingValue })}
                 type="button"
@@ -141,7 +142,7 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
       <button
         aria-controls="board-add-ons-overlay"
         aria-expanded={addOnsOpen}
-        className="mx-[15px] mt-[30px] flex h-[45px] w-[315px] items-center rounded-[50px] bg-[#f4f6f9] px-[20px]"
+        className="mx-[15px] mt-[30px] flex h-[45px] w-[calc(100%-30px)] items-center rounded-[50px] bg-[#f4f6f9] px-[20px]"
         onClick={onToggleAddOns}
         type="button"
       >
@@ -154,24 +155,24 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
         <img alt="" className={`h-[16px] w-[15px] transition-transform ${addOnsOpen ? "rotate-0" : "-rotate-90"}`} src="/figma-assets/board-chevron.svg" />
       </button>
 
-      <div className="mx-[15px] mt-[30px] w-[315px]">
+      <div className="mx-[15px] mt-[30px] w-[calc(100%-30px)]">
         <SectionHeader icon="/figma-assets/board-coins.svg" title={price.title} />
-        <div className="mt-[10px] flex h-[37px] w-[315px] items-center">
-          <label className="block">
+        <div className="mt-[10px] flex h-[37px] w-full items-center">
+          <label className="block min-w-0 flex-1">
             <span className="sr-only">Cena od</span>
             <input
-              className="h-[37px] w-[149px] rounded-[30px] border border-[#e5e7eb] px-[18px] text-center text-[14px] leading-[17px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af]"
+              className="h-[37px] w-full min-w-0 rounded-[30px] border border-[#e5e7eb] px-[18px] text-center text-[14px] leading-[17px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af]"
               inputMode="numeric"
               onChange={(event) => update({ minPrice: numberValue(event.target.value) })}
               placeholder="od"
               value={filters.minPrice}
             />
           </label>
-          <span className="w-[17px] text-center text-[14px] text-[#9ca3af]">-</span>
-          <label className="block">
+          <span className="w-[17px] shrink-0 text-center text-[14px] text-[#9ca3af]">-</span>
+          <label className="block min-w-0 flex-1">
             <span className="sr-only">Cena do</span>
             <input
-              className="h-[37px] w-[149px] rounded-[30px] border border-[#e5e7eb] px-[18px] text-center text-[14px] leading-[17px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af]"
+              className="h-[37px] w-full min-w-0 rounded-[30px] border border-[#e5e7eb] px-[18px] text-center text-[14px] leading-[17px] text-[#2e3b4c] outline-none placeholder:text-[#9ca3af]"
               inputMode="numeric"
               onChange={(event) => update({ maxPrice: numberValue(event.target.value) })}
               placeholder="do"
@@ -181,14 +182,14 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
         </div>
       </div>
 
-      <div className="mx-[15px] mt-[30px] w-[315px]">
+      <div className="mx-[15px] mt-[30px] w-[calc(100%-30px)]">
         <SectionHeader icon="/figma-assets/board-choose.svg" title={type.title} />
         <div className="mt-[10px] grid gap-[10px]">
           {type.options.map((option) => {
             const mode = option as "Jednosesyjne" | "Wielosesyjne";
 
             return (
-              <button className="flex h-[24px] w-[315px] items-center px-[15px]" key={option} onClick={() => toggleMode(mode)} type="button">
+              <button className="flex h-[24px] w-full items-center px-[15px]" key={option} onClick={() => toggleMode(mode)} type="button">
                 <Toggle enabled={filters.modes[mode]} />
                 <span className="ml-[20px] text-[14px] leading-[17px] text-[#2e3b4c]">{option}</span>
                 <img alt="" className="ml-[10px] h-[14px] w-[14px]" src="/figma-assets/board-info.svg" />
@@ -198,7 +199,7 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
         </div>
       </div>
 
-      <div className="mx-[15px] mt-[30px] w-[315px]">
+      <div className="mx-[15px] mt-[30px] w-[calc(100%-30px)]">
         <SectionHeader icon="/figma-assets/board-terms.svg" title={facilities.title} />
         <div className="mt-[10px] grid gap-[10px]">
           {facilities.options.map((option) => {
@@ -206,7 +207,7 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
 
             return (
               <button
-                className="flex h-[23px] w-[315px] items-center px-[15px]"
+                className="flex h-[23px] w-full items-center px-[15px]"
                 key={option}
                 onClick={() => update({ facilities: { ...filters.facilities, [option]: !checked } })}
                 type="button"
@@ -220,9 +221,9 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
         </div>
       </div>
 
-      <div className="mx-[15px] mt-[30px] w-[315px]">
+      <div className="mx-[15px] mt-[30px] w-[calc(100%-30px)]">
         <SectionHeader icon="/figma-assets/board-shield.svg" title={orders.title} />
-        <div className="mt-[10px] flex h-[40px] w-[315px] items-end px-[15px] py-[5px]" data-node-id="6118:10926">
+        <div className="mt-[10px] flex h-[40px] w-full items-end px-[15px] py-[5px]" data-node-id="6118:10926">
           <span className="flex h-[30px] min-w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-[#e5e7eb] bg-white px-[15px] py-[5px] text-[13px] font-medium leading-5 text-[#334155]" data-node-id="6121:10988">
             {filters.minOrders}
           </span>
@@ -243,10 +244,10 @@ export function BoardFilters({ addOnsOpen, filteredCount, filters, groups, onFil
       </div>
 
       <div className="mx-[15px] mt-[30px] grid gap-[10px]">
-        <div className="flex h-[45px] w-[315px] items-center justify-center rounded-[100px] bg-[#0079de] text-[14px] font-normal leading-[17px] text-white">
+        <button type="button" onClick={onShowResults} className="flex h-[45px] w-full items-center justify-center rounded-[100px] bg-[#0079de] text-[14px] font-normal leading-[17px] text-white">
           Pokaż ogłoszenia ({filteredCount}/{totalCount})
-        </div>
-        <button className="h-[37px] w-[315px] rounded-[100px] border border-[#e5e7eb] text-[13px] text-[#2e3b4c]" onClick={resetFilters} type="button">
+        </button>
+        <button className="h-[37px] w-full rounded-[100px] border border-[#e5e7eb] text-[13px] text-[#2e3b4c]" onClick={resetFilters} type="button">
           Wyczyść filtry
         </button>
       </div>

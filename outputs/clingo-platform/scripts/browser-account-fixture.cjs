@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 // Disposable local fixture for manual/browser smoke checks. Never changes an existing account.
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,6 +14,7 @@ async function main() {
       const run = randomUUID(); const email = `browser-${run}@example.test`; const password = `Browser test ${run}`;
       const result = await fetch('http://localhost:4000/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, firstName: 'Anna', lastName: 'Testowa' }) });
       if (!result.ok) throw new Error('Fixture registration failed.');
+      await finishFixtureRegistration('/auth/register', await result.json());
       const providerId = `browser-test-${run}`;
       fs.writeFileSync(file, JSON.stringify({ run, email, providerId }));
       await db.query(`INSERT INTO provider_profiles SELECT * FROM jsonb_populate_record(NULL::provider_profiles,

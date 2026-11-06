@@ -15,6 +15,12 @@ export class AuthController {
     await this.limits.consume("register-ip", req.ip, 30);
     return this.auth.register(body);
   }
+  @Post("verify-email")
+  async verify(@Body() body: unknown, @Req() req: { ip: string }) { await this.limits.consume("verify-ip", req.ip, 120); return this.auth.verifyEmail(body); }
+  @Post("resend-verification")
+  async resend(@Body() body: unknown, @Req() req: { ip: string }) { await this.limits.consume("verify-resend-ip", req.ip, 60); return this.auth.resendVerification(body); }
+  @Post("verification-status")
+  status(@Body() body: unknown) { return this.auth.verificationStatus(body); }
   @Post("login")
   async login(@Body() body: unknown, @Req() req: { ip: string }) {
     await this.limits.consume("login-ip", req.ip, 120);

@@ -1,8 +1,9 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs');const{randomUUID}=require('node:crypto');const{Client}=require('pg');
 const{chromium}=require('C:/Users/pc/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const{defaultOfferConfiguration}=require('../apps/api/dist/provider/provider-offers.input');const{localDate,addLocalDays}=require('../apps/api/dist/dashboard/booking');
 const db=new Client({host:'127.0.0.1',port:55432,user:'clingo',password:'clingo',database:'clingo'}),run=randomUUID(),emails=['owner','foreign'].map(role=>`manual-${role}-${run}@example.test`),accounts=[];
-async function request(path,token,body,method=body===undefined?'GET':'POST'){const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await response.json()};}
+async function request(path,token,body,method=body===undefined?'GET':'POST'){const response=await fetch('http://localhost:4000'+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});return{status:response.status,data:await finishFixtureRegistration(path, await response.json())};}
 async function ok(...args){const result=await request(...args);assert.ok(result.status<300,JSON.stringify(result));return result.data;}
 async function imageAudit(dialog){return dialog.locator('img:visible').evaluateAll(async images=>{await Promise.all(images.map(image=>image.decode()));return images.map(image=>({src:image.getAttribute('src'),width:image.getBoundingClientRect().width,height:image.getBoundingClientRect().height,cssWidth:getComputedStyle(image).width,cssHeight:getComputedStyle(image).height,naturalWidth:image.naturalWidth,naturalHeight:image.naturalHeight}));});}
 (async()=>{await db.connect();let browser;try{

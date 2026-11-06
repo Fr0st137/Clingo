@@ -1,3 +1,4 @@
+const { finishFixtureRegistration } = require('./test-registration.cjs');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { Client } = require('pg');
@@ -11,7 +12,7 @@ const db = new Client({ host: process.env.POSTGRES_HOST || '127.0.0.1', port: Nu
   database: process.env.POSTGRES_DB || 'clingo', user: process.env.POSTGRES_USER || 'clingo', password: process.env.POSTGRES_PASSWORD || 'clingo' });
 async function request(path, input, token, method = 'POST') {
   const result = await fetch(`${base}${path}`, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(input ? { body: JSON.stringify(input) } : {}) });
-  return { status: result.status, data: await result.json() };
+  return { status: result.status, data: await finishFixtureRegistration(path, await result.json()) };
 }
 async function main() {
   await db.connect();
@@ -35,10 +36,13 @@ async function main() {
     }
     assert.ok(slot);
     const input = { ...selection, startsAt: slot.startsAt, address: 'Testowa 1, 00-001 Warszawa', apartment: '7',
-      contactName: 'Test Rezerwacji', contactPhone: '500000000', notes: 'Test zapisu uwag', requestId: randomUUID(),
+      contactName: 'Test Rezerwacji', accessMethod: 'someone-present', contactPhone: '500000000', notes: 'Test zapisu uwag', requestId: randomUUID(),
       invoice: { companyName: 'Firma testowa', taxId: '1234567890', address: 'Testowa 2, Warszawa' } };
     assert.equal((await request('/dashboard/orders', input)).status, 401);
-    assert.equal((await request('/dashboard/orders', { ...input, contactPhone: 'abc' }, accounts[0].token)).status, 400);
+    for (const accessMethod of [undefined, null, '', 'keys', 1, {}]) {
+      assert.equal((await request('/dashboard/orders', { ...input, accessMethod }, accounts[0].token)).status, 400);
+    }
+    assert.equal((await request('/dashboard/orders', { ...input, accessMethod: 'someone-present', contactPhone: 'abc' }, accounts[0].token)).status, 400);
     assert.equal((await request('/dashboard/orders', { ...input, address: 'Kraków, Testowa 1' }, accounts[0].token)).status, 400, 'An address outside provider coverage must be rejected on the server');
     assert.equal((await request('/dashboard/orders', { ...input, expectedTotal: 1 }, accounts[0].token)).status, 409);
     const [first, other] = await Promise.all([
@@ -50,6 +54,8 @@ async function main() {
     const index = first.status === 201 ? 0 : 1;
     const token = accounts[index].token;
     assert.equal(winner.data.summary.total, '213 zł');
+    assert.equal(winner.data.bookingDetails.accessMethod, 'someone-present');
+    assert.equal((await request('/dashboard/orders', { ...input, accessMethod: 'phone-contact' }, token)).status, 409);
     assert.equal(winner.data.mode, 'Jednosesyjne');
     assert.equal(winner.data.bookingDetails.notes, input.notes);
     assert.equal(winner.data.bookingDetails.invoice.taxId, '1234567890');

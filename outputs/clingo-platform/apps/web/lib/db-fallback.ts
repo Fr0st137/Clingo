@@ -34,6 +34,7 @@ type OrderRow = {
   startsAt: Date | string | null;
   status: string;
   summary: OrderCardData["summary"] | string | null;
+  selectedOptions?: OrderCardData["bookingDetails"] | string | null;
 };
 
 type UserRow = {
@@ -146,6 +147,7 @@ function orderActions(status: string) {
 
 function toOrder(row: OrderRow): OrderCardData {
   const lines = dateLines(row);
+  const options = asJson(row.selectedOptions ?? null);
 
   return {
     actions: orderActions(row.status),
@@ -160,6 +162,7 @@ function toOrder(row: OrderRow): OrderCardData {
     range: lines.length === 2,
     status: row.status,
     summary: asJson(row.summary),
+    bookingDetails: options ? { photos: options.photos, accessMethod: options.accessMethod, addOns: options.addOns, contactName: options.contactName, contactPhone: options.contactPhone, frequencyLabel: options.frequencyLabel, estimatedWorkers: options.estimatedWorkers, notes: options.notes, invoice: options.invoice } : undefined,
     ...providerVisual(row.provider)
   };
 }
@@ -168,7 +171,7 @@ export async function getDashboardFromDb(email: string): Promise<DashboardPayloa
   return withDb(async (client) => {
     const [result, users] = await Promise.all([
       client.query<OrderRow>(
-        'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary from orders where "user_email" = $1 order by "startsAt" asc',
+        'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary, selected_options as "selectedOptions" from orders where "user_email" = $1 order by "startsAt" asc',
         [email]
       ),
       client.query<UserRow>(
@@ -204,7 +207,7 @@ export async function getDashboardFromDb(email: string): Promise<DashboardPayloa
 export async function getOrderFromDb(id: string, email: string): Promise<OrderCardData> {
   return withDb(async (client) => {
     const result = await client.query<OrderRow>(
-      'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary from orders where id = $1 and "user_email" = $2 limit 1',
+      'select id, provider, "provider_id" as "providerId", status, mode, "serviceType", address, "startsAt", "endsAt", summary, selected_options as "selectedOptions" from orders where id = $1 and "user_email" = $2 limit 1',
       [id, email]
     );
 
@@ -302,7 +305,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
     const [searchFields, filters, listings] = await Promise.all([
       client.query<BoardPayload["searchFields"][number]>('select id, label, value from board_search_fields order by "orderIndex" asc'),
       client.query<Record<string, unknown>>('select id, title, options from board_filters order by "orderIndex" asc'),
-      client.query<Record<string, unknown>>(`select b.*, p.service, p.area_pricing, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id where p.published = true and ${staffingEligibilitySql} order by b."orderIndex" asc`)
+      client.query<Record<string, unknown>>(`select b.*, p.service, p.metrics as "serviceMetrics", o.category as "serviceCategory", p.area_pricing, p.pricing, p.frequencies, p.booking_settings, p.tags, p."addOns" as "profileAddOns" from board_listings b inner join provider_profiles p on p.id = b.id left join provider_offers o on p.id = 'service-' || o.id::text and o.account_id = p.account_id where p.published = true and ${staffingEligibilitySql} order by b."orderIndex" asc`)
     ]);
 
     const ratings=ratingTotalsMap((await client.query<{id:string;count:string;sum:string;company:boolean}>(RATING_TOTALS_SQL,[listings.rows.map(row=>String(row.id))])).rows);
@@ -314,8 +317,14 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
       })),
       listings: listings.rows.map((listing) => ({
         service: String(listing.service),
+        serviceCategory: typeof listing.serviceCategory === "string" ? listing.serviceCategory : undefined,
+        serviceMetrics: asJson<BoardPayload["listings"][number]["serviceMetrics"]>(listing.serviceMetrics as string | null) ?? [],
         areaPricing: asJson<BoardPayload["listings"][number]["areaPricing"]>(listing.area_pricing as string | null),
-        addOns: (asJson<Array<{ id: string; label: string; durationMinutes?: number }>>(listing.profileAddOns as string) ?? []).map(({ id, label, durationMinutes }) => ({ id, label, durationMinutes })),
+        pricing: (asJson<NonNullable<BoardPayload["listings"][number]["pricing"]>>(listing.pricing as string) ?? []).map(({ id, label, priceValue, duration }) => ({ id, label, priceValue, duration })),
+        frequencies: (asJson<NonNullable<BoardPayload["listings"][number]["frequencies"]>>(listing.frequencies as string) ?? []).map(({ id, label, discount }) => ({ id, label, discount })),
+        bookingSettings: asJson<BoardPayload["listings"][number]["bookingSettings"]>(listing.booking_settings as string | null),
+        tags: asJson<string[]>(listing.tags as string) ?? [],
+        addOns: (asJson<NonNullable<BoardPayload["listings"][number]["addOns"]>>(listing.profileAddOns as string) ?? []).map(({ id, label, durationMinutes, priceValue }) => ({ id, label, durationMinutes, priceValue })),
         completedOrders: Number(listing.completedOrders),
         experience: String(listing.experience ?? ""),
         id: String(listing.id),
@@ -335,7 +344,7 @@ export async function getBoardFromDb(): Promise<BoardPayload> {
 
 export async function getProviderProfileFromDb(id: string): Promise<ProviderProfileData> {
   return withDb(async (client) => {
-    const result = await client.query<Record<string, unknown>>(`select p.* from provider_profiles p where p.id = $1 and p.published = true and ${staffingEligibilitySql} limit 1`, [id]);
+    const result = await client.query<Record<string, unknown>>(`select p.*, o.configuration as "sourceConfiguration" from provider_profiles p left join provider_offers o on p.id = 'service-' || o.id::text and o.account_id=p.account_id where p.id = $1 and p.published = true and ${staffingEligibilitySql} limit 1`, [id]);
     const profile = result.rows[0];
 
     if (!profile) {
@@ -343,6 +352,7 @@ export async function getProviderProfileFromDb(id: string): Promise<ProviderProf
     }
 
     const mapped = {
+      requiresClientPhotos: asJson<{ requiresClientPhotos?: boolean }>(profile.sourceConfiguration as string | null)?.requiresClientPhotos ?? false,
       areaPricing: asJson<ProviderProfileData["areaPricing"]>(profile.area_pricing as string | null),
       bookingSettings: asJson<ProviderProfileData["bookingSettings"]>(profile.booking_settings as string | null),
       completedOrders: Number(profile.completedOrders),

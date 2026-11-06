@@ -5,7 +5,7 @@ const { BookingService } = require('../apps/api/dist/dashboard/booking.service')
 const { bookingJobs } = require('../apps/api/dist/dashboard/booking-bridge');
 
 test('provider details retain the booking frequency snapshot, extras, notes and session identity', () => {
-  const rows = bookingJobs({ id:'booking-id',userEmail:'customer@example.test',providerId:'profile-id',status:'Zaplanowane',mode:'Jednorazowe',serviceType:'Sprzątanie',address:'Adres',startsAt:new Date('2026-10-26T11:30:00Z'),endsAt:new Date('2026-10-26T14:45:00Z'),revision:7,summary:{total:'165,00 zł',duration:'3h 15min',lines:[]},selectedOptions:{frequencyLabel:'Co tydzień',estimatedWorkers:2,contactName:'Klient',contactPhone:'',notes:'Uwagi klienta',addOns:[{id:'oven',label:'Piekarnik',quantity:2}]} });
+  const rows = bookingJobs({ id:'booking-id',userEmail:'customer@example.test',providerId:'profile-id',status:'Zaplanowane',mode:'Jednorazowe',serviceType:'Sprzątanie',address:'Adres',startsAt:new Date('2026-10-26T11:30:00Z'),endsAt:new Date('2026-10-26T14:45:00Z'),revision:7,summary:{total:'165,00 zł',duration:'3h 15min',lines:[]},selectedOptions:{frequencyLabel:'Co tydzień',estimatedWorkers:2,contactName:'Klient',accessMethod: 'someone-present', contactPhone: '',notes:'Uwagi klienta',addOns:[{id:'oven',label:'Piekarnik',quantity:2}]} });
   assert.equal(rows[0].estimatedWorkers,2);
   assert.equal(rows[0].frequencyLabel,'Co tydzień');
   assert.equal(rows[0].bookingId,'booking-id');assert.equal(rows[0].revision,7);
@@ -103,7 +103,7 @@ test('confirmed multi-session order is persisted with its schedule and mode', as
   const secondStart = warsawDate(secondDate, '08:00');
   const id = await service.create({
     providerId: offer.id, pricingId: 'large', frequencyId: 'weekly', addOns: [], address: 'Testowa 1, Warszawa',
-    contactName: 'Anna Nowak', contactPhone: '500600700', requestId: '22222222-2222-4222-8222-222222222222', expectedTotal: 360,
+    contactName: 'Anna Nowak', accessMethod: 'someone-present', contactPhone: '500600700', requestId: '22222222-2222-4222-8222-222222222222', expectedTotal: 360,
     sessions: [
       { startsAt: firstStart.toISOString(), endsAt: new Date(firstStart.getTime() + 270 * 60_000).toISOString() },
       { startsAt: secondStart.toISOString(), endsAt: new Date(secondStart.getTime() + 270 * 60_000).toISOString() }
@@ -111,6 +111,7 @@ test('confirmed multi-session order is persisted with its schedule and mode', as
   }, 'anna@example.com');
   assert.equal(id, '11111111-1111-4111-8111-111111111111');
   assert.equal(savedOrder.mode, 'Wielosesyjne');
+  assert.equal(savedOrder.selectedOptions.accessMethod, 'someone-present');
   assert.equal(savedOrder.selectedOptions.frequencyLabel, 'Co tydzień');
   assert.equal(savedOrder.selectedOptions.sessions.length, 2);
   assert.ok(savedOrder.selectedOptions.sessions.every(session => session.workers === 2));

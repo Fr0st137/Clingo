@@ -1,3 +1,5 @@
+import { EmailVerificationEntity } from "../auth/email-verification.entity";
+import { BookingPhotoEntity } from "../dashboard/booking-photo.entity";
 import { ProviderJobEntity } from "../provider/provider-jobs.entity";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -39,7 +41,7 @@ import { ProviderProjectPhotoEntity } from "../provider/provider-project-photo.e
         database: config.get<string>("POSTGRES_DB", "clingo"),
         entities: [
           ProviderAccountEntity, ProviderMembershipEntity, ProviderEmployeeEntity, ProviderClientEntity, ProviderOfferEntity, ProviderJobEntity, ProviderReviewEntity, ProviderMultiOrderEntity, ProviderProjectPhotoEntity,
-          AuthSessionEntity,
+          AuthSessionEntity, EmailVerificationEntity,
           AuthRateLimitEntity,
           CustomerFavoriteEntity, CustomerReviewEntity, CustomerReviewImageEntity,
           BoardFilterEntity,
@@ -50,7 +52,7 @@ import { ProviderProjectPhotoEntity } from "../provider/provider-project-photo.e
           ExternalConnectionEntity,
           FavoriteProviderEntity,
           NotificationSettingEntity,
-          OrderEntity,
+          OrderEntity, BookingPhotoEntity,
           PanelReviewEntity,
           ProviderProfileEntity,
           SettingsSectionEntity,

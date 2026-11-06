@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { BoardPayload } from "../lib/api";
 import { numericArea } from "../lib/offer-request";
-import { areaPricingOption } from "../../api/src/dashboard/area-pricing";
-import { bookingMode, durationMinutes } from "../../api/src/dashboard/booking-policy";
+import { quoteCatalogueListing } from "../lib/catalogue-quote";
+import { parsedAddOnQuantities } from "../lib/add-on-selection";
+import { matchesCatalogueRequest } from "../../api/src/dashboard/catalogue-search";
 import { paginate, paginationSequence } from "../lib/pagination";
 import { BoardFilters, type BoardAddOnFilter, type BoardFilterState } from "./board-filters";
 import { BoardAddOnsOverlay } from "./board-addons-overlay";
@@ -83,35 +84,10 @@ function cleanArea(value = "") {
   return Number.isFinite(parsed) && parsed > 0 ? String(parsed) : "";
 }
 
-const legacyAddOnIds: Record<string, string> = {
-  "mycie-okien": "window-cleaning",
-  lodowka: "fridge-cleaning",
-  naczynia: "dishes",
-  piekarnik: "oven-cleaning",
-  okap: "hood-cleaning",
-  mikrofalowka: "microwave",
-  "prasowanie-1": "ironing",
-  "prasowanie-2": "ironing",
-  szafa: "wardrobe-inside",
-  szafki: "cabinet-inside",
-  kuweta: "litter-box"
-};
-
 const addOnOrder = [
   "window-cleaning", "fridge-cleaning", "dishes", "oven-cleaning", "hood-cleaning",
   "microwave", "ironing", "wardrobe-inside", "cabinet-inside", "litter-box"
 ];
-
-function parsedAddOnQuantities(value = "") {
-  const quantities = new Map<string, number>();
-  value.split(",").forEach(entry => {
-    const [rawId, rawQuantity] = entry.split(":");
-    const id = legacyAddOnIds[rawId] ?? rawId;
-    const quantity = Math.max(1, Number(rawQuantity) || 1);
-    if (id) quantities.set(id, (quantities.get(id) ?? 0) + quantity);
-  });
-  return quantities;
-}
 
 function serializedAddOns(selected: Record<string, boolean>, currentValue = "") {
   const quantities = parsedAddOnQuantities(currentValue);
@@ -190,14 +166,11 @@ export function BoardInteractiveView({
 
   const filteredListings = useMemo(
     () => sortListings(board.listings.flatMap(listing => {
-      if (!listing.areaPricing || !request.area) return [listing];
-      const pricing = areaPricingOption(listing.areaPricing, `area-${numericArea(request.area)}`);
-      const quantities = parsedAddOnQuantities(request.addons);
-      const extraMinutes = (listing.addOns ?? []).reduce((sum, row) => sum + (row.durationMinutes ?? 0) * (quantities.get(row.id) ?? 0), 0);
-      const multi = pricing && bookingMode(durationMinutes(pricing.duration) + extraMinutes, listing, false, pricing.estimatedWorkers) === "multi";
-      return pricing ? [{ ...listing, price: pricing.price, mode: multi ? "Wielosesyjne" as const : "Jednosesyjne" as const }] : [];
+      if (!matchesCatalogueRequest(listing, request)) return [];
+      const quote = quoteCatalogueListing(listing, request.area, request.addons);
+      return quote ? [{ ...listing, price: quote.summary.total, mode: quote.mode === "multi" ? "Wielosesyjne" as const : "Jednosesyjne" as const }] : [];
     }).filter((listing) => matchesFilters(listing, filters)), sortMode),
-    [board.listings, filters, sortMode, request.area]
+    [board.listings, filters, sortMode, request.area, request.service, request.address, request.addons]
   );
   const visibleListingsCount = filteredListings.length;
   const page = paginate(filteredListings, requestedPage);
@@ -261,7 +234,7 @@ export function BoardInteractiveView({
     <section className="w-full pb-[116px]" data-node-id="5263:9055">
       <PublicSearchBar markup={searchMarkup} addOns={additionalServices} initialValues={{ service: request.service || "", area: request.area || "", location: request.address || "", addons: request.addons || "" }} onSearch={submitSearch} />
 
-      <div className="mt-[20px] grid w-[1440px] grid-cols-[345px_1075px] gap-[20px]" data-node-id="5263:9054">
+      <div className="mt-[20px] grid w-full min-w-0 grid-cols-1 gap-[20px] min-[1440px]:grid-cols-[345px_minmax(0,1fr)]" data-node-id="5263:9054">
         <BoardFilters
           addOnsOpen={addOnsPanelOpen}
           filteredCount={visibleListingsCount}
@@ -274,11 +247,20 @@ export function BoardInteractiveView({
             setRequestedPage(1);
             router.replace(boardUrl(nextRequest, 1), { scroll: false });
           }}
-          onToggleAddOns={() => setAddOnsPanelOpen(open => !open)}
+          onShowResults={() => {
+            setAddOnsPanelOpen(false);
+            document.querySelector("[data-board-results]")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+          onToggleAddOns={() => {
+            setAddOnsPanelOpen(open => !open);
+            if (!addOnsPanelOpen && window.innerWidth < 1440) {
+              requestAnimationFrame(() => document.querySelector("[data-board-results]")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+            }
+          }}
           totalCount={board.listings.length}
         />
 
-        <section className="relative min-h-[979px] w-[1075px] scroll-mt-[90px]" data-board-results data-node-id="5263:9053">
+        <section className="relative min-w-0 w-full scroll-mt-[130px] min-[1440px]:min-h-[979px] min-[1440px]:scroll-mt-[90px]" data-board-results data-node-id="5263:9053">
           {addOnsPanelOpen ? (
             <BoardAddOnsOverlay
               addOns={additionalServices}
@@ -287,9 +269,9 @@ export function BoardInteractiveView({
               quantities={parsedAddOnQuantities(request.addons)}
             />
           ) : null}
-          <div aria-hidden={addOnsPanelOpen || undefined} inert={addOnsPanelOpen || undefined}>
+          <div className={addOnsPanelOpen ? "hidden min-[1440px]:block" : undefined} aria-hidden={addOnsPanelOpen || undefined} inert={addOnsPanelOpen || undefined}>
           <header
-            className="flex h-[60px] w-[1075px] items-center justify-between rounded-[20px] border border-[#e6edf3] bg-white px-[15px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]"
+            className="flex min-h-[60px] w-full flex-wrap items-center justify-between gap-y-[10px] rounded-[20px] border border-[#e6edf3] bg-white px-[15px] py-[10px] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)] min-[1440px]:h-[60px]"
             data-node-id="1141:1478"
           >
             <label className="flex h-[28px] w-[230px] items-center text-[14px] font-normal leading-[28px] text-[#2e3b4c]">
@@ -322,14 +304,14 @@ export function BoardInteractiveView({
             {page.items.length > 0 ? (
               page.items.map((listing) => <BoardListingCard listing={listing} key={listing.id} request={request} />)
             ) : (
-              <div className="flex h-[172px] w-[1075px] items-center justify-center rounded-[20px] border border-[#e6edf3] bg-white text-[14px] text-[#7c8691] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]">
+              <div className="flex min-h-[172px] w-full items-center justify-center rounded-[20px] border border-[#e6edf3] bg-white p-[15px] text-center text-[14px] text-[#7c8691] shadow-[0px_2px_14px_0px_rgba(0,0,0,0.04)]">
                 Brak ogłoszeń dla wybranych filtrów
               </div>
             )}
           </div>
 
-          {page.totalPages > 0 ? <nav className="flex min-h-[58px] w-[1075px] items-center justify-center pt-[20px]" aria-label="Paginacja">
-            <div className="flex min-h-[33px] items-center justify-center gap-[10px]">
+          {page.totalPages > 0 ? <nav className="flex min-h-[58px] w-full items-center justify-center pt-[20px]" aria-label="Paginacja">
+            <div className="flex min-h-[33px] flex-wrap items-center justify-center gap-[10px]">
               {paginationItems.map((item, index) =>
                 item === "ellipsis" ? (
                   <img alt="" className="h-[23px] w-[17px]" key={`ellipsis-${index}`} src="/figma-assets/board-pagination-dots.svg" />

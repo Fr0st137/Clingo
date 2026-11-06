@@ -5,6 +5,8 @@ import { ProviderAccountEntity } from "../provider/provider.entity";
 export class ProviderProfileEntity {
   // Computed from the current roster for public reads; never persisted.
   staffingValid?: boolean;
+  serviceCategory?: string;
+  requiresClientPhotos?: boolean;
   @Column({ type: "boolean", default: true })
   published!: boolean;
 

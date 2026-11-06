@@ -58,6 +58,7 @@ export class OrderEntity {
 
   @Column({ name: "selected_options", nullable: true, type: "simple-json" })
   selectedOptions!: {
+    photos?: import("./booking-photo.types").BookingPhotoRef[];
     addOns: Array<{ id: string; label: string; quantity: number }>;
     frequencyId: string;
     pricingId: string;
@@ -70,6 +71,7 @@ export class OrderEntity {
     projectHistory?: Array<{ at: string; actor: string; added: string[]; removed: string[]; changed: string[]; areaChanged: boolean; confirmedShortage: boolean; confirmedExcess: boolean }>;
     contactName?: string;
     contactPhone?: string;
+    accessMethod?: import("./booking-access").AccessMethod;
     apartment?: string;
     notes?: string;
     invoice?: { companyName: string; taxId: string; address: string } | null;
